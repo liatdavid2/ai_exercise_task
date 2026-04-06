@@ -119,7 +119,7 @@ def clean_code(code: str) -> str:
     code = code.replace("```python", "")
     code = code.replace("```", "")
 
-    # 🔥 FIX: remove leading "python"
+    # FIX: remove leading "python"
     lines = code.strip().split("\n")
     if lines and lines[0].strip() == "python":
         lines = lines[1:]
@@ -193,7 +193,7 @@ Previous code:
 Fix the code.
 """
 
-    # 🔥 NEW: dataset context
+    # NEW: dataset context
     DATA_CONTEXT = """
 General dataset understanding rules:
 
