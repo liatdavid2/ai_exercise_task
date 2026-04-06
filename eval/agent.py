@@ -22,6 +22,15 @@ def get_data_dir():
         return "data"
     raise Exception("data folder not found")
 
+
+def debug_log(task_name, *args):
+    debug_dir = os.path.join(os.getcwd(), "debug")
+    os.makedirs(debug_dir, exist_ok=True)
+
+    path = os.path.join(debug_dir, f"{task_name}.log")
+
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(" ".join(str(a) for a in args) + "\n")
 # ---------------------------
 # TASK 1
 # ---------------------------
@@ -532,88 +541,185 @@ def handle_anomaly_task():
 # ---------------------------
 # TASK 8
 # ---------------------------
+
 def handle_executive_dashboard_task():
+    print("[DEBUG] RUNNING TASK 8")
+
     base = get_data_dir()
-    output_dir = os.path.join(os.getcwd(), "output")
+    root_dir = os.path.dirname(os.getcwd())
+    output_dir = os.path.join(root_dir, "output")
     os.makedirs(output_dir, exist_ok=True)
 
     employees_path = os.path.join(base, "employees.json")
     sales_path = os.path.join(base, "sales.csv")
     db_path = os.path.join(base, "metrics.db")
+    log_path = os.path.join(base, "logs", "app.log")
     dashboard_path = os.path.join(output_dir, "executive_dashboard.json")
 
+    print("[DEBUG] Paths:", employees_path, sales_path, db_path, log_path, dashboard_path)
+
+    # ---------------------------
     # Employees
+    # ---------------------------
     with open(employees_path, encoding="utf-8") as f:
         employees = json.load(f)
+
+    print("[DEBUG] Employees count:", len(employees))
 
     dept_counts = Counter()
     highest_paid = None
 
-    for emp in employees:
+    for i, emp in enumerate(employees):
         dept = emp.get("department", "Unknown")
         dept_counts[dept] += 1
-
         salary = emp.get("salary", 0)
+
+        if i < 5:
+            print("[DEBUG] Employee:", emp.get("name"), dept, salary)
+
         if highest_paid is None or salary > highest_paid.get("salary", 0):
             highest_paid = emp
 
+    department_summary = dict(dept_counts)
+    print("[DEBUG] Department summary:", department_summary)
+
+    # ---------------------------
     # Sales
+    # ---------------------------
     total_revenue = 0.0
     category_totals = defaultdict(float)
+    product_totals = defaultdict(float)
+    daily_totals = defaultdict(float)
 
     with open(sales_path, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
-        for r in reader:
+        print("[DEBUG] Sales columns:", reader.fieldnames)
+
+        for i, r in enumerate(reader):
             try:
                 total = float(r["total"])
             except Exception:
+                print("[DEBUG] Skip bad row")
                 continue
 
             category = (r.get("category") or "Unknown").strip()
+            product_id = r.get("product_id")
+            product_name = r.get("product_name")
+            date = r.get("date")
+
             total_revenue += total
             category_totals[category] += total
+            product_totals[(product_id, product_name)] += total
+            daily_totals[date] += total
 
-    top_category = None
-    top_category_revenue = 0.0
-    if category_totals:
-        top_category = max(category_totals, key=category_totals.get)
-        top_category_revenue = category_totals[top_category]
+            if i < 5:
+                print("[DEBUG] Sale row:", category, total)
 
-    # DB summary
-    db_summary = []
+    print("[DEBUG] Total revenue:", total_revenue)
+
+    top_products = sorted(product_totals.items(), key=lambda x: -x[1])[:5]
+    top_products_by_revenue = [
+        {"product_id": pid, "product_name": name, "revenue": round(val, 2)}
+        for (pid, name), val in top_products
+    ]
+
+    print("[DEBUG] Top products:", top_products_by_revenue[:3])
+
+    daily_revenue_trend = [
+        {"date": d, "revenue": round(v, 2)}
+        for d, v in sorted(daily_totals.items())
+    ]
+
+    print("[DEBUG] Daily trend sample:", daily_revenue_trend[:3])
+
+    # ---------------------------
+    # Logs
+    # ---------------------------
+    endpoint_stats = defaultdict(lambda: {"total": 0, "errors": 0})
+
     try:
-        conn = sqlite3.connect(db_path)
-        cur = conn.cursor()
-        cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
-        tables = [r[0] for r in cur.fetchall()]
-        db_summary = tables
-        conn.close()
-    except Exception:
-        pass
+        with open(log_path, encoding="utf-8") as f:
+            for i, line in enumerate(f):
+                m = re.search(r'endpoint=([^\s]+).*method=(GET|POST|PUT|DELETE|PATCH).*status=(\d{3})', line)
+                if not m:
+                    continue
 
+                key = f"{m.group(2)} {m.group(1)}"
+                status = int(m.group(3))
+
+                endpoint_stats[key]["total"] += 1
+                if status >= 400:
+                    endpoint_stats[key]["errors"] += 1
+
+                if i < 5:
+                    print("[DEBUG] Log parsed:", key, status)
+
+    except Exception as e:
+        print("[DEBUG] Log error:", str(e))
+
+    endpoint_health = []
+    for k, v in endpoint_stats.items():
+        if v["total"] == 0:
+            continue
+        endpoint_health.append({
+            "endpoint": k,
+            "error_rate": round(v["errors"] / v["total"], 3),
+            "total": v["total"]
+        })
+
+    endpoint_health = sorted(endpoint_health, key=lambda x: -x["error_rate"])[:5]
+
+    print("[DEBUG] Endpoint health:", endpoint_health[:3])
+
+    # ---------------------------
+    # Inventory
+    # ---------------------------
+    understocked_products = []
+    inventory_path = os.path.join(base, "inventory.json")
+
+    try:
+        with open(inventory_path, encoding="utf-8") as f:
+            inventory = json.load(f)
+
+        for item in inventory:
+            stock = item.get("stock", 0)
+            if stock < 10:
+                understocked_products.append({
+                    "product_id": item.get("product_id"),
+                    "product_name": item.get("product_name"),
+                    "stock": stock
+                })
+
+    except Exception as e:
+        print("[DEBUG] Inventory error:", str(e))
+
+    print("[DEBUG] Understocked:", understocked_products[:3])
+
+    # ---------------------------
+    # Final
+    # ---------------------------
     dashboard = {
-        "employees": {
-            "total": len(employees),
-            "department_counts": dict(dept_counts),
-            "highest_paid": {
-                "name": highest_paid.get("name") if highest_paid else None,
-                "salary": highest_paid.get("salary") if highest_paid else None
-            }
-        },
-        "sales": {
-            "total_revenue": round(total_revenue, 2),
-            "top_category": top_category,
-            "top_category_revenue": round(top_category_revenue, 2)
-        },
-        "database": {
-            "tables": db_summary
-        }
+        "department_summary": department_summary,
+        "top_products_by_revenue": top_products_by_revenue,
+        "understocked_products": understocked_products,
+        "endpoint_health": endpoint_health,
+        "daily_revenue_trend": daily_revenue_trend
     }
+
+    print("[DEBUG] Final keys:", list(dashboard.keys()))
 
     with open(dashboard_path, "w", encoding="utf-8") as f:
         json.dump(dashboard, f, ensure_ascii=False, indent=2)
 
-    return f"Wrote {dashboard_path}"
+    print("[DEBUG] File written:", dashboard_path)
+
+    with open(dashboard_path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    print("[DEBUG FILE CONTENT]", content[:500])
+
+    return json.dumps(dashboard)
+
 
 
 # ---------------------------
@@ -744,7 +850,11 @@ def handle_data_audit_task():
 
 def solve_task(task: str) -> str:
     t = task.lower()
-
+    # ---------------------------
+    # TASK 8
+    # ---------------------------
+    if "dashboard" in t or "executive" in t:
+        return handle_executive_dashboard_task()
     # ---------------------------
     # TASK 1
     # ---------------------------
@@ -775,6 +885,9 @@ def solve_task(task: str) -> str:
     if "task 7" in t or "anomaly" in t or "anomalies" in t:
         print("[DEBUG] Running anomaly task")
         return handle_anomaly_task()
+    
+
+
     # ---------------------------
     # TASK 2
     # ---------------------------
@@ -791,11 +904,6 @@ def solve_task(task: str) -> str:
 
 
 
-    # ---------------------------
-    # TASK 8
-    # ---------------------------
-    if "dashboard" in t or "executive" in t:
-        return handle_executive_dashboard_task()
 
     # ---------------------------
     # TASK 9
