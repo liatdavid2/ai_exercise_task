@@ -54,6 +54,7 @@ def safe_json(obj):
 
 def fix_code(task: str, code: str, error: str) -> str:
     print("[DEBUG] Fixing code...")
+    reflection = reflect_on_error(code, error)
 
     prompt = f"""
 You are a Python debugging expert.
@@ -75,6 +76,8 @@ Error:
 
 Code:
 {code}
+
+{reflection}
 """
 
     response = client.chat.completions.create(
@@ -84,6 +87,23 @@ Code:
     )
 
     return response.choices[0].message.content
+
+def reflect_on_error(code: str, error: str) -> str:
+    return f"""
+The code failed with this error:
+
+{error}
+
+Analyze the root cause and fix it.
+
+Constraints:
+- Use ONLY standard library (no pandas, no numpy)
+- If SQL fails, ensure compatibility with SQLite
+- Handle missing/empty values safely
+- Do NOT guess schema — infer dynamically if needed
+
+Return ONLY corrected Python code.
+"""
 # ---------------------------
 # CLEAN CODE
 # ---------------------------
@@ -150,6 +170,15 @@ IMPORTANT:
 def generate_tool_code(task: str, previous_code=None, error=None) -> str:
     print("[DEBUG] Generating code...")
     dynamic_context = build_dynamic_context(task)
+
+    GLOBAL_CONSTRAINTS = """
+STRICT RULES:
+- Use only Python standard library
+- Do NOT use pandas / numpy / requests unless necessary
+- Always handle missing values (empty strings, None)
+- For SQL: assume SQLite (no advanced functions)
+- Do not assume column names — inspect data
+"""
     fix_hint = ""
     if previous_code and error:
         fix_hint = f"""
@@ -191,6 +220,7 @@ Rules:
 - No explanations, only code
 - Return ONLY raw Python code
 - DO NOT use ```python or ``` blocks
+{GLOBAL_CONSTRAINTS}
 
 {DATA_CONTEXT}
 {dynamic_context}
