@@ -61,7 +61,7 @@ def fix_code(task: str, code: str, error: str, feedback: str = None) -> str:
         return None
 
     prompt = f"""
-You are fixing a Python function.
+You are a Python expert fixing a failing tool() function.
 
 TASK:
 {task}
@@ -69,30 +69,29 @@ TASK:
 ERROR:
 {error}
 
-VALIDATION FEEDBACK (CRITICAL):
+VALIDATION FEEDBACK:
 {feedback}
 
-================================
-HARD CONSTRAINTS (MUST FOLLOW)
-================================
+PREVIOUS CODE:
+{code}
 
-1. You MUST define: def tool():
-2. You MUST use ONLY Python standard library
-   → DO NOT use pandas, numpy, or any external library
-3. The code MUST run without errors
-4. The function MUST return a Python object (not print)
+INSTRUCTIONS:
 
-If you break ANY of these rules → the solution is INVALID.
+1. Fix runtime errors if exist
+2. ALSO fix logical issues from validation feedback
+3. If feedback says something is missing → ADD it
+4. Do NOT ignore feedback
 
-The previous solution FAILED.
+CRITICAL RULES:
 
-MANDATORY REQUIREMENTS:
-- You MUST fix the validation feedback
-- If feedback mentions missing logic → you MUST implement it
-- Do NOT return the same logic again
-- You MUST change the algorithm
+- Keep function name: tool()
+- Use only Python standard library
+- Do NOT hardcode filenames
+- Do NOT hardcode column names
+- Infer schema dynamically
 
-Return ONLY Python code.
+OUTPUT:
+- Return ONLY raw Python code
 """
 
     response = client.chat.completions.create(
