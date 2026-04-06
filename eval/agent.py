@@ -196,13 +196,19 @@ def handle_log_task():
     base = get_data_dir()
     path = os.path.join(base, "logs", "app.log")
 
-
+    print("[DEBUG] Log path:", path)
 
     stats = defaultdict(lambda: {"latencies": [], "total": 0, "errors": 0})
+    parsed_lines = 0
+    skipped_lines = 0
 
     with open(path, encoding="utf-8") as f:
-        for line in f:
+        for i, line in enumerate(f):
             line = line.strip()
+
+            if i < 5:
+                print("[DEBUG] RAW:", line)
+
             if not line:
                 continue
 
@@ -211,57 +217,41 @@ def handle_log_task():
             status = None
             latency = None
 
-            # Pattern 1: quoted request line
-            # Example: "GET /api/payments HTTP/1.1" 500 ... 1977ms
-            m = re.search(
-                r'"(GET|POST|PUT|DELETE|PATCH)\s+([^\s"?]+)(?:\?[^"\s]*)?\s+HTTP/[0-9.]+"\s+(\d{3}).*?(\d+)ms\b',
-                line
-            )
-            if m:
-                method = m.group(1)
-                endpoint = m.group(2)
-                status = int(m.group(3))
-                latency = int(m.group(4))
-            else:
-                # Pattern 2: plain request line
-                # Example: GET /api/payments 500 1977ms
-                m = re.search(
-                    r'\b(GET|POST|PUT|DELETE|PATCH)\b\s+([^\s?]+)(?:\?[^\s]*)?.*?\b(\d{3})\b.*?(\d+)ms\b',
-                    line
-                )
-                if m:
-                    method = m.group(1)
-                    endpoint = m.group(2)
-                    status = int(m.group(3))
-                    latency = int(m.group(4))
-                else:
-                    # Pattern 3: key=value style
-                    # Example: method=GET path=/api/payments status=500 latency=1977ms
-                    method_match = re.search(r'\bmethod=(GET|POST|PUT|DELETE|PATCH)\b', line, re.IGNORECASE)
-                    endpoint_match = re.search(r'\b(?:path|endpoint|uri)=([^\s?]+)', line, re.IGNORECASE)
-                    status_match = re.search(r'\bstatus=(\d{3})\b', line, re.IGNORECASE)
-                    latency_match = re.search(r'\b(?:latency|duration|response_time)=(\d+)ms\b', line, re.IGNORECASE)
+            method_match = re.search(r'method=(GET|POST|PUT|DELETE|PATCH)', line)
+            endpoint_match = re.search(r'endpoint=([^\s?]+)', line)
+            status_match = re.search(r'status=(\d{3})', line)
+            latency_match = re.search(r'(?:duration_ms|latency|response_time)=(\d+)', line)
 
-                    if method_match and endpoint_match and status_match and latency_match:
-                        method = method_match.group(1).upper()
-                        endpoint = endpoint_match.group(1)
-                        status = int(status_match.group(1))
-                        latency = int(latency_match.group(1))
+            if method_match and endpoint_match and status_match and latency_match:
+                method = method_match.group(1)
+                endpoint = endpoint_match.group(1)
+                status = int(status_match.group(1))
+                latency = int(latency_match.group(1))
 
             if not method or not endpoint or status is None or latency is None:
+                skipped_lines += 1
                 continue
 
-            # Keep only API endpoints and normalize query strings
             if not endpoint.startswith("/api/"):
                 continue
-            endpoint = endpoint.split("?")[0]
 
-            key = endpoint
+            endpoint = endpoint.split("?")[0]
+            key = f"{method} {endpoint}"
+
             stats[key]["total"] += 1
             stats[key]["latencies"].append(latency)
 
             if status >= 400:
                 stats[key]["errors"] += 1
+
+            parsed_lines += 1
+
+            if parsed_lines <= 5:
+                print("[DEBUG] Parsed:", key, status, latency)
+
+    print("[DEBUG] Parsed lines:", parsed_lines)
+    print("[DEBUG] Skipped lines:", skipped_lines)
+    print("[DEBUG] Unique keys:", len(stats))
 
     results = []
 
@@ -273,21 +263,22 @@ def handle_log_task():
         error_rate = value["errors"] / total
 
         latencies = sorted(value["latencies"])
-        # nearest-rank p95
         rank = max(1, math.ceil(0.95 * len(latencies)))
         p95 = latencies[rank - 1]
 
         results.append((key, error_rate, p95, total))
 
-    # Sort by error rate desc, then p95 desc, then total desc, then name
+    print("[DEBUG] Aggregated:", len(results))
+
     results.sort(key=lambda x: (-x[1], -x[2], -x[3], x[0]))
+
+    print("[DEBUG] Top5:", results[:5])
 
     lines = []
     for key, err, p95, total in results[:5]:
-        lines.append(f"{key} error_rate={err:.3f} p95={p95}ms")
+        lines.append(f"{key} error_rate={err*100:.1f}% p95={p95}ms")
 
     return "\n".join(lines)
-
 
 import os
 import json
