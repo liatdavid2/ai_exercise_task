@@ -56,22 +56,35 @@ def safe_json(obj):
 def fix_code(task: str, code: str, error: str) -> str:
     print("[DEBUG] Fixing code...")
 
+    if client is None:
+        return None
+
     prompt = f"""
     You are a Python expert.
 
-    Write a Python function tool() that solves the task.
+    The previous code failed.
+
+    Error:
+    {error}
+
+    Previous code:
+    {code}
+
+    Fix the code.
 
     Rules:
-    - Use standard library only
-    - Read files from data/
-    - Infer structure dynamically
-    - Handle missing values safely
-    - Return result as dict
-    - No explanations
-
-    Task:
-    {task}
+    - Return ONLY valid Python code
+    - Keep function name: tool()
+    - Use standard libraries only
     """
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0
+    )
+
+    return response.choices[0].message.content
 # ---------------------------
 # CLEAN CODE
 # ---------------------------
@@ -139,6 +152,31 @@ def generate_tool_code(task: str, previous_code=None, error=None) -> str:
     print("[DEBUG] Generating code...")
     dynamic_context = build_dynamic_context(task)
 
+    GENERIC_ENFORCEMENT = """
+CRITICAL GENERIC REQUIREMENTS:
+
+- You MUST list files using os.listdir('data') before opening any file
+- You MUST NOT hardcode filenames like 'sales.csv', 'employees.json'
+- You MUST select files dynamically based on extension (.csv, .json, .db)
+
+- You MUST detect column names dynamically:
+    Example:
+    columns = reader.fieldnames
+    col = next((c for c in columns if 'category' in c.lower()), columns[0])
+
+- You MUST NOT write column names explicitly like row['category']
+
+- For logs:
+    files are inside 'data/logs/'
+    you MUST list files before selecting one
+
+- For databases:
+    discover tables using sqlite_master
+    DO NOT assume table names
+
+If code contains hardcoded names, it is WRONG.
+"""
+
     GLOBAL_CONSTRAINTS = """
 STRICT RULES:
 - Use only Python standard library
@@ -166,7 +204,8 @@ Fix the code.
 General dataset understanding rules:
 
 CSV files:
-- Always read full file using csv.DictReader
+- Discover CSV files dynamically using os.listdir
+- Then open selected file
 - Infer columns dynamically from first row
 - If 'date' exists → compute min/max
 - If numeric fields exist → convert safely (float)
@@ -246,7 +285,7 @@ Rules:
 - Return ONLY raw Python code
 - DO NOT use ```python or ``` blocks
 {GLOBAL_CONSTRAINTS}
-
+{GENERIC_ENFORCEMENT}
 {DATA_CONTEXT}
 {dynamic_context}
 {fix_hint}
