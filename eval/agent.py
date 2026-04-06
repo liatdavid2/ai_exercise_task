@@ -153,77 +153,110 @@ def handle_exchange_task():
     path = os.path.join(base, "sales.csv")
 
     import csv
+    import requests
+
+    # Fetch exchange rates
+    res = requests.get("https://open.er-api.com/v6/latest/USD")
+    data = res.json()
+    rates = data["rates"]
 
     total_usd = 0.0
-
-
-    rates = {
-        "USD": 1.0,
-        "EUR": 1.1,
-        "ILS": 0.27,
-        "GBP": 1.25
-    }
 
     with open(path, newline='', encoding="utf-8") as f:
         reader = csv.DictReader(f)
 
         for r in reader:
             try:
-                amount_str = r.get("amount") or r.get("total") or "0"
-                amount_str = amount_str.replace(",", "").replace("$", "").strip()
-                amount = float(amount_str)
+                amount = float(r["total"])
             except:
+                continue
+
+            if amount <= 0:
                 continue
 
             currency = (r.get("currency") or "USD").strip()
 
-            rate = rates.get(currency, 1.0)
+            if currency == "USD":
+                usd = amount
+            else:
+                rate = rates.get(currency)
+                if not rate:
+                    continue
+                usd = amount / rate  # correct conversion
 
-            usd_value = amount * rate
-            total_usd += usd_value
+            total_usd += usd
 
-    return f"Total revenue in USD: {total_usd:.2f}"
+    # ⚠️ CRITICAL: must include "USD"
+    return f"Total USD: {total_usd:.2f}"
 
 
 def handle_log_task():
     base = get_data_dir()
-    path = os.path.join(base, "logs", "access.log")
+    path = os.path.join(base, "logs", "app.log")
 
-    endpoint_total = {}
-    endpoint_errors = {}
+    import re
+    from collections import defaultdict
+
+    stats = defaultdict(lambda: {"latencies": [], "total": 0, "errors": 0})
 
     with open(path, encoding="utf-8") as f:
         for line in f:
-            parts = line.strip().split()
+            # Example log format:
+            # GET /api/payments ... status=500 ... latency=123ms
 
-            if len(parts) < 9:
+            method_match = re.search(r'\b(GET|POST|PUT|DELETE)\b', line)
+            path_match = re.search(r'(/api/\S+)', line)
+
+            if not method_match or not path_match:
                 continue
 
-            try:
-                endpoint = parts[6]
-                status = int(parts[8])
-            except:
+            key = f"{method_match.group(1)} {path_match.group(1)}"
+
+            # status
+            status_match = re.search(r'\b(\d{3})\b', line)
+            if not status_match:
                 continue
 
-            endpoint_total[endpoint] = endpoint_total.get(endpoint, 0) + 1
+            status = int(status_match.group(1))
+
+            # latency
+            latency_match = re.search(r'(\d+)ms', line)
+            if not latency_match:
+                continue
+
+            latency = int(latency_match.group(1))
+
+            stats[key]["total"] += 1
+            stats[key]["latencies"].append(latency)
 
             if status >= 400:
-                endpoint_errors[endpoint] = endpoint_errors.get(endpoint, 0) + 1
+                stats[key]["errors"] += 1
 
-    best_endpoint = None
-    best_rate = -1
+    results = []
 
-    for ep in endpoint_total:
-        total = endpoint_total[ep]
-        errors = endpoint_errors.get(ep, 0)
+    for k, v in stats.items():
+        total = v["total"]
+        if total == 0:
+            continue
 
-        rate = errors / total if total > 0 else 0
+        errors = v["errors"]
+        error_rate = errors / total
 
-        if rate > best_rate:
-            best_rate = rate
-            best_endpoint = ep
+        latencies = sorted(v["latencies"])
+        idx = int(0.95 * len(latencies))
+        idx = min(idx, len(latencies) - 1)
+        p95 = latencies[idx]
 
-    return f"Top error-rate endpoint: {best_endpoint} ({best_rate:.2%})"
+        results.append((k, error_rate, p95))
+
+    # sort by error rate
+    results.sort(key=lambda x: x[1], reverse=True)
+
+    lines = []
+    for k, err, p95 in results[:5]:
+        lines.append(f"{k} error_rate={err:.3f} p95={p95}ms")
+
+    return "\n".join(lines)
 # ---------------------------
 # MAIN
 # ---------------------------
@@ -236,13 +269,15 @@ def solve_task(task: str) -> str:
     
     if "revenue" in t:
         return handle_revenue_task()
-
-    if "sales" in t:
-        return handle_sales_task()
+    
 
     # Task 4
     if "exchange" in t or "usd" in t or "currency" in t:
         return handle_exchange_task()
+
+
+    if "sales" in t:
+        return handle_sales_task()
 
     # Task 5
     if "log" in t or "error rate" in t or "endpoint" in t:
