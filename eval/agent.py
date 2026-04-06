@@ -306,7 +306,10 @@ def run_generated_tool(code: str):
 
     code = clean_code(code)
 
-
+    # FORCE correct log path
+    code = code.replace("data/app.log", "data/logs/app.log")
+    code = code.replace("app.log", "data/logs/app.log")
+    code = code.replace("path/to/your/app.log", "data/logs/app.log")
     print("[DEBUG] Clean code preview:\n", code[:300])
 
     local_scope = {}
