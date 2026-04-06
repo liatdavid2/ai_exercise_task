@@ -17,6 +17,26 @@ else:
     client = OpenAI(api_key=OPENAI_API_KEY)
 
 
+# ---------------------------
+# SAFE JSON (FIX datetime crash)
+# ---------------------------
+def safe_json(obj):
+    if isinstance(obj, dict):
+        return {k: safe_json(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [safe_json(v) for v in obj]
+    try:
+        import datetime
+        if isinstance(obj, (datetime.date, datetime.datetime)):
+            return obj.strftime("%Y-%m-%d")
+    except:
+        pass
+    return obj
+
+
+# ---------------------------
+# CLEAN CODE
+# ---------------------------
 def clean_code(code: str) -> str:
     print("[DEBUG] Cleaning code...")
 
@@ -26,6 +46,7 @@ def clean_code(code: str) -> str:
     code = code.replace("```python", "").replace("```", "")
 
     return code.strip()
+
 
 # ---------------------------
 # LLM CODE GENERATION
@@ -47,6 +68,21 @@ Previous code:
 Fix the code.
 """
 
+    # 🔥 NEW: dataset context
+    DATA_CONTEXT = """
+Dataset schema hints:
+
+sales.csv columns:
+date, order_id, product_id, product_name, category,
+quantity, unit_price, currency, total, region, customer_id
+
+Important:
+- Use 'total' for revenue (NOT amount / revenue)
+- NEVER return datetime objects
+- logs are inside: data/logs/
+- currency conversion: USD = value / rate
+"""
+
     prompt = f"""
 You are a Python expert.
 
@@ -59,6 +95,8 @@ Rules:
 - No explanations, only code
 - Return ONLY raw Python code
 - DO NOT use ```python or ``` blocks
+
+{DATA_CONTEXT}
 
 {fix_hint}
 
@@ -84,6 +122,13 @@ def run_generated_tool(code: str):
     print("[DEBUG] Executing code...")
 
     code = clean_code(code)
+
+    # 🔥 NEW: auto fixes
+    code = code.replace("row['amount']", "row['total']")
+    code = code.replace('row["amount"]', 'row["total"]')
+    code = code.replace("row['revenue']", "row['total']")
+    code = code.replace('row["revenue"]', 'row["total"]')
+    code = code.replace("data/app.log", "data/logs/app.log")
 
     print("[DEBUG] Clean code preview:\n", code[:300])
 
@@ -135,7 +180,9 @@ def solve_task(task: str) -> str:
         if error is None:
             print("[DEBUG] Success")
             print("[DEBUG] Result:", str(result)[:300])
-            return json.dumps(result)
+
+            # 🔥 FIX: safe json
+            return json.dumps(safe_json(result))
 
         print("[DEBUG] Failed, will retry...")
         print("[DEBUG] Error:", error)
