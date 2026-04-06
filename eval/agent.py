@@ -195,23 +195,80 @@ Fix the code.
 
     # 🔥 NEW: dataset context
     DATA_CONTEXT = """
-Dataset schema hints:
+General dataset understanding rules:
 
-sales.csv columns:
-date, order_id, product_id, product_name, category,
-quantity, unit_price, currency, total, region, customer_id
+CSV files:
+- Always read full file using csv.DictReader
+- Infer columns dynamically from first row
+- If 'date' exists → compute min/max
+- If numeric fields exist → convert safely (float)
+- If 'total' exists → use as main value
+- Row count = total number of rows (not partial read)
 
-Important:
-- Use 'total' for revenue (NOT amount / revenue)
+Currency:
+- If 'currency' exists:
+    rate = rates.get(currency, 1)
+    USD = value / rate
+- If currency missing or rate missing → assume USD
+- NEVER return 0 unless dataset is empty
+- Always accumulate total revenue
+
+Logs:
+- DO NOT use csv.DictReader
+- Read file line by line
+- Extract:
+    method (GET/POST/etc)
+    endpoint (path)
+    status code
+    response time (ms)
+- Parse using string split or regex
+
+- Example pattern:
+    "GET /api/users 200 123ms"
+
+- Compute:
+    total_requests
+    error_count (status >= 400)
+    error_rate
+    avg_response_time
+    p95_response_time
+
+- Sort by error_rate DESC
+- Return top 5
+
+Database (SQLite):
+- Discover tables dynamically
+- Use PRAGMA table_info
+- Look for columns like:
+  latency, p99, error, endpoint
+- Compute:
+  avg latency
+  p99 latency
+  error rate
+
+Anomaly detection:
+- Value > 2x average
+- Negative values
+- Missing fields
+- Outliers in numeric columns
+
+General:
+- NEVER assume column names
+- ALWAYS infer schema dynamically
+- Handle missing values safely
 - NEVER return datetime objects
-- logs are inside: data/logs/
-- currency conversion: USD = value / rate
 """
 
     prompt = f"""
 You are a Python expert.
 
 Write a Python function named tool() that solves the task.
+
+IMPORTANT LOGIC RULES:
+- When grouping data → ALWAYS return ALL groups (not only max)
+- If task asks for specific time period (e.g. December 2024) → filter correctly AND still compute full grouping
+- Return both:
+  full breakdown AND requested subset
 
 Rules:
 - Use standard libraries only
@@ -249,12 +306,6 @@ def run_generated_tool(code: str):
 
     code = clean_code(code)
 
-    # 🔥 NEW: auto fixes
-    code = code.replace("row['amount']", "row['total']")
-    code = code.replace('row["amount"]', 'row["total"]')
-    code = code.replace("row['revenue']", "row['total']")
-    code = code.replace('row["revenue"]', 'row["total"]')
-    code = code.replace("data/app.log", "data/logs/app.log")
 
     print("[DEBUG] Clean code preview:\n", code[:300])
 
