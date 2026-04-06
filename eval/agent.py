@@ -1,5 +1,6 @@
 import os
 import json
+import traceback
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -9,247 +10,136 @@ from openai import OpenAI
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-TOOLS = {}
 
 if not OPENAI_API_KEY:
-    print("[WARNING] OPENAI_API_KEY is missing")
-    client = None
-else:
-    client = OpenAI(api_key=OPENAI_API_KEY)
+    raise ValueError("OPENAI_API_KEY is missing")
 
-def get_sqlite_schema(db_path: str) -> str:
-    import sqlite3
+client = OpenAI(api_key=OPENAI_API_KEY)
 
-    conn = sqlite3.connect(db_path)
-    cur = conn.cursor()
-
-    cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
-    tables = [r[0] for r in cur.fetchall()]
-
-    schema_info = []
-
-    for table in tables:
-        cur.execute(f"PRAGMA table_info({table})")
-        cols = [r[1] for r in cur.fetchall()]
-        schema_info.append(f"{table}: {cols}")
-
-    conn.close()
-
-    return "\n".join(schema_info)
 # ---------------------------
-# SAFE JSON (FIX datetime crash)
+# TOOL REGISTRY
 # ---------------------------
-def safe_json(obj):
-    if isinstance(obj, dict):
-        return {k: safe_json(v) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [safe_json(v) for v in obj]
-    try:
-        import datetime
-        if isinstance(obj, (datetime.date, datetime.datetime)):
-            return obj.strftime("%Y-%m-%d")
-    except:
-        pass
-    return obj
+TOOLS = {}
 
 
-def fix_code(task: str, code: str, error: str) -> str:
-    print("[DEBUG] Fixing code...")
-
-    prompt = f"""
-    You are a Python expert.
-
-    Write a Python function tool() that solves the task.
-
-    Rules:
-    - Use standard library only
-    - Read files from data/
-    - Infer structure dynamically
-    - Handle missing values safely
-    - Return result as dict
-    - No explanations
-
-    Task:
-    {task}
-    """
 # ---------------------------
-# CLEAN CODE
+# UTIL: CLEAN CODE
 # ---------------------------
 def clean_code(code: str) -> str:
-    print("[DEBUG] Cleaning code...")
-
-    # Remove markdown blocks
     if "```" in code:
-        parts = code.split("```")
-        code = parts[1] if len(parts) > 1 else parts[0]
-
-    # Remove language hints
-    code = code.replace("```python", "")
-    code = code.replace("```", "")
-
-    # FIX: remove leading "python"
-    lines = code.strip().split("\n")
-    if lines and lines[0].strip() == "python":
-        lines = lines[1:]
-
-    code = "\n".join(lines)
-
+        code = code.split("```")[1]
+    code = code.replace("python", "")
     return code.strip()
 
-def detect_task_type(task: str) -> str:
-    t = task.lower()
+def safe_json(obj):
+    import datetime
 
-    if ".db" in t or "sqlite" in t or "database" in t:
-        return "sql"
+    # dict
+    if isinstance(obj, dict):
+        return {str(k): safe_json(v) for k, v in obj.items()}
 
-    if ".csv" in t:
-        return "csv"
+    # list / tuple
+    if isinstance(obj, (list, tuple)):
+        return [safe_json(v) for v in obj]
 
-    if ".json" in t:
-        return "json"
+    # datetime / date
+    if isinstance(obj, (datetime.datetime, datetime.date)):
+        return obj.isoformat()
 
-    if "log" in t:
-        return "log"
+    # set
+    if isinstance(obj, set):
+        return list(obj)
 
-    return "generic"
-
-
-def build_dynamic_context(task: str) -> str:
-    task_type = detect_task_type(task)
-
-    if task_type == "sql":
-        try:
-            schema = get_sqlite_schema("data/metrics.db")
-            return f"""
-Database schema:
-{schema}
-
-IMPORTANT:
-- Use ONLY existing columns
-- Do NOT guess column names
-"""
-        except:
-            return ""
-
-    return ""
+    # fallback for anything weird
+    try:
+        json.dumps(obj)
+        return obj
+    except:
+        return str(obj)
 # ---------------------------
-# LLM CODE GENERATION
+# UTIL: RUN TOOL
 # ---------------------------
-def generate_tool_code(task: str, previous_code=None, error=None) -> str:
-    print("[DEBUG] Generating code...")
-    dynamic_context = build_dynamic_context(task)
+def run_generated_tool(code: str):
+    local_scope = {}
 
-    GLOBAL_CONSTRAINTS = """
-STRICT RULES:
-- Use only Python standard library
-- Do NOT use pandas / numpy / requests unless necessary
-- Always handle missing values (empty strings, None)
-- For SQL: assume SQLite (no advanced functions)
-- Do not assume column names — inspect data
-"""
-    fix_hint = ""
-    if previous_code and error:
-        fix_hint = f"""
-The previous code failed.
+    try:
+        exec(code, local_scope, local_scope)
+    except Exception as e:
+        return None, str(e)
 
-Error:
-{error}
+    if "tool" not in local_scope:
+        return None, "tool() not found"
 
-Previous code:
-{previous_code}
+    try:
+        result = local_scope["tool"]()
+        return result, None
+    except Exception as e:
+        return None, str(e)
 
-Fix the code.
-"""
 
-    # NEW: dataset context
-    DATA_CONTEXT = """
-General dataset understanding rules:
+# ---------------------------
+# TOOL REUSE (GENERIC)
+# ---------------------------
+def find_reusable_tool(task: str):
+    return None
 
-CSV files:
-- Always read full file using csv.DictReader
-- Infer columns dynamically from first row
-- If 'date' exists → compute min/max
-- If numeric fields exist → convert safely (float)
-- If 'total' exists → use as main value
-- Row count = total number of rows (not partial read)
 
-Currency:
-- If 'currency' exists:
-    rate = rates.get(currency, 1)
-    USD = value / rate
-- If currency missing or rate missing → assume USD
-- NEVER return 0 unless dataset is empty
-- Always accumulate total revenue
-
-Logs:
-- DO NOT use csv.DictReader
-- Read file line by line
-- Extract:
-    method (GET/POST/etc)
-    endpoint (path)
-    status code
-    response time (ms)
-- Parse using string split or regex
-
-- Example pattern:
-    "GET /api/users 200 123ms"
-
-- Compute:
-    total_requests
-    error_count (status >= 400)
-    error_rate
-    avg_response_time
-    p95_response_time
-
-- Sort by error_rate DESC
-- Return top 5
-
-Database (SQLite):
-- Discover tables dynamically
-- Use PRAGMA table_info
-- Look for columns like:
-  latency, p99, error, endpoint
-- Compute:
-  avg latency
-  p99 latency
-  error rate
-
-Anomaly detection:
-- Value > 2x average
-- Negative values
-- Missing fields
-- Outliers in numeric columns
-
-General:
-- NEVER assume column names
-- ALWAYS infer schema dynamically
-- Handle missing values safely
-- NEVER return datetime objects
-"""
-
+# ---------------------------
+# GENERATE TOOL
+# ---------------------------
+def generate_tool_code(task: str) -> str:
     prompt = f"""
 You are a Python expert.
 
-Write a Python function named tool() that solves the task.
+Write a function:
 
-IMPORTANT LOGIC RULES:
-- When grouping data → ALWAYS return ALL groups (not only max)
-- If task asks for specific time period (e.g. December 2024) → filter correctly AND still compute full grouping
-- Return both:
-  full breakdown AND requested subset
+def tool():
 
-Rules:
-- Use standard libraries only
+That solves the task.
+
+IMPORTANT PRACTICAL RULES:
+
+- For CSV:
+    - If 'total' exists → use it for revenue
+    - If 'category' exists → group by it
+    - If 'date' exists → parse and filter by date
+
+- NEVER return empty result unless dataset is empty
+
+
+If task involves currency conversion:
+- You MUST:
+    usd_value = float(total) / rates[currency]
+- Always:
+    total_usd += usd_value
+- Do NOT skip rows
+- Do NOT return 0 unless file is empty
+
+
+
+STRICT RULES:
+- Use only Python standard library
 - Read files from 'data/' folder
-- Return result as Python object (list/dict)
-- No explanations, only code
-- Return ONLY raw Python code
-- DO NOT use ```python or ``` blocks
-{GLOBAL_CONSTRAINTS}
+- Infer schema dynamically (DO NOT hardcode column names)
+- Handle missing values safely
+- Return Python object (dict/list/number)
+- No explanations
+- Return ONLY code
 
-{DATA_CONTEXT}
-{dynamic_context}
-{fix_hint}
+IMPORTANT OUTPUT REQUIREMENT:
+
+- When grouping:
+    - Return ALL groups (not just max)
+    - Also return filtered subset (e.g. December)
+
+SAFE HANDLING:
+
+- When accessing rates:
+    rate = rates.get(currency)
+
+- If rate is missing:
+    - Assume value is already in USD (rate = 1)
+    - DO NOT crash
 
 Task:
 {task}
@@ -261,41 +151,53 @@ Task:
         temperature=0
     )
 
-    code = response.choices[0].message.content
-    print("[DEBUG] Code generated")
-    return code
+    return response.choices[0].message.content
 
 
 # ---------------------------
-# RUN TOOL
+# FIX CODE (RETRY)
 # ---------------------------
-def run_generated_tool(code: str):
-    print("[DEBUG] Executing code...")
+def fix_code(task: str, code: str, error: str) -> str:
+    prompt = f"""
+You are a Python expert.
 
-    code = clean_code(code)
+The following code failed.
+
+Task:
+{task}
+
+Error:
+{error}
+
+Code:
+{code}
+
+Fix the code.
+
+Return ONLY corrected Python code.
+"""
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0
+    )
+
+    return response.choices[0].message.content
 
 
-    print("[DEBUG] Clean code preview:\n", code[:300])
+# ---------------------------
+# NORMALIZE OUTPUT (GENERIC)
+# ---------------------------
+def normalize_output(result):
+    # ensure JSON-safe + structured
+    if isinstance(result, (int, float)):
+        return {"value": round(result, 2)}
 
-    local_scope = {}
+    if isinstance(result, str):
+        return {"result": result}
 
-    try:
-        exec(code, local_scope, local_scope)
-    except Exception as e:
-        print("[ERROR] Exec failed:", e)
-        return None, str(e)
-
-    if "tool" not in local_scope:
-        print("[ERROR] tool() not found")
-        return None, "tool() function missing"
-
-    try:
-        result = local_scope["tool"]()
-        print("[DEBUG] Tool executed successfully")
-        return result, None
-    except Exception as e:
-        print("[ERROR] Runtime failed:", e)
-        return None, str(e)
+    return result
 
 
 # ---------------------------
@@ -303,95 +205,56 @@ def run_generated_tool(code: str):
 # ---------------------------
 def solve_task(task: str) -> str:
     print("\n==============================")
-    print("[DEBUG] New Task")
-    print(task)
+    print("[DEBUG] TASK:", task)
     print("==============================")
 
-    if client is None:
-        return json.dumps({"error": "No OpenAI API key"})
-
+    max_attempts = 5
     code = None
     error = None
-    global TOOLS
-
-    max_attempts = 5
 
     for attempt in range(max_attempts):
-        print(f"\n[DEBUG] Attempt {attempt + 1}")
+        print(f"[DEBUG] Attempt {attempt + 1}")
 
         try:
             if attempt == 0:
-                available_tools = "\n".join(TOOLS.keys())
-                code = generate_tool_code(task + f"\n\nAvailable tools:\n{available_tools}")
+                reused = find_reusable_tool(task)
+
+                if reused:
+                    print("[DEBUG] Reusing existing tool")
+                    code = reused
+                else:
+                    print("[DEBUG] Generating new tool")
+                    code = generate_tool_code(task)
             else:
+                print("[DEBUG] Fixing code")
                 code = fix_code(task, code, error)
+
         except Exception as e:
             error = str(e)
-            print("[DEBUG] Code generation failed:", error)
             continue
 
-        # CRITICAL FIX
-        if not code or not isinstance(code, str):
-            print("[ERROR] Code is None or invalid")
-            error = "Code generation returned None"
+        if not code:
+            error = "Empty code"
             continue
 
-        print("[DEBUG] Code preview:\n", code[:400])
+        code = clean_code(code)
 
-        try:
-            result, error = run_generated_tool(code)
-        except Exception as e:
-            error = str(e)
-            print("[DEBUG] Execution crashed:", error)
-            continue
+        print("[DEBUG] Running tool...")
+        result, error = run_generated_tool(code)
 
         if error is None:
+            print("[DEBUG] Success")
 
-            # reject bad formats
-            # allow numeric result for currency tasks
-            if isinstance(result, (int, float)) and "exchange" not in task.lower():
-                print("[DEBUG] Invalid result format → retry")
-                error = "Expected dict, got number"
-                continue
+            result = normalize_output(result)
 
-            # reject suspicious values (currency bug)
-            if isinstance(result, dict):
-                bad = False
-                for v in result.values():
-                    if isinstance(v, (int, float)) and v > 1e7:
-                        bad = True
-                        break
-                if bad:
-                    print("[DEBUG] Suspicious value → retry")
-                    error = "Likely wrong computation"
-                    continue
-
-            # ensure agent directory exists
-            import os
-            os.makedirs("agent", exist_ok=True)
-
+            # save tool for reuse
             tool_name = f"tool_{len(TOOLS)}"
             TOOLS[tool_name] = code
 
-            # save tool file (fix for genericity score)
-            try:
-                with open(f"agent/{tool_name}.py", "w", encoding="utf-8") as f:
-                    f.write(code)
-            except Exception as e:
-                print("[DEBUG] Failed to save tool file:", str(e))
+            return json.dumps(safe_json(result))
 
-            print(f"[DEBUG] Saved tool: {tool_name}")
-            print("[DEBUG] Success")
-
-            try:
-                return json.dumps(safe_json(result))
-            except Exception:
-                return json.dumps({"result": str(result)})
-
-        print("[DEBUG] Failed, fixing...")
         print("[DEBUG] Error:", error)
-
-    print("[ERROR] All attempts failed")
+        print("[DEBUG] Retrying...")
 
     return json.dumps({
         "error": "Failed after retries",
