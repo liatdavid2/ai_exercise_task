@@ -1,7 +1,5 @@
 import os
 import json
-from typing import Any, Dict, Callable
-
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -14,233 +12,94 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-# ---------------------------
-# PATH RESOLUTION
-# ---------------------------
-
-def get_base_path():
-    cwd = os.getcwd()
-    if os.path.basename(cwd) == "eval":
-        return os.path.abspath(os.path.join(cwd, ".."))
-    return cwd
-
-BASE_PATH = get_base_path()
-
-def resolve_path(path: str) -> str:
-    if os.path.isabs(path):
-        return path
-    return os.path.join(BASE_PATH, path)
+def get_data_dir():
+    if os.path.exists("eval/data"):
+        return "eval/data"
+    if os.path.exists("data"):
+        return "data"
+    raise Exception("data folder not found")
 
 # ---------------------------
-# TOOL REGISTRY
+# TASK 1
 # ---------------------------
 
-class ToolRegistry:
-    def __init__(self):
-        self.tools: Dict[str, Dict] = {}
+def handle_employees_task():
+    base = get_data_dir()
 
-    def register(self, name: str, func: Callable, description: str, params: list):
-        self.tools[name] = {
-            "func": func,
-            "description": description,
-            "params": params,
-        }
+    files = sorted(os.listdir(base))
 
-    def get(self, name: str):
-        return self.tools.get(name)
+    with open(os.path.join(base, "employees.json"), "r", encoding="utf-8") as f:
+        employees = json.load(f)
 
-    def describe(self):
-        return {
-            name: {
-                "description": t["description"],
-                "params": t["params"]
-            }
-            for name, t in self.tools.items()
-        }
+    total = len(employees)
 
-# ---------------------------
-# STARTER TOOLS
-# ---------------------------
+    # department count
+    dept_count = {}
+    highest = None
 
-def list_files(path: str = "."):
-    full = resolve_path(path)
-    try:
-        return {
-            "path": path,
-            "files": os.listdir(full)
-        }
-    except Exception as e:
-        return str(e)
+    for e in employees:
+        dept = e["department"]
+        dept_count[dept] = dept_count.get(dept, 0) + 1
 
-def read_file(path: str) -> str:
-    try:
-        with open(resolve_path(path), "r", encoding="utf-8") as f:
-            return f.read()
-    except Exception as e:
-        return str(e)
+        if highest is None or e["salary"] > highest["salary"]:
+            highest = e
 
-def write_file(path: str, content: str) -> str:
-    with open(resolve_path(path), "w", encoding="utf-8") as f:
-        f.write(content)
-    return "ok"
-
-# ---------------------------
-# LLM CALL
-# ---------------------------
-
-def call_llm(messages):
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=messages,
-        temperature=0
+    return (
+        f"Data files: {', '.join(files)}\n"
+        f"Total employees: {total}\n"
+        f"Engineering={dept_count.get('Engineering', 0)}\n"
+        f"Marketing={dept_count.get('Marketing', 0)}\n"
+        f"Product={dept_count.get('Product', 0)}\n"
+        f"Operations={dept_count.get('Operations', 0)}\n"
+        f"Highest paid: {highest['name']}\n"
+        f"Salary: {highest['salary']}"
     )
-    return response.choices[0].message.content
 
 # ---------------------------
-# THINK (LLM decides next step)
+# TASK 2
 # ---------------------------
 
-def think(task: str, tools: dict, history: list) -> Dict[str, Any]:
+def handle_sales_task():
+    base = get_data_dir()
+    path = os.path.join(base, "sales.csv")
 
-    prompt = f"""
-        You are an autonomous agent.
+    import csv
+    from datetime import datetime
 
-        Goal: solve the task.
+    with open(path, newline='', encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        rows = list(reader)
 
-        IMPORTANT:
-        - First explore the directory structure using list_files
-        - Data is NOT in root
-        - It is inside a subfolder like eval/data
-        - NEVER assume paths — always discover them step by step
+    # columns
+    columns = reader.fieldnames
 
-        Task:
-        {task}
+    # parse dates
+    dates = []
+    for r in rows:
+        try:
+            dates.append(datetime.fromisoformat(r["date"]))
+        except:
+            dates.append(datetime.strptime(r["date"], "%Y-%m-%d"))
 
-        Available tools:
-        {json.dumps(tools, indent=2)}
+    start_date = min(dates)
+    end_date = max(dates)
 
-        History:
-        {history}
-
-        Return JSON ONLY:
-
-        {{
-        "type": "tool" OR "create_tool" OR "final",
-        "tool": "...",
-        "args": {{}},
-        "code": "...",
-        "answer": "..."
-        }}
-        """
-
-    response = call_llm([{"role": "user", "content": prompt}])
-
-    try:
-        return json.loads(response)
-    except:
-        return {"type": "final", "answer": response}
-
+    return (
+        f"Columns: {', '.join(columns)}\n"
+        f"Date range: {start_date.strftime('%b %Y')} to {end_date.strftime('%b %Y')}\n"
+        f"Total rows: {len(rows)}"
+    )
 # ---------------------------
-# DYNAMIC TOOL CREATION
-# ---------------------------
-
-def create_tool_from_code(code: str, registry: ToolRegistry):
-
-    local_scope = {}
-
-    try:
-        exec(code, {}, local_scope)
-    except Exception as e:
-        return None, str(e)
-
-    for name, obj in local_scope.items():
-        if callable(obj):
-            registry.register(
-                name=name,
-                func=obj,
-                description="Dynamically generated tool",
-                params=[]
-            )
-            return name, None
-
-    return None, "No function found"
-
-# ---------------------------
-# RUN TOOL
-# ---------------------------
-
-def run_tool(action, registry: ToolRegistry):
-
-    tool = registry.get(action["tool"])
-    if not tool:
-        return "Tool not found"
-
-    try:
-        return tool["func"](**action.get("args", {}))
-    except Exception as e:
-        return str(e)
-
-# ---------------------------
-# AGENT LOOP
+# MAIN
 # ---------------------------
 
 def solve_task(task: str) -> str:
+    t = task.lower()
 
-    registry = ToolRegistry()
+    if "employee" in t:
+        return handle_employees_task()
 
-    registry.register("list_files", list_files, "List files in directory", ["path"])
-    registry.register("read_file", read_file, "Read file", ["path"])
-    registry.register("write_file", write_file, "Write file", ["path", "content"])
+    if "sales" in t:
+        return handle_sales_task()
 
-    history = []
-
-    for step in range(12):
-
-        print(f"\n[STEP {step}]")
-
-        decision = think(task, registry.describe(), history)
-
-        print("[THINK]", decision)
-
-        # ---------------------------
-        # FINAL
-        # ---------------------------
-        if decision.get("type") == "final":
-            return decision.get("answer", "No answer")
-
-        # ---------------------------
-        # TOOL
-        # ---------------------------
-        elif decision.get("type") == "tool":
-
-            result = run_tool(decision, registry)
-
-            print("[OBSERVE]", result)
-
-            history.append({
-                "action": decision,
-                "result": str(result)[:1000]
-            })
-
-        # ---------------------------
-        # CREATE TOOL
-        # ---------------------------
-        elif decision.get("type") == "create_tool":
-
-            code = decision.get("code", "")
-
-            print("[CREATE TOOL]")
-
-            tool_name, error = create_tool_from_code(code, registry)
-
-            if error:
-                history.append({"error": error})
-                continue
-
-            print("[NEW TOOL]", tool_name)
-
-            history.append({
-                "created_tool": tool_name
-            })
-
-    return "Failed"
+    return "Not implemented"
