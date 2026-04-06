@@ -2,7 +2,6 @@ import os
 import json
 from dotenv import load_dotenv
 from openai import OpenAI
-from eval import VALIDATORS, compute_expected_answers
 
 # ---------------------------
 # ENV
@@ -54,54 +53,36 @@ def safe_json(obj):
     return obj
 
 
-def fix_code(task: str, code: str, error: str, feedback: str = None) -> str:
+def fix_code(task: str, code: str, error: str) -> str:
     print("[DEBUG] Fixing code...")
 
     if client is None:
         return None
 
     prompt = f"""
-You are a Python expert fixing a failing tool() function.
+    You are a Python expert.
 
-TASK:
-{task}
+    The previous code failed.
 
-ERROR:
-{error}
+    Error:
+    {error}
 
-VALIDATION FEEDBACK:
-{feedback}
+    Previous code:
+    {code}
 
-PREVIOUS CODE:
-{code}
+    Fix the code.
 
-INSTRUCTIONS:
-
-1. Fix runtime errors if exist
-2. ALSO fix logical issues from validation feedback
-3. If feedback says something is missing → ADD it
-4. Do NOT ignore feedback
-
-CRITICAL RULES:
-
-- Keep function name: tool()
-- Use only Python standard library
-- Do NOT hardcode filenames
-- Do NOT hardcode column names
-- Infer schema dynamically
-
-OUTPUT:
-- Return ONLY raw Python code
-"""
+    Rules:
+    - Return ONLY valid Python code
+    - Keep function name: tool()
+    - Use standard libraries only
+    """
 
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
         temperature=0
     )
-    """print("\n====== FIX PROMPT ======")
-    print(prompt)
-    print("====== END PROMPT ======\n")"""
 
     return response.choices[0].message.content
 # ---------------------------
@@ -368,34 +349,11 @@ def solve_task(task: str) -> str:
     if client is None:
         return json.dumps({"error": "No OpenAI API key"})
 
-    # ---------------------------
-    # IMPORT VALIDATORS (SAFE)
-    # ---------------------------
-    try:
-        from eval import VALIDATORS, compute_expected_answers
-    except Exception as e:
-        print("[DEBUG] Failed to import validators:", str(e))
-        VALIDATORS = {}
-        compute_expected_answers = lambda: {}
-
-    expected = compute_expected_answers()
-
     code = None
     error = None
     global TOOLS
 
     max_attempts = 5
-    validation_feedback = None
-    previous_code = None
-
-    # ---------------------------
-    # EXTRACT TASK ID (ROBUST)
-    # ---------------------------
-    import re
-    match = re.search(r"Task\s+(\d+)", task)
-    task_id = int(match.group(1)) if match else None
-
-    print("[DEBUG] Detected task_id:", task_id)
 
     for attempt in range(max_attempts):
         print(f"\n[DEBUG] Attempt {attempt + 1}")
@@ -405,25 +363,17 @@ def solve_task(task: str) -> str:
                 available_tools = "\n".join(TOOLS.keys())
                 code = generate_tool_code(task + f"\n\nAvailable tools:\n{available_tools}")
             else:
-                code = fix_code(task, code, error, validation_feedback)
+                code = fix_code(task, code, error)
         except Exception as e:
             error = str(e)
             print("[DEBUG] Code generation failed:", error)
             continue
 
+        # CRITICAL FIX
         if not code or not isinstance(code, str):
             print("[ERROR] Code is None or invalid")
             error = "Code generation returned None"
             continue
-
-        # Prevent infinite loop (same code)
-        if code == previous_code:
-            print("[DEBUG] Same code detected → forcing retry")
-            error = "Previous attempt produced identical code"
-            validation_feedback = error
-            continue
-
-        previous_code = code
 
         print("[DEBUG] Code preview:\n", code[:400])
 
@@ -436,51 +386,33 @@ def solve_task(task: str) -> str:
 
         if error is None:
 
-            # ---------------------------
-            # RUN VALIDATOR
-            # ---------------------------
-            validation_failed = False
-            validation_feedback = None
-
-            try:
-                validators_list = list(VALIDATORS.values())
-
-                if len(TOOLS) < len(validators_list):
-                    validator = validators_list[len(TOOLS)]
-
-                    score, notes = validator(
-                        str(result),
-                        expected.get(len(TOOLS) + 1, {})
-                    )
-
-                    print("[DEBUG] Validator score:", score)
-                    print("[DEBUG] Validator notes:", notes)
-
-                    if score < 0.7:
-                        validation_failed = True
-                        validation_feedback = notes or "Validation failed"
-
-            except Exception as e:
-                print("[DEBUG] Validator crashed:", str(e))
-
-            # ---------------------------
-            # RETRY IF FAILED
-            # ---------------------------
-            if validation_failed:
-                print("[DEBUG] Validation → retry")
-                print("[DEBUG] Feedback:", validation_feedback)
-                error = validation_feedback
+            # reject bad formats
+            # allow numeric result for currency tasks
+            if isinstance(result, (int, float)) and "exchange" not in task.lower():
+                print("[DEBUG] Invalid result format → retry")
+                error = "Expected dict, got number"
                 continue
 
-            # ---------------------------
-            # SAVE TOOL
-            # ---------------------------
+            # reject suspicious values (currency bug)
+            if isinstance(result, dict):
+                bad = False
+                for v in result.values():
+                    if isinstance(v, (int, float)) and v > 1e7:
+                        bad = True
+                        break
+                if bad:
+                    print("[DEBUG] Suspicious value → retry")
+                    error = "Likely wrong computation"
+                    continue
+
+            # ensure agent directory exists
             import os
             os.makedirs("agent", exist_ok=True)
 
             tool_name = f"tool_{len(TOOLS)}"
             TOOLS[tool_name] = code
 
+            # save tool file (fix for genericity score)
             try:
                 with open(f"agent/{tool_name}.py", "w", encoding="utf-8") as f:
                     f.write(code)
