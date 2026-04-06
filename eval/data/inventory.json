@@ -1,0 +1,1502 @@
+[
+  {
+    "product_id": "P001",
+    "name": "Wireless Headphones",
+    "category": "Electronics",
+    "price_usd": 79.99,
+    "stock": 62,
+    "reorder_point": 11,
+    "supplier": "Summit Wholesale",
+    "last_restocked": "2024-11-25"
+  },
+  {
+    "product_id": "P002",
+    "name": "Bluetooth Speaker",
+    "category": "Electronics",
+    "price_usd": 49.99,
+    "stock": 119,
+    "reorder_point": 18,
+    "supplier": "GlobalSupply",
+    "last_restocked": "2024-10-18"
+  },
+  {
+    "product_id": "P003",
+    "name": "USB-C Hub",
+    "category": "Electronics",
+    "price_usd": 34.99,
+    "stock": 49,
+    "reorder_point": 47,
+    "supplier": "Nordic Distribution",
+    "last_restocked": "2024-12-22"
+  },
+  {
+    "product_id": "P004",
+    "name": "Laptop Stand",
+    "category": "Electronics",
+    "price_usd": 45.99,
+    "stock": 20,
+    "reorder_point": 15,
+    "supplier": "EastWest Trading",
+    "last_restocked": "2024-11-27"
+  },
+  {
+    "product_id": "P005",
+    "name": "Mechanical Keyboard",
+    "category": "Electronics",
+    "price_usd": 129.99,
+    "stock": 263,
+    "reorder_point": 48,
+    "supplier": "TechCorp",
+    "last_restocked": "2024-10-16"
+  },
+  {
+    "product_id": "P006",
+    "name": "Gaming Mouse",
+    "category": "Electronics",
+    "price_usd": 59.99,
+    "stock": 106,
+    "reorder_point": 44,
+    "supplier": "Nordic Distribution",
+    "last_restocked": "2024-11-28"
+  },
+  {
+    "product_id": "P007",
+    "name": "Webcam HD",
+    "category": "Electronics",
+    "price_usd": 69.99,
+    "stock": 234,
+    "reorder_point": 47,
+    "supplier": "Summit Wholesale",
+    "last_restocked": "2024-12-26"
+  },
+  {
+    "product_id": "P008",
+    "name": "Portable Charger",
+    "category": "Electronics",
+    "price_usd": 29.99,
+    "stock": 86,
+    "reorder_point": 37,
+    "supplier": "Pacific Imports",
+    "last_restocked": "2024-11-21"
+  },
+  {
+    "product_id": "P009",
+    "name": "Smart Watch",
+    "category": "Electronics",
+    "price_usd": 199.99,
+    "stock": 84,
+    "reorder_point": 23,
+    "supplier": "Pacific Imports",
+    "last_restocked": "2024-12-13"
+  },
+  {
+    "product_id": "P010",
+    "name": "Noise Cancelling Earbuds",
+    "category": "Electronics",
+    "price_usd": 149.99,
+    "stock": 52,
+    "reorder_point": 34,
+    "supplier": "GlobalSupply",
+    "last_restocked": "2024-11-11"
+  },
+  {
+    "product_id": "P011",
+    "name": "HDMI Cable",
+    "category": "Electronics",
+    "price_usd": 12.99,
+    "stock": 181,
+    "reorder_point": 48,
+    "supplier": "Summit Wholesale",
+    "last_restocked": "2024-12-21"
+  },
+  {
+    "product_id": "P012",
+    "name": "Phone Case",
+    "category": "Electronics",
+    "price_usd": 19.99,
+    "stock": 240,
+    "reorder_point": 44,
+    "supplier": "GlobalSupply",
+    "last_restocked": "2024-11-08"
+  },
+  {
+    "product_id": "P013",
+    "name": "Screen Protector",
+    "category": "Electronics",
+    "price_usd": 9.99,
+    "stock": 45,
+    "reorder_point": 45,
+    "supplier": "Summit Wholesale",
+    "last_restocked": "2024-10-07"
+  },
+  {
+    "product_id": "P014",
+    "name": "Wireless Mouse",
+    "category": "Electronics",
+    "price_usd": 24.99,
+    "stock": 190,
+    "reorder_point": 46,
+    "supplier": "EastWest Trading",
+    "last_restocked": "2024-12-18"
+  },
+  {
+    "product_id": "P015",
+    "name": "Monitor Light Bar",
+    "category": "Electronics",
+    "price_usd": 39.99,
+    "stock": 28,
+    "reorder_point": 24,
+    "supplier": "Summit Wholesale",
+    "last_restocked": "2024-12-16"
+  },
+  {
+    "product_id": "P016",
+    "name": "Cable Organizer",
+    "category": "Electronics",
+    "price_usd": 14.99,
+    "stock": 124,
+    "reorder_point": 16,
+    "supplier": "Nordic Distribution",
+    "last_restocked": "2024-11-21"
+  },
+  {
+    "product_id": "P017",
+    "name": "Power Strip",
+    "category": "Electronics",
+    "price_usd": 22.99,
+    "stock": 237,
+    "reorder_point": 50,
+    "supplier": "Pacific Imports",
+    "last_restocked": "2024-12-06"
+  },
+  {
+    "product_id": "P018",
+    "name": "SD Card 128GB",
+    "category": "Electronics",
+    "price_usd": 18.99,
+    "stock": 194,
+    "reorder_point": 32,
+    "supplier": "EastWest Trading",
+    "last_restocked": "2024-10-02"
+  },
+  {
+    "product_id": "P019",
+    "name": "External SSD 1TB",
+    "category": "Electronics",
+    "price_usd": 89.99,
+    "stock": 141,
+    "reorder_point": 14,
+    "supplier": "Apex Wholesale",
+    "last_restocked": "2024-10-06"
+  },
+  {
+    "product_id": "P020",
+    "name": "Ring Light",
+    "category": "Electronics",
+    "price_usd": 34.99,
+    "stock": 92,
+    "reorder_point": 44,
+    "supplier": "EastWest Trading",
+    "last_restocked": "2024-12-06"
+  },
+  {
+    "product_id": "P021",
+    "name": "USB Microphone",
+    "category": "Electronics",
+    "price_usd": 64.99,
+    "stock": 241,
+    "reorder_point": 34,
+    "supplier": "Summit Wholesale",
+    "last_restocked": "2024-10-06"
+  },
+  {
+    "product_id": "P022",
+    "name": "Tablet Stand",
+    "category": "Electronics",
+    "price_usd": 27.99,
+    "stock": 290,
+    "reorder_point": 24,
+    "supplier": "Pacific Imports",
+    "last_restocked": "2024-12-19"
+  },
+  {
+    "product_id": "P023",
+    "name": "Smart Plug",
+    "category": "Electronics",
+    "price_usd": 17.99,
+    "stock": 122,
+    "reorder_point": 12,
+    "supplier": "Pacific Imports",
+    "last_restocked": "2024-11-05"
+  },
+  {
+    "product_id": "P024",
+    "name": "USB Flash Drive",
+    "category": "Electronics",
+    "price_usd": 11.99,
+    "stock": 142,
+    "reorder_point": 14,
+    "supplier": "EastWest Trading",
+    "last_restocked": "2024-10-15"
+  },
+  {
+    "product_id": "P025",
+    "name": "Mouse Pad XL",
+    "category": "Electronics",
+    "price_usd": 19.99,
+    "stock": 166,
+    "reorder_point": 23,
+    "supplier": "Atlas Logistics",
+    "last_restocked": "2024-11-06"
+  },
+  {
+    "product_id": "P026",
+    "name": "Ethernet Adapter",
+    "category": "Electronics",
+    "price_usd": 15.99,
+    "stock": 239,
+    "reorder_point": 19,
+    "supplier": "Summit Wholesale",
+    "last_restocked": "2024-12-09"
+  },
+  {
+    "product_id": "P027",
+    "name": "Wireless Charger",
+    "category": "Electronics",
+    "price_usd": 29.99,
+    "stock": 131,
+    "reorder_point": 45,
+    "supplier": "Meridian Supply Co",
+    "last_restocked": "2024-11-23"
+  },
+  {
+    "product_id": "P028",
+    "name": "Surge Protector",
+    "category": "Electronics",
+    "price_usd": 24.99,
+    "stock": 224,
+    "reorder_point": 47,
+    "supplier": "Nordic Distribution",
+    "last_restocked": "2024-11-10"
+  },
+  {
+    "product_id": "P029",
+    "name": "Desk Fan",
+    "category": "Electronics",
+    "price_usd": 32.99,
+    "stock": 117,
+    "reorder_point": 18,
+    "supplier": "Meridian Supply Co",
+    "last_restocked": "2024-10-24"
+  },
+  {
+    "product_id": "P030",
+    "name": "LED Strip Lights",
+    "category": "Electronics",
+    "price_usd": 21.99,
+    "stock": 51,
+    "reorder_point": 13,
+    "supplier": "GlobalSupply",
+    "last_restocked": "2024-12-07"
+  },
+  {
+    "product_id": "P031",
+    "name": "Classic T-Shirt",
+    "category": "Clothing",
+    "price_usd": 24.99,
+    "stock": 86,
+    "reorder_point": 37,
+    "supplier": "Apex Wholesale",
+    "last_restocked": "2024-12-18"
+  },
+  {
+    "product_id": "P032",
+    "name": "Denim Jeans",
+    "category": "Clothing",
+    "price_usd": 59.99,
+    "stock": 202,
+    "reorder_point": 34,
+    "supplier": "Apex Wholesale",
+    "last_restocked": "2024-10-28"
+  },
+  {
+    "product_id": "P033",
+    "name": "Hoodie",
+    "category": "Clothing",
+    "price_usd": 49.99,
+    "stock": 275,
+    "reorder_point": 26,
+    "supplier": "Meridian Supply Co",
+    "last_restocked": "2024-12-25"
+  },
+  {
+    "product_id": "P034",
+    "name": "Running Shorts",
+    "category": "Clothing",
+    "price_usd": 29.99,
+    "stock": 63,
+    "reorder_point": 44,
+    "supplier": "Summit Wholesale",
+    "last_restocked": "2024-10-05"
+  },
+  {
+    "product_id": "P035",
+    "name": "Dress Shirt",
+    "category": "Clothing",
+    "price_usd": 44.99,
+    "stock": 179,
+    "reorder_point": 17,
+    "supplier": "Summit Wholesale",
+    "last_restocked": "2024-11-01"
+  },
+  {
+    "product_id": "P036",
+    "name": "Wool Sweater",
+    "category": "Clothing",
+    "price_usd": 79.99,
+    "stock": 85,
+    "reorder_point": 39,
+    "supplier": "TechCorp",
+    "last_restocked": "2024-11-23"
+  },
+  {
+    "product_id": "P037",
+    "name": "Rain Jacket",
+    "category": "Clothing",
+    "price_usd": 89.99,
+    "stock": 261,
+    "reorder_point": 21,
+    "supplier": "Meridian Supply Co",
+    "last_restocked": "2024-12-13"
+  },
+  {
+    "product_id": "P038",
+    "name": "Cargo Pants",
+    "category": "Clothing",
+    "price_usd": 54.99,
+    "stock": 157,
+    "reorder_point": 50,
+    "supplier": "Meridian Supply Co",
+    "last_restocked": "2024-10-10"
+  },
+  {
+    "product_id": "P039",
+    "name": "Polo Shirt",
+    "category": "Clothing",
+    "price_usd": 34.99,
+    "stock": 106,
+    "reorder_point": 19,
+    "supplier": "Pacific Imports",
+    "last_restocked": "2024-12-06"
+  },
+  {
+    "product_id": "P040",
+    "name": "Athletic Socks 6-Pack",
+    "category": "Clothing",
+    "price_usd": 16.99,
+    "stock": 281,
+    "reorder_point": 43,
+    "supplier": "TechCorp",
+    "last_restocked": "2024-10-11"
+  },
+  {
+    "product_id": "P041",
+    "name": "Winter Coat",
+    "category": "Clothing",
+    "price_usd": 149.99,
+    "stock": 170,
+    "reorder_point": 41,
+    "supplier": "TechCorp",
+    "last_restocked": "2024-12-12"
+  },
+  {
+    "product_id": "P042",
+    "name": "Casual Blazer",
+    "category": "Clothing",
+    "price_usd": 119.99,
+    "stock": 190,
+    "reorder_point": 29,
+    "supplier": "EastWest Trading",
+    "last_restocked": "2024-12-19"
+  },
+  {
+    "product_id": "P043",
+    "name": "Swim Trunks",
+    "category": "Clothing",
+    "price_usd": 27.99,
+    "stock": 128,
+    "reorder_point": 46,
+    "supplier": "GlobalSupply",
+    "last_restocked": "2024-12-16"
+  },
+  {
+    "product_id": "P044",
+    "name": "Leggings",
+    "category": "Clothing",
+    "price_usd": 34.99,
+    "stock": 253,
+    "reorder_point": 14,
+    "supplier": "Meridian Supply Co",
+    "last_restocked": "2024-12-10"
+  },
+  {
+    "product_id": "P045",
+    "name": "Baseball Cap",
+    "category": "Clothing",
+    "price_usd": 19.99,
+    "stock": 70,
+    "reorder_point": 40,
+    "supplier": "Meridian Supply Co",
+    "last_restocked": "2024-12-05"
+  },
+  {
+    "product_id": "P046",
+    "name": "Silk Scarf",
+    "category": "Clothing",
+    "price_usd": 39.99,
+    "stock": 140,
+    "reorder_point": 43,
+    "supplier": "Apex Wholesale",
+    "last_restocked": "2024-11-02"
+  },
+  {
+    "product_id": "P047",
+    "name": "Winter Gloves",
+    "category": "Clothing",
+    "price_usd": 24.99,
+    "stock": 113,
+    "reorder_point": 44,
+    "supplier": "EastWest Trading",
+    "last_restocked": "2024-11-17"
+  },
+  {
+    "product_id": "P048",
+    "name": "Leather Belt",
+    "category": "Clothing",
+    "price_usd": 34.99,
+    "stock": 209,
+    "reorder_point": 33,
+    "supplier": "Atlas Logistics",
+    "last_restocked": "2024-10-21"
+  },
+  {
+    "product_id": "P049",
+    "name": "Canvas Sneakers",
+    "category": "Clothing",
+    "price_usd": 54.99,
+    "stock": 236,
+    "reorder_point": 17,
+    "supplier": "EastWest Trading",
+    "last_restocked": "2024-11-28"
+  },
+  {
+    "product_id": "P050",
+    "name": "Dress Shoes",
+    "category": "Clothing",
+    "price_usd": 129.99,
+    "stock": 37,
+    "reorder_point": 31,
+    "supplier": "TechCorp",
+    "last_restocked": "2024-10-12"
+  },
+  {
+    "product_id": "P051",
+    "name": "Hiking Boots",
+    "category": "Clothing",
+    "price_usd": 119.99,
+    "stock": 288,
+    "reorder_point": 24,
+    "supplier": "Apex Wholesale",
+    "last_restocked": "2024-11-28"
+  },
+  {
+    "product_id": "P052",
+    "name": "Sport Sandals",
+    "category": "Clothing",
+    "price_usd": 44.99,
+    "stock": 8,
+    "reorder_point": 14,
+    "supplier": "TechCorp",
+    "last_restocked": "2024-11-27"
+  },
+  {
+    "product_id": "P053",
+    "name": "Tank Top",
+    "category": "Clothing",
+    "price_usd": 17.99,
+    "stock": 39,
+    "reorder_point": 12,
+    "supplier": "Pacific Imports",
+    "last_restocked": "2024-12-17"
+  },
+  {
+    "product_id": "P054",
+    "name": "Cardigan",
+    "category": "Clothing",
+    "price_usd": 64.99,
+    "stock": 268,
+    "reorder_point": 25,
+    "supplier": "Summit Wholesale",
+    "last_restocked": "2024-10-02"
+  },
+  {
+    "product_id": "P055",
+    "name": "Flannel Shirt",
+    "category": "Clothing",
+    "price_usd": 39.99,
+    "stock": 253,
+    "reorder_point": 23,
+    "supplier": "Meridian Supply Co",
+    "last_restocked": "2024-12-10"
+  },
+  {
+    "product_id": "P056",
+    "name": "Chino Pants",
+    "category": "Clothing",
+    "price_usd": 49.99,
+    "stock": 297,
+    "reorder_point": 46,
+    "supplier": "Atlas Logistics",
+    "last_restocked": "2024-11-25"
+  },
+  {
+    "product_id": "P057",
+    "name": "Windbreaker",
+    "category": "Clothing",
+    "price_usd": 69.99,
+    "stock": 247,
+    "reorder_point": 36,
+    "supplier": "EastWest Trading",
+    "last_restocked": "2024-12-14"
+  },
+  {
+    "product_id": "P058",
+    "name": "Knit Beanie",
+    "category": "Clothing",
+    "price_usd": 14.99,
+    "stock": 54,
+    "reorder_point": 37,
+    "supplier": "Pacific Imports",
+    "last_restocked": "2024-11-02"
+  },
+  {
+    "product_id": "P059",
+    "name": "Silk Tie",
+    "category": "Clothing",
+    "price_usd": 29.99,
+    "stock": 215,
+    "reorder_point": 39,
+    "supplier": "TechCorp",
+    "last_restocked": "2024-10-04"
+  },
+  {
+    "product_id": "P060",
+    "name": "Linen Pants",
+    "category": "Clothing",
+    "price_usd": 59.99,
+    "stock": 55,
+    "reorder_point": 13,
+    "supplier": "Nordic Distribution",
+    "last_restocked": "2024-11-13"
+  },
+  {
+    "product_id": "P061",
+    "name": "Coffee Maker Deluxe",
+    "category": "Home & Garden",
+    "price_usd": 89.99,
+    "stock": 60,
+    "reorder_point": 25,
+    "supplier": "EastWest Trading",
+    "last_restocked": "2024-12-02"
+  },
+  {
+    "product_id": "P062",
+    "name": "High-Speed Blender",
+    "category": "Home & Garden",
+    "price_usd": 69.99,
+    "stock": 279,
+    "reorder_point": 38,
+    "supplier": "PrimeParts",
+    "last_restocked": "2024-11-02"
+  },
+  {
+    "product_id": "P063",
+    "name": "Toaster 4-Slice",
+    "category": "Home & Garden",
+    "price_usd": 39.99,
+    "stock": 98,
+    "reorder_point": 27,
+    "supplier": "Atlas Logistics",
+    "last_restocked": "2024-11-25"
+  },
+  {
+    "product_id": "P064",
+    "name": "Bamboo Cutting Board",
+    "category": "Home & Garden",
+    "price_usd": 24.99,
+    "stock": 43,
+    "reorder_point": 38,
+    "supplier": "Meridian Supply Co",
+    "last_restocked": "2024-12-14"
+  },
+  {
+    "product_id": "P065",
+    "name": "Digital Kitchen Scale",
+    "category": "Home & Garden",
+    "price_usd": 19.99,
+    "stock": 30,
+    "reorder_point": 44,
+    "supplier": "TechCorp",
+    "last_restocked": "2024-12-15"
+  },
+  {
+    "product_id": "P066",
+    "name": "Mixing Bowls Set",
+    "category": "Home & Garden",
+    "price_usd": 29.99,
+    "stock": 126,
+    "reorder_point": 20,
+    "supplier": "Nordic Distribution",
+    "last_restocked": "2024-10-25"
+  },
+  {
+    "product_id": "P067",
+    "name": "Electric Can Opener",
+    "category": "Home & Garden",
+    "price_usd": 22.99,
+    "stock": 251,
+    "reorder_point": 23,
+    "supplier": "Nordic Distribution",
+    "last_restocked": "2024-12-19"
+  },
+  {
+    "product_id": "P068",
+    "name": "Stainless Colander",
+    "category": "Home & Garden",
+    "price_usd": 14.99,
+    "stock": 89,
+    "reorder_point": 34,
+    "supplier": "TechCorp",
+    "last_restocked": "2024-11-07"
+  },
+  {
+    "product_id": "P069",
+    "name": "Measuring Cups Set",
+    "category": "Home & Garden",
+    "price_usd": 12.99,
+    "stock": 140,
+    "reorder_point": 39,
+    "supplier": "Summit Wholesale",
+    "last_restocked": "2024-11-02"
+  },
+  {
+    "product_id": "P070",
+    "name": "Rotating Spice Rack",
+    "category": "Home & Garden",
+    "price_usd": 34.99,
+    "stock": 289,
+    "reorder_point": 41,
+    "supplier": "PrimeParts",
+    "last_restocked": "2024-12-02"
+  },
+  {
+    "product_id": "P071",
+    "name": "Ceramic Plant Pot",
+    "category": "Home & Garden",
+    "price_usd": 18.99,
+    "stock": 156,
+    "reorder_point": 23,
+    "supplier": "TechCorp",
+    "last_restocked": "2024-10-13"
+  },
+  {
+    "product_id": "P072",
+    "name": "Expandable Garden Hose",
+    "category": "Home & Garden",
+    "price_usd": 29.99,
+    "stock": 282,
+    "reorder_point": 13,
+    "supplier": "Pacific Imports",
+    "last_restocked": "2024-12-19"
+  },
+  {
+    "product_id": "P073",
+    "name": "Pruning Shears",
+    "category": "Home & Garden",
+    "price_usd": 16.99,
+    "stock": 30,
+    "reorder_point": 47,
+    "supplier": "Atlas Logistics",
+    "last_restocked": "2024-10-23"
+  },
+  {
+    "product_id": "P074",
+    "name": "Copper Watering Can",
+    "category": "Home & Garden",
+    "price_usd": 27.99,
+    "stock": 276,
+    "reorder_point": 20,
+    "supplier": "TechCorp",
+    "last_restocked": "2024-10-22"
+  },
+  {
+    "product_id": "P075",
+    "name": "Seed Starter Kit",
+    "category": "Home & Garden",
+    "price_usd": 14.99,
+    "stock": 46,
+    "reorder_point": 21,
+    "supplier": "GlobalSupply",
+    "last_restocked": "2024-10-11"
+  },
+  {
+    "product_id": "P076",
+    "name": "Cedar Bird Feeder",
+    "category": "Home & Garden",
+    "price_usd": 24.99,
+    "stock": 39,
+    "reorder_point": 25,
+    "supplier": "Nordic Distribution",
+    "last_restocked": "2024-12-11"
+  },
+  {
+    "product_id": "P077",
+    "name": "Solar Path Lights",
+    "category": "Home & Garden",
+    "price_usd": 34.99,
+    "stock": 296,
+    "reorder_point": 25,
+    "supplier": "Apex Wholesale",
+    "last_restocked": "2024-10-11"
+  },
+  {
+    "product_id": "P078",
+    "name": "Coir Welcome Mat",
+    "category": "Home & Garden",
+    "price_usd": 19.99,
+    "stock": 25,
+    "reorder_point": 49,
+    "supplier": "GlobalSupply",
+    "last_restocked": "2024-11-03"
+  },
+  {
+    "product_id": "P079",
+    "name": "Velvet Throw Pillow",
+    "category": "Home & Garden",
+    "price_usd": 22.99,
+    "stock": 294,
+    "reorder_point": 43,
+    "supplier": "Pacific Imports",
+    "last_restocked": "2024-11-23"
+  },
+  {
+    "product_id": "P080",
+    "name": "Soy Scented Candle",
+    "category": "Home & Garden",
+    "price_usd": 16.99,
+    "stock": 109,
+    "reorder_point": 30,
+    "supplier": "EastWest Trading",
+    "last_restocked": "2024-11-23"
+  },
+  {
+    "product_id": "P081",
+    "name": "Egyptian Cotton Towels",
+    "category": "Home & Garden",
+    "price_usd": 44.99,
+    "stock": 207,
+    "reorder_point": 18,
+    "supplier": "Summit Wholesale",
+    "last_restocked": "2024-10-29"
+  },
+  {
+    "product_id": "P082",
+    "name": "Fabric Shower Curtain",
+    "category": "Home & Garden",
+    "price_usd": 24.99,
+    "stock": 166,
+    "reorder_point": 14,
+    "supplier": "TechCorp",
+    "last_restocked": "2024-10-29"
+  },
+  {
+    "product_id": "P083",
+    "name": "Ceramic Soap Dispenser",
+    "category": "Home & Garden",
+    "price_usd": 14.99,
+    "stock": 293,
+    "reorder_point": 16,
+    "supplier": "GlobalSupply",
+    "last_restocked": "2024-10-19"
+  },
+  {
+    "product_id": "P084",
+    "name": "Modern Wall Clock",
+    "category": "Home & Garden",
+    "price_usd": 29.99,
+    "stock": 114,
+    "reorder_point": 42,
+    "supplier": "Summit Wholesale",
+    "last_restocked": "2024-12-10"
+  },
+  {
+    "product_id": "P085",
+    "name": "Gallery Picture Frame",
+    "category": "Home & Garden",
+    "price_usd": 19.99,
+    "stock": 183,
+    "reorder_point": 14,
+    "supplier": "EastWest Trading",
+    "last_restocked": "2024-11-09"
+  },
+  {
+    "product_id": "P086",
+    "name": "Floating Bookshelf",
+    "category": "Home & Garden",
+    "price_usd": 39.99,
+    "stock": 150,
+    "reorder_point": 20,
+    "supplier": "Atlas Logistics",
+    "last_restocked": "2024-10-18"
+  },
+  {
+    "product_id": "P087",
+    "name": "Adjustable Desk Lamp",
+    "category": "Home & Garden",
+    "price_usd": 34.99,
+    "stock": 159,
+    "reorder_point": 49,
+    "supplier": "Meridian Supply Co",
+    "last_restocked": "2024-12-25"
+  },
+  {
+    "product_id": "P088",
+    "name": "Fabric Storage Bins",
+    "category": "Home & Garden",
+    "price_usd": 24.99,
+    "stock": 288,
+    "reorder_point": 29,
+    "supplier": "GlobalSupply",
+    "last_restocked": "2024-12-09"
+  },
+  {
+    "product_id": "P089",
+    "name": "Woven Laundry Basket",
+    "category": "Home & Garden",
+    "price_usd": 29.99,
+    "stock": 140,
+    "reorder_point": 17,
+    "supplier": "GlobalSupply",
+    "last_restocked": "2024-10-17"
+  },
+  {
+    "product_id": "P090",
+    "name": "Robot Vacuum",
+    "category": "Home & Garden",
+    "price_usd": 179.99,
+    "stock": 84,
+    "reorder_point": 27,
+    "supplier": "Summit Wholesale",
+    "last_restocked": "2024-10-10"
+  },
+  {
+    "product_id": "P091",
+    "name": "Running Shoes Pro",
+    "category": "Sports",
+    "price_usd": 129.99,
+    "stock": 112,
+    "reorder_point": 31,
+    "supplier": "EastWest Trading",
+    "last_restocked": "2024-10-06"
+  },
+  {
+    "product_id": "P092",
+    "name": "Yoga Mat Premium",
+    "category": "Sports",
+    "price_usd": 39.99,
+    "stock": 140,
+    "reorder_point": 42,
+    "supplier": "Atlas Logistics",
+    "last_restocked": "2024-11-24"
+  },
+  {
+    "product_id": "P093",
+    "name": "Adjustable Dumbbells",
+    "category": "Sports",
+    "price_usd": 199.99,
+    "stock": 31,
+    "reorder_point": 15,
+    "supplier": "Nordic Distribution",
+    "last_restocked": "2024-11-21"
+  },
+  {
+    "product_id": "P094",
+    "name": "Resistance Bands Set",
+    "category": "Sports",
+    "price_usd": 24.99,
+    "stock": 27,
+    "reorder_point": 10,
+    "supplier": "Pacific Imports",
+    "last_restocked": "2024-12-10"
+  },
+  {
+    "product_id": "P095",
+    "name": "Speed Jump Rope",
+    "category": "Sports",
+    "price_usd": 14.99,
+    "stock": 139,
+    "reorder_point": 20,
+    "supplier": "Atlas Logistics",
+    "last_restocked": "2024-10-17"
+  },
+  {
+    "product_id": "P096",
+    "name": "Insulated Water Bottle",
+    "category": "Sports",
+    "price_usd": 24.99,
+    "stock": 223,
+    "reorder_point": 45,
+    "supplier": "TechCorp",
+    "last_restocked": "2024-12-12"
+  },
+  {
+    "product_id": "P097",
+    "name": "Gym Duffel Bag",
+    "category": "Sports",
+    "price_usd": 44.99,
+    "stock": 43,
+    "reorder_point": 19,
+    "supplier": "Meridian Supply Co",
+    "last_restocked": "2024-12-22"
+  },
+  {
+    "product_id": "P098",
+    "name": "Tennis Racket",
+    "category": "Sports",
+    "price_usd": 79.99,
+    "stock": 194,
+    "reorder_point": 47,
+    "supplier": "Meridian Supply Co",
+    "last_restocked": "2024-12-08"
+  },
+  {
+    "product_id": "P099",
+    "name": "Indoor Basketball",
+    "category": "Sports",
+    "price_usd": 29.99,
+    "stock": 225,
+    "reorder_point": 18,
+    "supplier": "TechCorp",
+    "last_restocked": "2024-11-17"
+  },
+  {
+    "product_id": "P100",
+    "name": "Match Soccer Ball",
+    "category": "Sports",
+    "price_usd": 34.99,
+    "stock": 191,
+    "reorder_point": 12,
+    "supplier": "Pacific Imports",
+    "last_restocked": "2024-11-30"
+  },
+  {
+    "product_id": "P101",
+    "name": "Padded Cycling Gloves",
+    "category": "Sports",
+    "price_usd": 19.99,
+    "stock": 132,
+    "reorder_point": 16,
+    "supplier": "Pacific Imports",
+    "last_restocked": "2024-10-16"
+  },
+  {
+    "product_id": "P102",
+    "name": "Competition Swim Goggles",
+    "category": "Sports",
+    "price_usd": 22.99,
+    "stock": 213,
+    "reorder_point": 49,
+    "supplier": "PrimeParts",
+    "last_restocked": "2024-11-26"
+  },
+  {
+    "product_id": "P103",
+    "name": "High-Density Foam Roller",
+    "category": "Sports",
+    "price_usd": 24.99,
+    "stock": 88,
+    "reorder_point": 21,
+    "supplier": "Nordic Distribution",
+    "last_restocked": "2024-12-23"
+  },
+  {
+    "product_id": "P104",
+    "name": "Doorway Pull-Up Bar",
+    "category": "Sports",
+    "price_usd": 34.99,
+    "stock": 96,
+    "reorder_point": 31,
+    "supplier": "Nordic Distribution",
+    "last_restocked": "2024-10-02"
+  },
+  {
+    "product_id": "P105",
+    "name": "Ab Roller Wheel",
+    "category": "Sports",
+    "price_usd": 19.99,
+    "stock": 132,
+    "reorder_point": 27,
+    "supplier": "PrimeParts",
+    "last_restocked": "2024-12-13"
+  },
+  {
+    "product_id": "P106",
+    "name": "Boxing Gloves 12oz",
+    "category": "Sports",
+    "price_usd": 39.99,
+    "stock": 200,
+    "reorder_point": 12,
+    "supplier": "Atlas Logistics",
+    "last_restocked": "2024-11-28"
+  },
+  {
+    "product_id": "P107",
+    "name": "Weighted Jump Rope",
+    "category": "Sports",
+    "price_usd": 19.99,
+    "stock": 107,
+    "reorder_point": 39,
+    "supplier": "Pacific Imports",
+    "last_restocked": "2024-11-17"
+  },
+  {
+    "product_id": "P108",
+    "name": "Adjustable Ankle Weights",
+    "category": "Sports",
+    "price_usd": 29.99,
+    "stock": 121,
+    "reorder_point": 24,
+    "supplier": "TechCorp",
+    "last_restocked": "2024-10-03"
+  },
+  {
+    "product_id": "P109",
+    "name": "GPS Fitness Tracker",
+    "category": "Sports",
+    "price_usd": 149.99,
+    "stock": 103,
+    "reorder_point": 35,
+    "supplier": "Pacific Imports",
+    "last_restocked": "2024-11-21"
+  },
+  {
+    "product_id": "P110",
+    "name": "Compression Shirt",
+    "category": "Sports",
+    "price_usd": 34.99,
+    "stock": 40,
+    "reorder_point": 27,
+    "supplier": "Pacific Imports",
+    "last_restocked": "2024-10-05"
+  },
+  {
+    "product_id": "P111",
+    "name": "High-Impact Sports Bra",
+    "category": "Sports",
+    "price_usd": 39.99,
+    "stock": 265,
+    "reorder_point": 35,
+    "supplier": "Meridian Supply Co",
+    "last_restocked": "2024-11-14"
+  },
+  {
+    "product_id": "P112",
+    "name": "Hiking Backpack 40L",
+    "category": "Sports",
+    "price_usd": 89.99,
+    "stock": 19,
+    "reorder_point": 17,
+    "supplier": "Summit Wholesale",
+    "last_restocked": "2024-12-04"
+  },
+  {
+    "product_id": "P113",
+    "name": "3-Season Camping Tent",
+    "category": "Sports",
+    "price_usd": 159.99,
+    "stock": 140,
+    "reorder_point": 12,
+    "supplier": "GlobalSupply",
+    "last_restocked": "2024-10-11"
+  },
+  {
+    "product_id": "P114",
+    "name": "Down Sleeping Bag",
+    "category": "Sports",
+    "price_usd": 119.99,
+    "stock": 227,
+    "reorder_point": 32,
+    "supplier": "Pacific Imports",
+    "last_restocked": "2024-11-01"
+  },
+  {
+    "product_id": "P115",
+    "name": "Telescopic Fishing Rod",
+    "category": "Sports",
+    "price_usd": 49.99,
+    "stock": 266,
+    "reorder_point": 17,
+    "supplier": "Nordic Distribution",
+    "last_restocked": "2024-10-14"
+  },
+  {
+    "product_id": "P116",
+    "name": "Premium Golf Balls 12pk",
+    "category": "Sports",
+    "price_usd": 34.99,
+    "stock": 102,
+    "reorder_point": 26,
+    "supplier": "TechCorp",
+    "last_restocked": "2024-11-01"
+  },
+  {
+    "product_id": "P117",
+    "name": "Maple Skateboard",
+    "category": "Sports",
+    "price_usd": 59.99,
+    "stock": 5,
+    "reorder_point": 43,
+    "supplier": "Meridian Supply Co",
+    "last_restocked": "2024-10-02"
+  },
+  {
+    "product_id": "P118",
+    "name": "Surfboard Wax Kit",
+    "category": "Sports",
+    "price_usd": 12.99,
+    "stock": 105,
+    "reorder_point": 33,
+    "supplier": "Nordic Distribution",
+    "last_restocked": "2024-12-18"
+  },
+  {
+    "product_id": "P119",
+    "name": "Climbing Chalk Bag",
+    "category": "Sports",
+    "price_usd": 17.99,
+    "stock": 174,
+    "reorder_point": 49,
+    "supplier": "Pacific Imports",
+    "last_restocked": "2024-10-03"
+  },
+  {
+    "product_id": "P120",
+    "name": "Hinged Knee Brace",
+    "category": "Sports",
+    "price_usd": 29.99,
+    "stock": 68,
+    "reorder_point": 29,
+    "supplier": "Meridian Supply Co",
+    "last_restocked": "2024-11-17"
+  },
+  {
+    "product_id": "P121",
+    "name": "Mystery Novel Collection",
+    "category": "Books",
+    "price_usd": 34.99,
+    "stock": 214,
+    "reorder_point": 30,
+    "supplier": "Nordic Distribution",
+    "last_restocked": "2024-11-19"
+  },
+  {
+    "product_id": "P122",
+    "name": "Sci-Fi Anthology",
+    "category": "Books",
+    "price_usd": 29.99,
+    "stock": 288,
+    "reorder_point": 18,
+    "supplier": "EastWest Trading",
+    "last_restocked": "2024-11-03"
+  },
+  {
+    "product_id": "P123",
+    "name": "Python Programming Guide",
+    "category": "Books",
+    "price_usd": 44.99,
+    "stock": 199,
+    "reorder_point": 21,
+    "supplier": "Apex Wholesale",
+    "last_restocked": "2024-10-15"
+  },
+  {
+    "product_id": "P124",
+    "name": "Data Science Handbook",
+    "category": "Books",
+    "price_usd": 49.99,
+    "stock": 159,
+    "reorder_point": 35,
+    "supplier": "Meridian Supply Co",
+    "last_restocked": "2024-12-26"
+  },
+  {
+    "product_id": "P125",
+    "name": "Leadership Manual",
+    "category": "Books",
+    "price_usd": 24.99,
+    "stock": 160,
+    "reorder_point": 28,
+    "supplier": "EastWest Trading",
+    "last_restocked": "2024-11-01"
+  },
+  {
+    "product_id": "P126",
+    "name": "Cooking for Beginners",
+    "category": "Books",
+    "price_usd": 19.99,
+    "stock": 169,
+    "reorder_point": 39,
+    "supplier": "Atlas Logistics",
+    "last_restocked": "2024-10-31"
+  },
+  {
+    "product_id": "P127",
+    "name": "World History Encyclopedia",
+    "category": "Books",
+    "price_usd": 39.99,
+    "stock": 114,
+    "reorder_point": 42,
+    "supplier": "Atlas Logistics",
+    "last_restocked": "2024-12-05"
+  },
+  {
+    "product_id": "P128",
+    "name": "Astronomy Today",
+    "category": "Books",
+    "price_usd": 29.99,
+    "stock": 48,
+    "reorder_point": 28,
+    "supplier": "Meridian Supply Co",
+    "last_restocked": "2024-10-03"
+  },
+  {
+    "product_id": "P129",
+    "name": "Art of Photography",
+    "category": "Books",
+    "price_usd": 34.99,
+    "stock": 176,
+    "reorder_point": 15,
+    "supplier": "EastWest Trading",
+    "last_restocked": "2024-11-17"
+  },
+  {
+    "product_id": "P130",
+    "name": "Music Theory Basics",
+    "category": "Books",
+    "price_usd": 22.99,
+    "stock": 120,
+    "reorder_point": 22,
+    "supplier": "PrimeParts",
+    "last_restocked": "2024-12-23"
+  },
+  {
+    "product_id": "P131",
+    "name": "Organic Chemistry Textbook",
+    "category": "Books",
+    "price_usd": 59.99,
+    "stock": 28,
+    "reorder_point": 25,
+    "supplier": "Atlas Logistics",
+    "last_restocked": "2024-10-09"
+  },
+  {
+    "product_id": "P132",
+    "name": "Calculus Fundamentals",
+    "category": "Books",
+    "price_usd": 54.99,
+    "stock": 42,
+    "reorder_point": 39,
+    "supplier": "Nordic Distribution",
+    "last_restocked": "2024-10-07"
+  },
+  {
+    "product_id": "P133",
+    "name": "Philosophy Reader",
+    "category": "Books",
+    "price_usd": 19.99,
+    "stock": 299,
+    "reorder_point": 22,
+    "supplier": "Nordic Distribution",
+    "last_restocked": "2024-10-24"
+  },
+  {
+    "product_id": "P134",
+    "name": "Economics 101",
+    "category": "Books",
+    "price_usd": 29.99,
+    "stock": 209,
+    "reorder_point": 25,
+    "supplier": "PrimeParts",
+    "last_restocked": "2024-10-04"
+  },
+  {
+    "product_id": "P135",
+    "name": "Creative Writing Workshop",
+    "category": "Books",
+    "price_usd": 24.99,
+    "stock": 7,
+    "reorder_point": 16,
+    "supplier": "Nordic Distribution",
+    "last_restocked": "2024-11-28"
+  },
+  {
+    "product_id": "P136",
+    "name": "Travel Guide Europe",
+    "category": "Books",
+    "price_usd": 18.99,
+    "stock": 95,
+    "reorder_point": 43,
+    "supplier": "Atlas Logistics",
+    "last_restocked": "2024-12-20"
+  },
+  {
+    "product_id": "P137",
+    "name": "Meditation Handbook",
+    "category": "Books",
+    "price_usd": 14.99,
+    "stock": 290,
+    "reorder_point": 25,
+    "supplier": "GlobalSupply",
+    "last_restocked": "2024-10-29"
+  },
+  {
+    "product_id": "P138",
+    "name": "Gardening Almanac",
+    "category": "Books",
+    "price_usd": 16.99,
+    "stock": 73,
+    "reorder_point": 39,
+    "supplier": "Meridian Supply Co",
+    "last_restocked": "2024-10-16"
+  },
+  {
+    "product_id": "P139",
+    "name": "DIY Home Repair Guide",
+    "category": "Books",
+    "price_usd": 24.99,
+    "stock": 167,
+    "reorder_point": 38,
+    "supplier": "Apex Wholesale",
+    "last_restocked": "2024-10-23"
+  },
+  {
+    "product_id": "P140",
+    "name": "Fitness Encyclopedia",
+    "category": "Books",
+    "price_usd": 29.99,
+    "stock": 223,
+    "reorder_point": 45,
+    "supplier": "Atlas Logistics",
+    "last_restocked": "2024-12-06"
+  },
+  {
+    "product_id": "P141",
+    "name": "Complete Nutrition Guide",
+    "category": "Books",
+    "price_usd": 22.99,
+    "stock": 248,
+    "reorder_point": 38,
+    "supplier": "Summit Wholesale",
+    "last_restocked": "2024-11-25"
+  },
+  {
+    "product_id": "P142",
+    "name": "Intro to Psychology",
+    "category": "Books",
+    "price_usd": 34.99,
+    "stock": 146,
+    "reorder_point": 43,
+    "supplier": "Atlas Logistics",
+    "last_restocked": "2024-10-07"
+  },
+  {
+    "product_id": "P143",
+    "name": "Marketing Strategy Book",
+    "category": "Books",
+    "price_usd": 27.99,
+    "stock": 127,
+    "reorder_point": 27,
+    "supplier": "Atlas Logistics",
+    "last_restocked": "2024-12-17"
+  },
+  {
+    "product_id": "P144",
+    "name": "Financial Planning 101",
+    "category": "Books",
+    "price_usd": 24.99,
+    "stock": 151,
+    "reorder_point": 25,
+    "supplier": "Summit Wholesale",
+    "last_restocked": "2024-11-14"
+  },
+  {
+    "product_id": "P145",
+    "name": "AI and Machine Learning",
+    "category": "Books",
+    "price_usd": 49.99,
+    "stock": 168,
+    "reorder_point": 44,
+    "supplier": "GlobalSupply",
+    "last_restocked": "2024-12-09"
+  },
+  {
+    "product_id": "P146",
+    "name": "Blockchain Explained",
+    "category": "Books",
+    "price_usd": 29.99,
+    "stock": 82,
+    "reorder_point": 24,
+    "supplier": "Nordic Distribution",
+    "last_restocked": "2024-12-07"
+  },
+  {
+    "product_id": "P147",
+    "name": "Climate Science Today",
+    "category": "Books",
+    "price_usd": 24.99,
+    "stock": 114,
+    "reorder_point": 14,
+    "supplier": "Nordic Distribution",
+    "last_restocked": "2024-11-04"
+  },
+  {
+    "product_id": "P148",
+    "name": "Modern Poetry Collection",
+    "category": "Books",
+    "price_usd": 17.99,
+    "stock": 174,
+    "reorder_point": 44,
+    "supplier": "Atlas Logistics",
+    "last_restocked": "2024-11-03"
+  },
+  {
+    "product_id": "P149",
+    "name": "Graphic Novel Box Set",
+    "category": "Books",
+    "price_usd": 44.99,
+    "stock": 36,
+    "reorder_point": 23,
+    "supplier": "Nordic Distribution",
+    "last_restocked": "2024-11-07"
+  },
+  {
+    "product_id": "P150",
+    "name": "Children's Stories Bundle",
+    "category": "Books",
+    "price_usd": 19.99,
+    "stock": 15,
+    "reorder_point": 46,
+    "supplier": "Nordic Distribution",
+    "last_restocked": "2024-10-26"
+  }
+]

@@ -1,0 +1,68 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "phase": 1,
+      "title": "Employee Directory",
+      "description": "List all data files in the data/ directory. Read employees.json and tell me: how many employees are in each department, and who is the highest-paid employee?",
+      "requires_tool_creation": false
+    },
+    {
+      "id": 2,
+      "phase": 1,
+      "title": "Sales Data Orientation",
+      "description": "Read the first 10 rows of sales.csv. What columns does it have? What date range does the full dataset cover? How many total rows are there?",
+      "requires_tool_creation": false
+    },
+    {
+      "id": 3,
+      "phase": 2,
+      "title": "Revenue Analysis",
+      "description": "Calculate the total revenue per product category in sales.csv, and identify which category had the highest revenue in December 2024 specifically. Report exact numbers rounded to 2 decimal places.",
+      "requires_tool_creation": true
+    },
+    {
+      "id": 4,
+      "phase": 2,
+      "title": "Live Exchange Rate Conversion",
+      "description": "Fetch the current USD exchange rates from https://open.er-api.com/v6/latest/USD. The sales.csv file contains transactions in multiple currencies (USD, EUR, GBP, JPY). Convert ALL transactions to USD using the live rates and report the grand total revenue in USD, rounded to 2 decimal places.",
+      "requires_tool_creation": true
+    },
+    {
+      "id": 5,
+      "phase": 2,
+      "title": "Log Analysis",
+      "description": "Analyze the full app.log (~5,000 lines). For each unique endpoint+method combination, compute: total request count, average response time (ms), error rate (%), and p95 response time (ms). Return the top 5 endpoints ranked by error rate (descending). Format as a table.",
+      "requires_tool_creation": true
+    },
+    {
+      "id": 6,
+      "phase": 3,
+      "title": "Database Investigation",
+      "description": "The file data/metrics.db is a SQLite database. First, explore its schema to understand what tables and columns exist. Then find the 10 endpoints with the worst p99 latency from the requests table. For each, also report its total request count and error rate (status_code >= 400). Format as a table sorted by p99 latency descending.",
+      "requires_tool_creation": true
+    },
+    {
+      "id": 7,
+      "phase": 3,
+      "title": "Anomaly Detection",
+      "description": "Perform anomaly detection on sales.csv. For each product that has at least 20 total orders in the dataset, compute the daily total quantity sold over the full date range (Oct 1 - Dec 31, 2024). Flag any (product, date) pair where the daily quantity exceeds 3 standard deviations above that product's mean daily quantity. Write the results to output/anomaly_report.json as a JSON array of objects with fields: product_id, product_name, date, daily_quantity, mean_quantity, std_dev, z_score (all numeric values rounded to 2 decimal places). Also return a text summary of how many anomalies were found and which products were affected.",
+      "requires_tool_creation": true
+    },
+    {
+      "id": 8,
+      "phase": 3,
+      "title": "Executive Dashboard",
+      "description": "Build a cross-source executive dashboard and write it to output/executive_dashboard.json. The dashboard JSON must contain these exact keys:\n\n1. 'top_products_by_revenue': Top 10 products by total revenue in USD (using live rates from https://open.er-api.com/v6/latest/USD). Each entry: {product_id, product_name, revenue_usd} rounded to 2 decimal places.\n\n2. 'understocked_products': Products from inventory.json where current stock is below reorder_point AND the product had more than 15 sales in sales.csv. Each entry: {product_id, product_name, current_stock, reorder_point, total_sales_count}.\n\n3. 'endpoint_health': For each API endpoint, combine data from BOTH app.log AND metrics.db to report: {endpoint, method, log_request_count, log_error_rate_pct, log_p95_ms, db_request_count, db_error_rate_pct, db_p99_ms}. Sort by db_p99_ms descending.\n\n4. 'department_summary': For each department in employees.json: {department, headcount, avg_salary, total_salary}.\n\n5. 'daily_revenue_trend': For each day in the sales date range, the total revenue in USD: {date, revenue_usd}.\n\nConstraint: Your agent may invoke at most 8 tools total for this task. Design efficient, multi-purpose tools. Write the final JSON to output/executive_dashboard.json and return a brief text summary.",
+      "requires_tool_creation": true,
+      "max_tool_calls": 8
+    },
+    {
+      "id": 9,
+      "phase": 3,
+      "title": "Data Integrity Audit",
+      "description": "Audit ALL data sources in the data/ directory for data quality issues and integrity problems. For each file, check for issues such as: missing or empty values, duplicate records, invalid or inconsistent entries, and unexpected data. Additionally, cross-reference any aggregated or summary data against its raw source to verify correctness — if the database contains both raw records and pre-computed aggregates, check whether the aggregates actually match what you'd compute from the raw data. Write your findings to output/data_audit.json as a JSON object with one key per file analyzed, each containing an array of issue objects with fields: {issue_type, description, affected_count, examples}. Return a text summary of all findings including the total number of issues per file and any data integrity discrepancies discovered.",
+      "requires_tool_creation": true
+    }
+  ]
+}

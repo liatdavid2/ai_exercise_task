@@ -1,0 +1,227 @@
+[
+  {
+    "id": 1,
+    "name": "Alice Chen",
+    "department": "Engineering",
+    "title": "Staff Engineer",
+    "salary": 185000,
+    "start_date": "2021-03-15",
+    "location": "San Francisco"
+  },
+  {
+    "id": 2,
+    "name": "Bob Martinez",
+    "department": "Engineering",
+    "title": "Senior Engineer",
+    "salary": 165000,
+    "start_date": "2022-01-10",
+    "location": "San Francisco"
+  },
+  {
+    "id": 3,
+    "name": "Carol Wu",
+    "department": "Engineering",
+    "title": "Senior Engineer",
+    "salary": 162000,
+    "start_date": "2022-06-20",
+    "location": "New York"
+  },
+  {
+    "id": 4,
+    "name": "David Kim",
+    "department": "Engineering",
+    "title": "Engineer",
+    "salary": 135000,
+    "start_date": "2023-02-01",
+    "location": "San Francisco"
+  },
+  {
+    "id": 5,
+    "name": "Eva Novak",
+    "department": "Engineering",
+    "title": "Engineer",
+    "salary": 132000,
+    "start_date": "2023-05-15",
+    "location": "Remote"
+  },
+  {
+    "id": 6,
+    "name": "Frank Liu",
+    "department": "Engineering",
+    "title": "Junior Engineer",
+    "salary": 110000,
+    "start_date": "2024-01-08",
+    "location": "San Francisco"
+  },
+  {
+    "id": 7,
+    "name": "Grace Patel",
+    "department": "Engineering",
+    "title": "Junior Engineer",
+    "salary": 108000,
+    "start_date": "2024-03-20",
+    "location": "New York"
+  },
+  {
+    "id": 8,
+    "name": "Henry Zhang",
+    "department": "Engineering",
+    "title": "Engineering Manager",
+    "salary": 195000,
+    "start_date": "2020-11-01",
+    "location": "San Francisco"
+  },
+  {
+    "id": 9,
+    "name": "Irene Foster",
+    "department": "Marketing",
+    "title": "Marketing Director",
+    "salary": 170000,
+    "start_date": "2021-08-01",
+    "location": "New York"
+  },
+  {
+    "id": 10,
+    "name": "Jake Thompson",
+    "department": "Marketing",
+    "title": "Content Manager",
+    "salary": 120000,
+    "start_date": "2022-09-15",
+    "location": "Remote"
+  },
+  {
+    "id": 11,
+    "name": "Karen Lee",
+    "department": "Marketing",
+    "title": "Marketing Specialist",
+    "salary": 95000,
+    "start_date": "2023-04-01",
+    "location": "New York"
+  },
+  {
+    "id": 12,
+    "name": "Leo Ramirez",
+    "department": "Marketing",
+    "title": "SEO Specialist",
+    "salary": 92000,
+    "start_date": "2023-07-20",
+    "location": "Remote"
+  },
+  {
+    "id": 13,
+    "name": "Maya Johnson",
+    "department": "Marketing",
+    "title": "Social Media Manager",
+    "salary": 88000,
+    "start_date": "2024-02-10",
+    "location": "New York"
+  },
+  {
+    "id": 14,
+    "name": "Nathan Brooks",
+    "department": "Sales",
+    "title": "VP of Sales",
+    "salary": 200000,
+    "start_date": "2020-06-15",
+    "location": "Chicago"
+  },
+  {
+    "id": 15,
+    "name": "Olivia Scott",
+    "department": "Sales",
+    "title": "Account Executive",
+    "salary": 130000,
+    "start_date": "2022-03-01",
+    "location": "Chicago"
+  },
+  {
+    "id": 16,
+    "name": "Paul Nguyen",
+    "department": "Sales",
+    "title": "Account Executive",
+    "salary": 125000,
+    "start_date": "2022-08-15",
+    "location": "New York"
+  },
+  {
+    "id": 17,
+    "name": "Quinn Adams",
+    "department": "Sales",
+    "title": "Sales Rep",
+    "salary": 85000,
+    "start_date": "2023-11-01",
+    "location": "Chicago"
+  },
+  {
+    "id": 18,
+    "name": "Rachel Torres",
+    "department": "Sales",
+    "title": "Sales Rep",
+    "salary": 82000,
+    "start_date": "2024-01-15",
+    "location": "Remote"
+  },
+  {
+    "id": 19,
+    "name": "Sam Wilson",
+    "department": "Product",
+    "title": "VP of Product",
+    "salary": 210000,
+    "start_date": "2020-04-01",
+    "location": "San Francisco"
+  },
+  {
+    "id": 20,
+    "name": "Tina Park",
+    "department": "Product",
+    "title": "Senior Product Manager",
+    "salary": 175000,
+    "start_date": "2021-06-15",
+    "location": "San Francisco"
+  },
+  {
+    "id": 21,
+    "name": "Uma Krishnan",
+    "department": "Product",
+    "title": "Product Manager",
+    "salary": 145000,
+    "start_date": "2022-11-01",
+    "location": "Remote"
+  },
+  {
+    "id": 22,
+    "name": "Victor Okonkwo",
+    "department": "Product",
+    "title": "UX Designer",
+    "salary": 130000,
+    "start_date": "2023-03-15",
+    "location": "New York"
+  },
+  {
+    "id": 23,
+    "name": "Wendy Harris",
+    "department": "Operations",
+    "title": "Head of Operations",
+    "salary": 160000,
+    "start_date": "2021-01-15",
+    "location": "Chicago"
+  },
+  {
+    "id": 24,
+    "name": "Xavier Diaz",
+    "department": "Operations",
+    "title": "DevOps Engineer",
+    "salary": 150000,
+    "start_date": "2022-04-01",
+    "location": "Remote"
+  },
+  {
+    "id": 25,
+    "name": "Yuki Tanaka",
+    "department": "Operations",
+    "title": "Office Manager",
+    "salary": 75000,
+    "start_date": "2023-09-01",
+    "location": "San Francisco"
+  }
+]
