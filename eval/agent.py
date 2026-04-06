@@ -34,16 +34,59 @@ def safe_json(obj):
     return obj
 
 
+def fix_code(task: str, code: str, error: str) -> str:
+    print("[DEBUG] Fixing code...")
+
+    prompt = f"""
+You are a Python debugging expert.
+
+Fix the following Python code based on the error.
+
+Rules:
+- Keep same structure
+- Fix ONLY what is needed
+- Do NOT rewrite everything
+- Return ONLY corrected code
+- No explanations
+
+Task:
+{task}
+
+Error:
+{error}
+
+Code:
+{code}
+"""
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0
+    )
+
+    return response.choices[0].message.content
 # ---------------------------
 # CLEAN CODE
 # ---------------------------
 def clean_code(code: str) -> str:
     print("[DEBUG] Cleaning code...")
 
+    # Remove markdown blocks
     if "```" in code:
-        code = code.split("```")[1] if "```python" in code else code.replace("```", "")
+        parts = code.split("```")
+        code = parts[1] if len(parts) > 1 else parts[0]
 
-    code = code.replace("```python", "").replace("```", "")
+    # Remove language hints
+    code = code.replace("```python", "")
+    code = code.replace("```", "")
+
+    # 🔥 FIX: remove leading "python"
+    lines = code.strip().split("\n")
+    if lines and lines[0].strip() == "python":
+        lines = lines[1:]
+
+    code = "\n".join(lines)
 
     return code.strip()
 
@@ -168,10 +211,15 @@ def solve_task(task: str) -> str:
     code = None
     error = None
 
-    for attempt in range(3):
+    max_attempts = 5
+
+    for attempt in range(max_attempts):
         print(f"\n[DEBUG] Attempt {attempt + 1}")
 
-        code = generate_tool_code(task, code, error)
+        if attempt == 0:
+            code = generate_tool_code(task)
+        else:
+            code = fix_code(task, code, error)
 
         print("[DEBUG] Code preview:\n", code[:400])
 
@@ -179,12 +227,9 @@ def solve_task(task: str) -> str:
 
         if error is None:
             print("[DEBUG] Success")
-            print("[DEBUG] Result:", str(result)[:300])
-
-            # 🔥 FIX: safe json
             return json.dumps(safe_json(result))
 
-        print("[DEBUG] Failed, will retry...")
+        print("[DEBUG] Failed, fixing...")
         print("[DEBUG] Error:", error)
 
     print("[ERROR] All attempts failed")
