@@ -186,7 +186,6 @@ def handle_exchange_task():
 
             total_usd += usd
 
-    # ⚠️ CRITICAL: must include "USD"
     return f"Total USD: {total_usd:.2f}"
 
 
@@ -267,13 +266,11 @@ def solve_task(task: str) -> str:
     if "employee" in t:
         return handle_employees_task()
     
-    if "revenue" in t:
-        return handle_revenue_task()
-    
-
-    # Task 4
     if "exchange" in t or "usd" in t or "currency" in t:
         return handle_exchange_task()
+    
+    if "revenue" in t:
+        return handle_revenue_task()
 
 
     if "sales" in t:
