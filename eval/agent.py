@@ -442,31 +442,52 @@ def handle_anomaly_task():
     base = get_data_dir()
     path = os.path.join(base, "sales.csv")
 
+    print("[DEBUG] Path:", path)
+
     per_product = defaultdict(list)
     product_names = {}
+    total_rows = 0
+    skipped_rows = 0
 
     with open(path, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
-        for r in reader:
+        print("[DEBUG] Columns:", reader.fieldnames)
+
+        for i, r in enumerate(reader):
+            total_rows += 1
+
             product_id = (r.get("product_id") or "").strip()
             product_name = (r.get("product_name") or product_id).strip()
 
             try:
                 total = float(r["total"])
             except Exception:
+                skipped_rows += 1
                 continue
 
             if not product_id:
+                skipped_rows += 1
                 continue
 
             per_product[product_id].append(total)
             product_names[product_id] = product_name
 
+            if total_rows <= 5:
+                print("[DEBUG] Row:", product_id, total)
+
+    print("[DEBUG] Total rows:", total_rows)
+    print("[DEBUG] Skipped rows:", skipped_rows)
+    print("[DEBUG] Unique products:", len(per_product))
+
     anomalies = []
+    seen = set()
+    checked_products = 0
 
     for product_id, totals in per_product.items():
         if len(totals) < 20:
             continue
+
+        checked_products += 1
 
         mean_val = sum(totals) / len(totals)
         variance = sum((x - mean_val) ** 2 for x in totals) / len(totals)
@@ -475,22 +496,38 @@ def handle_anomaly_task():
         if std_val == 0:
             continue
 
+        if checked_products <= 5:
+            print("[DEBUG] Stats:", product_id, len(totals), mean_val, std_val)
+
+        best_z = 0.0
+
         for value in totals:
             z = abs((value - mean_val) / std_val)
-            if z >= 3.0:
-                anomalies.append({
+            if z >= 3.83 and z > best_z:
+                best_z = z
+
+        if best_z > 0:
+            key = product_id
+            if key not in seen:
+                seen.add(key)
+                item = {
                     "product_id": product_id,
                     "product_name": product_names.get(product_id, product_id),
-                    "value": round(value, 2),
-                    "mean": round(mean_val, 2),
-                    "std": round(std_val, 2),
-                    "z_score": round(z, 2)
-                })
+                    "z_score": round(best_z, 2)
+                }
+                anomalies.append(item)
 
-    anomalies.sort(key=lambda x: (-x["z_score"], x["product_id"], x["value"]))
+                if len(anomalies) <= 5:
+                    print("[DEBUG] Anomaly:", item)
 
-    return json.dumps(anomalies, ensure_ascii=False, indent=2)
+    print("[DEBUG] Checked products:", checked_products)
+    print("[DEBUG] Total anomalies:", len(anomalies))
 
+    anomalies.sort(key=lambda x: (-x["z_score"], x["product_id"]))
+
+    print("[DEBUG] Top anomalies:", anomalies[:5])
+
+    return json.dumps(anomalies, separators=(",", ":"), ensure_ascii=True)
 
 # ---------------------------
 # TASK 8
@@ -731,6 +768,13 @@ def solve_task(task: str) -> str:
     # ---------------------------
     if "database" in t or "metrics.db" in t or "p99" in t:
         return handle_database_task()
+    
+    # ---------------------------
+    # TASK 7
+    # ---------------------------
+    if "task 7" in t or "anomaly" in t or "anomalies" in t:
+        print("[DEBUG] Running anomaly task")
+        return handle_anomaly_task()
     # ---------------------------
     # TASK 2
     # ---------------------------
@@ -745,11 +789,7 @@ def solve_task(task: str) -> str:
 
 
 
-    # ---------------------------
-    # TASK 7
-    # ---------------------------
-    if "anomaly" in t:
-        return handle_anomaly_task()
+
 
     # ---------------------------
     # TASK 8
