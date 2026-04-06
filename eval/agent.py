@@ -16,7 +16,25 @@ if not OPENAI_API_KEY:
 else:
     client = OpenAI(api_key=OPENAI_API_KEY)
 
+def get_sqlite_schema(db_path: str) -> str:
+    import sqlite3
 
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    tables = [r[0] for r in cur.fetchall()]
+
+    schema_info = []
+
+    for table in tables:
+        cur.execute(f"PRAGMA table_info({table})")
+        cols = [r[1] for r in cur.fetchall()]
+        schema_info.append(f"{table}: {cols}")
+
+    conn.close()
+
+    return "\n".join(schema_info)
 # ---------------------------
 # SAFE JSON (FIX datetime crash)
 # ---------------------------
@@ -90,13 +108,48 @@ def clean_code(code: str) -> str:
 
     return code.strip()
 
+def detect_task_type(task: str) -> str:
+    t = task.lower()
 
+    if ".db" in t or "sqlite" in t or "database" in t:
+        return "sql"
+
+    if ".csv" in t:
+        return "csv"
+
+    if ".json" in t:
+        return "json"
+
+    if "log" in t:
+        return "log"
+
+    return "generic"
+
+
+def build_dynamic_context(task: str) -> str:
+    task_type = detect_task_type(task)
+
+    if task_type == "sql":
+        try:
+            schema = get_sqlite_schema("data/metrics.db")
+            return f"""
+Database schema:
+{schema}
+
+IMPORTANT:
+- Use ONLY existing columns
+- Do NOT guess column names
+"""
+        except:
+            return ""
+
+    return ""
 # ---------------------------
 # LLM CODE GENERATION
 # ---------------------------
 def generate_tool_code(task: str, previous_code=None, error=None) -> str:
     print("[DEBUG] Generating code...")
-
+    dynamic_context = build_dynamic_context(task)
     fix_hint = ""
     if previous_code and error:
         fix_hint = f"""
@@ -140,7 +193,7 @@ Rules:
 - DO NOT use ```python or ``` blocks
 
 {DATA_CONTEXT}
-
+{dynamic_context}
 {fix_hint}
 
 Task:
