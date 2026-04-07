@@ -1,82 +1,84 @@
 import glob
 import json
 import os
+from collections import defaultdict
 
-def find_key(d, options):
-    for k in d:
-        for opt in options:
-            if opt in k.lower():
-                return k
+def find_key(d, semantic_options):
+    keys = list(d.keys())
+    lowered = {k: k.lower() for k in keys}
+    for semantic_group in semantic_options:
+        for k in keys:
+            lk = lowered[k]
+            for opt in semantic_group:
+                if opt in lk:
+                    return k
     return None
 
 def tool():
-    # Discover files
+    # Step 1: Discover relevant files
     files = glob.glob('data/**/*.json', recursive=True) + glob.glob('**/*.json', recursive=True)
     files = list(set(files))  # Remove duplicates
 
-    # Fallback if no files found
+    # Step 2: Fallback if no files found
     if not files:
-        fallback_files = ['employees.json', 'sales.csv', 'app.log']
-        for fallback in fallback_files:
-            if os.path.exists(fallback):
-                files.append(fallback)
+        known_files = ['employees.json']
+        for known_file in known_files:
+            if os.path.exists(known_file):
+                files.append(known_file)
 
         if not files:
             for root, dirs, filenames in os.walk('data/'):
                 for filename in filenames:
                     if filename.endswith('.json'):
                         files.append(os.path.join(root, filename))
-                if files:
-                    break
 
+    # If still no files found, return message
     if not files:
         return "No matching file found"
 
-    # Process employees.json
-    employee_data = None
-    for file in files:
-        if 'employees.json' in file:
-            with open(file, 'r') as f:
-                employee_data = json.load(f)
-            break
+    # Step 3: Read employees.json
+    employees_file = next((f for f in files if 'employees.json' in f), None)
+    if not employees_file:
+        return "No employees.json file found"
 
-    if employee_data is None:
-        return "No employee data found"
+    with open(employees_file, 'r') as f:
+        data = json.load(f)
 
-    # Prepare to analyze employee data
-    department_counts = {}
-    highest_paid_employee = None
-
-    if isinstance(employee_data, list):
-        rows = employee_data
-    elif isinstance(employee_data, dict):
-        rows = list(employee_data.values())
+    # Step 4: Inspect schema
+    if isinstance(data, list):
+        rows = data
+    elif isinstance(data, dict):
+        rows = list(data.values())
     else:
-        return "Invalid employee data structure"
+        return "Invalid data format"
+
+    # Step 5: Process the data
+    department_count = defaultdict(int)
+    highest_paid_employee = None
 
     for row in rows:
         department_key = find_key(row, ["department"]) or "department"
         salary_key = find_key(row, ["salary", "income"]) or "salary"
-        
+        name_key = find_key(row, ["name", "employee_name"]) or "name"
+
         department = row.get(department_key)
         salary = row.get(salary_key)
+        name = row.get(name_key)
 
-        if department and salary:
-            # Count employees in each department
-            department_counts[department] = department_counts.get(department, 0) + 1
+        if department and salary and isinstance(salary, (int, float)):
+            department_count[department] += 1
             
-            # Determine the highest-paid employee
-            if highest_paid_employee is None or salary > highest_paid_employee['salary']:
-                highest_paid_employee = {
-                    'name': row.get('name', 'Unknown'),
-                    'salary': salary,
-                    'department': department
-                }
+            if highest_paid_employee is None or salary > highest_paid_employee[1]:
+                highest_paid_employee = (name, salary)
 
     # Prepare the result
     result = {
-        'department_counts': department_counts,
-        'highest_paid_employee': highest_paid_employee
+        "department_count": dict(department_count),
+        "highest_paid_employee": highest_paid_employee
     }
 
-    return result
+    # Ensure non-empty result
+    if result["department_count"] or highest_paid_employee:
+        return result
+    else:
+        return "No valid employee data found"

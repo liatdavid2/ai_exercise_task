@@ -1,11 +1,11 @@
 {
   "task_results": {
     "1": {
-      "score": 1.0,
+      "score": 0.0,
       "max_points": 1.0,
-      "points": 1.0,
-      "notes": "OK",
-      "time": 15.1,
+      "points": 0.0,
+      "notes": "Missing: Engineering=8; Missing: Marketing=5; Missing: Sales=5; Missing: Product=4; Missing: Operations=3; Missing highest paid: Sam Wilson; Missing salary: 210000",
+      "time": 12.2,
       "error": null
     },
     "2": {
@@ -13,23 +13,23 @@
       "max_points": 1.0,
       "points": 1.0,
       "notes": "OK",
-      "time": 8.0,
+      "time": 9.4,
       "error": null
     },
     "3": {
-      "score": 0.5,
+      "score": 0.7,
       "max_points": 1.5,
-      "points": 0.75,
-      "notes": "December Electronics revenue not found (expected ~2,210,199.61); No other December category totals found within tolerance",
-      "time": 11.4,
+      "points": 1.05,
+      "notes": "December Electronics revenue not found (expected ~2,210,199.61)",
+      "time": 22.9,
       "error": null
     },
     "4": {
-      "score": 0.8,
+      "score": 0.2,
       "max_points": 1.5,
-      "points": 1.2,
-      "notes": "OK",
-      "time": 11.3,
+      "points": 0.3,
+      "notes": "USD total not within 3% of expected (~714,860.72)",
+      "time": 13.8,
       "error": null
     },
     "5": {
@@ -37,7 +37,7 @@
       "max_points": 1.5,
       "points": 1.12,
       "notes": "Top endpoint p95 not found (~1977ms)",
-      "time": 11.5,
+      "time": 9.5,
       "error": null
     },
     "6": {
@@ -45,7 +45,7 @@
       "max_points": 2.0,
       "points": 1.85,
       "notes": "OK",
-      "time": 12.5,
+      "time": 10.9,
       "error": null
     },
     "7": {
@@ -53,23 +53,23 @@
       "max_points": 2.0,
       "points": 1.2,
       "notes": "Only 0/24 anomaly products mentioned; Report has 24 anomalies, expected ~39",
-      "time": 24.7,
+      "time": 17.2,
       "error": null
     },
     "8": {
-      "score": 0.7300000000000001,
+      "score": 0.49999999999999994,
       "max_points": 2.0,
-      "points": 1.46,
-      "notes": "understocked has 30 entries, expected ~2; endpoint_health missing or empty",
-      "time": 71.3,
+      "points": 1.0,
+      "notes": "department_summary missing or empty; understocked_products is empty but expected entries; endpoint_health missing or empty",
+      "time": 66.2,
       "error": null
     },
     "9": {
-      "score": 0.25,
+      "score": 0.15,
       "max_points": 2.5,
-      "points": 0.62,
-      "notes": "Did not identify returns/negative quantities in CSV; Did not identify empty/missing totals in CSV; Did not identify unknown currencies (CHF) in CSV; Did not identify duplicate order IDs in CSV; Did not identify multi-line stack traces in logs; Did not identify malformed lines in logs; Did not identify alternate timestamp formats in logs; Did not discover database integrity bug (aggregates missing 99 4xx errors)",
-      "time": 31.7,
+      "points": 0.38,
+      "notes": "Did not identify returns/negative quantities in CSV; Did not identify empty/missing totals in CSV; Did not identify unknown currencies (CHF) in CSV; Did not identify duplicate order IDs in CSV; Did not identify multi-line stack traces in logs; Did not identify malformed lines in logs; Did not identify alternate timestamp formats in logs; Did not discover database integrity bug (aggregates missing 99 4xx errors); Audit only covers 1 file(s)",
+      "time": 23.6,
       "error": null
     }
   },
@@ -88,8 +88,6 @@
     "score": 0.1,
     "issues": [
       "agent\\tool_1.py: hardcoded filename: employees.json",
-      "agent\\tool_1.py: hardcoded filename: sales.csv",
-      "agent\\tool_1.py: hardcoded filename: app.log",
       "agent\\tool_1.py: hardcoded column name: department",
       "agent\\tool_1.py: hardcoded column name: salary",
       "agent\\tool_2.py: hardcoded filename: employees.json",
@@ -123,17 +121,17 @@
       "agent\\tool_8.py: hardcoded filename: employees.json",
       "agent\\tool_8.py: hardcoded filename: sales.csv",
       "agent\\tool_8.py: hardcoded filename: app.log",
-      "agent\\tool_8.py: hardcoded column name: endpoint",
+      "agent\\tool_8.py: hardcoded column name: product_id",
       "agent\\tool_8.py: hardcoded column name: order_id",
       "agent\\tool_8.py: log format hint (stack trace)",
       "agent\\tool_9.py: hardcoded filename: employees.json",
       "agent\\tool_9.py: hardcoded filename: sales.csv",
       "agent\\tool_9.py: hardcoded filename: app.log",
-      "agent\\tool_9.py: hardcoded column name: endpoint",
+      "agent\\tool_9.py: hardcoded column name: product_id",
       "agent\\tool_9.py: hardcoded column name: order_id"
     ]
   },
-  "r4_score": 10.199999999999998,
+  "r4_score": 7.9,
   "r4_max": 15.0,
-  "total_time_seconds": 197.5
+  "total_time_seconds": 185.6
 }

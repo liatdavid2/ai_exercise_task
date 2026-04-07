@@ -1,57 +1,66 @@
 CSV TASK (CRITICAL):
 
-- You MUST search specifically for CSV files
-- Use:
-    glob.glob('data/**/*.csv', recursive=True)
-    glob.glob('**/*.csv', recursive=True)
+- You MUST import csv and glob
+- You MUST search recursively for CSV files
+- Prefer files under data/
+- Inspect headers first with csv.DictReader
+- Read ALL rows:
+    rows = list(reader)
 
-- Combine results and remove duplicates
-- Prefer files inside data/
-- Exclude files inside:
-    output/
-    agent/
-    __pycache__/
-    .git/
-    venv/
-    .venv/
+LIST/DICT SAFETY (CRITICAL):
+- rows is a LIST after rows = list(reader)
+- NEVER call rows.keys()
+- Use reader.fieldnames or the first row dict for schema inspection:
+    headers = reader.fieldnames or []
+    first_row = rows[0] if rows else {{}}
+- When using dynamic key detection, apply it to a row dict, not to the rows list
 
-- Choose the CSV file whose filename and columns best match the task
-- If the task explicitly mentions a filename, strongly prefer that exact basename
-- Do NOT assume a fixed schema unless the task explicitly names fields or files
+FIELD DETECTION:
+- Detect category-like fields dynamically:
+    category, type, group, class
+- Detect amount-like fields dynamically:
+    total, revenue, amount, sales, price, unit_price
+- Detect quantity-like fields dynamically:
+    quantity, qty, count, units
+- Detect date-like fields dynamically:
+    date, order_date, timestamp, created_at
 
-- You MUST use csv.DictReader
-- You MUST load all rows before computing aggregates
+REVENUE LOGIC:
+- If total exists and is numeric -> use total directly as row revenue
+- Else if quantity and unit_price exist -> revenue = quantity * unit_price
+- Else skip only the invalid row
+- NEVER discard the whole dataset because some rows are invalid
 
-- First inspect:
-    - header names
-    - sample row values
-    - which columns are numeric
-    - which columns look categorical
-    - which columns look like dates/timestamps
+TASK-SPECIFIC INTERPRETATION:
+- If task asks for "total revenue per category", compute totals for the FULL dataset grouped by category
+- If task ALSO asks which category had the highest revenue in December 2024 specifically:
+    1. compute full-dataset category totals
+    2. separately filter rows to December 2024
+    3. compute December category totals
+    4. identify the December highest category from the December totals only
+- Do NOT use full-period totals when answering a December-specific question
 
-- If the task explicitly mentions field names such as category, date, total, quantity, or unit_price:
-    - use those exact columns if they exist in the header
+DATE FILTERING:
+- Parse date values carefully
+- Accept formats like:
+    YYYY-MM-DD
+    YYYY-MM-DD HH:MM:SS
+    ISO timestamps
+- For December 2024, include only rows where year=2024 and month=12
 
-- Use only columns that actually exist
-- If multiple candidate columns exist, choose the one that best matches the task wording
+OUTPUT:
+- Return exact numeric results rounded to 2 decimals
+- If the task contains both overall totals and a December-specific maximum, return both
 
-- For aggregation tasks:
-    - detect numeric columns dynamically
-    - but prefer exact task-mentioned columns when present
+PREFERRED OUTPUT SHAPE FOR THIS TYPE OF TASK:
+{{
+  "category_totals": {{}},
+  "december_2024_totals": {{}},
+  "highest_category_december_2024": "...",
+  "highest_revenue_december_2024": 0.0
+}}
 
-- For grouping tasks:
-    - detect categorical/grouping columns dynamically
-    - but prefer exact task-mentioned columns when present
-
-- For filtering tasks:
-    - detect filter columns dynamically
-    - but prefer exact task-mentioned columns when present
-
-- If the task asks for revenue:
-    - prefer total if it exists
-    - otherwise use quantity * unit_price if both exist
-
-- If the task asks for all group totals:
-    - return ALL groups, not just the maximum
-
-- Returning "No matching file found" without searching for *.csv specifically is INVALID
+INVALID OUTPUTS:
+- Returning "No matching file found" without recursive search is invalid
+- Returning empty result on non-empty CSV is invalid
+- Returning only full-period totals for a month-specific question is invalid

@@ -1,21 +1,72 @@
-CURRENCY CONVERSION OUTPUT (CRITICAL):
+CURRENCY CONVERSION TASK (CRITICAL):
 
+FILE DISCOVERY:
+- You MUST import csv, glob, json, and urllib.request
+- You MUST search recursively for CSV files
+- Prefer files under data/
+- Do NOT return "No valid transactions found" unless rows were actually loaded and none were convertible
+- Do NOT return "No matching file found" unless recursive search found zero CSV files
+
+CSV LOADING:
+- Use csv.DictReader
+- Read ALL rows:
+    rows = list(reader)
+- Inspect actual headers before processing
+
+LIST/DICT SAFETY:
+- rows is a LIST
+- NEVER call rows.keys()
+- Use:
+    headers = reader.fieldnames or []
+    first_row = rows[0] if rows else {{}}
+
+FIELD DETECTION:
+- Detect amount field dynamically using names like:
+    total, revenue, amount, sales, value, price, unit_price
+- Detect quantity field dynamically using names like:
+    quantity, qty, count, units
+- Detect currency field dynamically using names like:
+    currency, curr, currency_code, code
+
+AMOUNT LOGIC:
+- Prefer total/revenue/amount if present
+- Else if quantity and unit_price exist, compute:
+    amount = quantity * unit_price
+- Convert only rows with a valid numeric amount
+- Do NOT skip valid rows
+
+EXCHANGE RATE LOGIC:
+- Fetch live exchange rates from:
+    https://open.er-api.com/v6/latest/USD
+- Parse the JSON safely
+- Read rates from the "rates" object
+- For each row:
+    - if currency is USD, usd_value = amount
+    - else if currency exists in rates and rate > 0:
+          usd_value = amount / rate
+    - else skip only that row
+- Accumulate:
+    total_usd += usd_value
+
+VALID ROW POLICY:
+- Do NOT return 0 unless the CSV is empty or every row is truly unusable
+- Do NOT fail the whole task because some rows are missing currency or amount
+- Process all valid transactions
+
+OUTPUT (MANDATORY):
 - You MUST return a result that EXPLICITLY mentions USD conversion
-
 - The output MUST include at least one of:
     - "USD"
     - "converted"
     - "exchange rate"
 
-- Preferred formats:
+PREFERRED FORMAT:
+{{
+  "total_revenue_usd": 0.0,
+  "description": "All transactions converted to USD using live exchange rates"
+}}
 
-STRING:
-    "Total revenue in USD: <value>"
-
-OR DICT:
-    {
-        "total_revenue_usd": <value>,
-        "description": "All transactions converted to USD using live exchange rates"
-    }
-
-- Returning ONLY a number is INVALID
+INVALID OUTPUTS:
+- Returning ONLY a number is invalid
+- Returning "No valid transactions found" when valid rows exist is invalid
+- Returning a result without mentioning USD conversion is invalid
