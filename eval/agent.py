@@ -94,10 +94,26 @@ def save_tool_to_file(code: str, index: int):
         f.write(code)
 
     print(f"[DEBUG] Saved tool to {path}")
+
+def detect_task_type(task: str):
+    t = task.lower()
+
+    if ".db" in t or "sqlite" in t or "database" in t:
+        return "db"
+    if "anomaly" in t:
+        return "anomaly"
+    if ".csv" in t:
+        return "csv"
+    if ".log" in t:
+        return "log"
+
+    return "generic"
 # ---------------------------
 # GENERATE TOOL
 # ---------------------------
 def generate_tool_code(task: str) -> str:
+    rules_block = ""
+    
 
     FILE_DISCOVERY_RULES = """
 FILE DISCOVERY (CRITICAL):
@@ -193,33 +209,94 @@ FAILURE → INVALID SOLUTION
     DATABASE TASK (CRITICAL):
 
     - You MUST use sqlite3 (standard library only)
-    - You MUST:
-        1. Connect to database
-        2. Discover tables:
-            SELECT name FROM sqlite_master WHERE type='table'
-        3. For each table:
-            PRAGMA table_info(table_name)
 
-    - DO NOT assume column names
-    - You MUST dynamically detect:
-        - endpoint-like column (string with '/')
-        - status-like column (numeric HTTP-like values)
-        - latency-like column (numeric values)
+    STEP 1 — CONNECT:
+    - Find .db file using glob.glob('**/*.db', recursive=True)
+    - Connect using sqlite3.connect(path)
 
-    - p99 MUST be computed manually:
-        - sort values
-        - index = int(0.99 * len(values))
+    STEP 2 — DISCOVER SCHEMA:
+    - Run:
+        SELECT name FROM sqlite_master WHERE type='table'
+    - For each table:
+        PRAGMA table_info(table_name)
 
-    - error_rate:
-        count(status >= 400) / total_count
+    - Prefer table named 'requests' if exists
+    - Otherwise choose table with most rows
 
-    - You MUST:
-        - compute per group
-        - sort descending by p99
-        - return top 10
+    STEP 3 — LOAD DATA:
+    - You MUST load ALL rows into Python
+    - Example:
+        SELECT * FROM table
 
-    - DO NOT use SQL aggregation unless column names are confirmed
+    STEP 4 — DETECT COLUMNS (CRITICAL):
+
+    You MUST detect columns using BOTH name and values:
+
+    - endpoint column:
+        name contains: endpoint, path, route, uri
+        OR values contain '/'
+
+    - status column:
+        name contains: status, status_code, code
+        values are integers between 100–599
+
+    - latency column:
+        name contains: latency, response_time, duration, ms
+        values are numeric
+
+    - If detection fails:
+        fallback to:
+            endpoint → endpoint
+            status → status_code
+            latency → latency_ms
+
+    STEP 5 — GROUPING:
+
+    - You MUST group by endpoint
+
+    For EACH endpoint:
+        - total_requests = count
+        - error_rate = count(status >= 400) / total_requests
+
+        - Compute p99:
+            values = sorted(latencies)
+            index = int(0.99 * (len(values) - 1))
+            p99_latency = values[index]
+
+    STEP 6 — SORT + FILTER:
+
+    - Sort by p99_latency DESC
+    - Return TOP 10 endpoints
+
+    STEP 7 — OUTPUT FORMAT (CRITICAL):
+
+    - Output MUST be a list of dicts
+
+    - Each row MUST include:
+        - endpoint
+        - total_requests
+        - error_rate
+        - p99_latency
+
+    Example:
+
+    [
+        {
+            "endpoint": "/api/reports",
+            "total_requests": 1200,
+            "error_rate": 0.12,
+            "p99_latency": 7024.3
+        }
+    ]
+
+    - Returning [] is INVALID
+    - Missing fields is INVALID
+    - Returning string/table is INVALID
     """
+   
+   
+   
+   
     prompt = f"""
 You are a Python expert.
 
