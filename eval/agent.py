@@ -181,13 +181,24 @@ FAILURE → INVALID SOLUTION
     3. COMPUTE:
         - daily_quantity = sum(quantity per day)
 
-    4. FILTER (CRITICAL):
-        - ONLY keep products where:
-            total_quantity = sum(quantity across ALL rows for that product)
-            total_quantity >= 20
+    4. FILTER (CRITICAL - STRICT ORDER):
+
+        - You MUST FIRST compute total_quantity per product:
+            total_quantity = sum(quantity across ALL rows)
+
+        - ONLY THEN filter:
+            keep products where total_quantity >= 20
+
+        - This MUST be done BEFORE daily grouping
 
         - DO NOT use number of rows
         - MUST use SUM(quantity)
+
+        - WRONG:
+            count(rows) >= 20
+
+        - CORRECT:
+            sum(quantity) >= 20
 
     5. STATS:
         For EACH product:
@@ -531,14 +542,26 @@ FAILURE → INVALID SOLUTION
     - logs + database metrics
     - employees aggregation
 
-    OUTPUT (CRITICAL):
+    JSON OUTPUT (CRITICAL):
 
-    - You MUST build ONE final JSON object with all required keys
+    - You MUST write EXACTLY ONE valid JSON object to file:
 
-    - Write to:
         output/executive_dashboard.json
 
-    - Returning partial data is INVALID
+    - The file MUST contain ONLY JSON (no text, no print)
+
+    - DO NOT write multiple JSON objects
+
+    - DO NOT append data
+
+    - Use:
+
+        with open(path, 'w') as f:
+            json.dump(data, f)
+
+    - INVALID:
+        f.write(str(data))
+        multiple json.dump calls
     """
 
     # Routing
