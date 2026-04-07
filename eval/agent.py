@@ -116,49 +116,6 @@ If task involves currency conversion:
 - Do NOT return 0 unless file is empty
 
 
-FILE DISCOVERY:
-
-- Do NOT assume exact file paths
-- If a file is not found:
-    - search inside 'data/' directory
-    - also search inside subdirectories (like data/logs/)
-
-- Find files by extension:
-    - .csv → CSV files
-    - .json → JSON files
-    - .log → log files
-    - .db → database files
-
-Example:
-- Use os.listdir and os.walk to locate files dynamically
-
-
-
-LOG REQUIREMENTS:
-
-- You MUST read ALL lines from the log file
-- You MUST produce at least 5 endpoints
-
-- If result is empty:
-    - parsing is incorrect → fix it
-
-
-DATABASE REQUIREMENTS:
-
-- You MUST:
-    - connect to SQLite database
-    - list tables using:
-        SELECT name FROM sqlite_master WHERE type='table'
-    - inspect columns using:
-        PRAGMA table_info(table_name)
-
-- DO NOT assume column names
-- You MUST use actual columns from the database
-
-- If query fails:
-    - adjust column names based on schema
-
-
 
 STRICT RULES:
 - Use only Python standard library
@@ -251,7 +208,7 @@ def solve_task(task: str) -> str:
     print("[DEBUG] TASK:", task)
     print("==============================")
 
-    max_attempts = 2
+    max_attempts = 5
     code = None
     error = None
 
@@ -287,6 +244,8 @@ def solve_task(task: str) -> str:
 
         if error is None:
             print("[DEBUG] Success")
+
+            result = normalize_output(result)
 
             # save tool for reuse
             tool_name = f"tool_{len(TOOLS)}"
