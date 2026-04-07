@@ -176,7 +176,7 @@ That solves the task.
 IMPORTANT PRACTICAL RULES:
 
 - For CSV:
-    - Prefer numeric columns representing aggregated values (e.g. totals)
+    - If 'total' exists → use it for revenue
     - If 'category' exists → group by it
     - If 'date' exists → parse and filter by date
 
