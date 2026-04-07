@@ -239,7 +239,7 @@ Task:
 {task}
 """
         response = self.client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4o",
             messages=[{"role": "user", "content": prompt}],
             temperature=0
         )
@@ -277,7 +277,7 @@ STRICT:
 - Preserve required output format
 """
         response = self.client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4o",
             messages=[{"role": "user", "content": prompt}],
             temperature=0
         )

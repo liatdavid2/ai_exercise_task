@@ -1,11 +1,11 @@
 {
   "task_results": {
     "1": {
-      "score": 0.0,
+      "score": 0.8,
       "max_points": 1.0,
-      "points": 0.0,
-      "notes": "Missing: Engineering=8; Missing: Marketing=5; Missing: Sales=5; Missing: Product=4; Missing: Operations=3; Missing highest paid: Sam Wilson; Missing salary: 210000",
-      "time": 12.2,
+      "points": 0.8,
+      "notes": "Missing salary: 210000",
+      "time": 6.7,
       "error": null
     },
     "2": {
@@ -13,7 +13,7 @@
       "max_points": 1.0,
       "points": 1.0,
       "notes": "OK",
-      "time": 9.4,
+      "time": 6.0,
       "error": null
     },
     "3": {
@@ -21,7 +21,7 @@
       "max_points": 1.5,
       "points": 1.05,
       "notes": "December Electronics revenue not found (expected ~2,210,199.61)",
-      "time": 22.9,
+      "time": 10.0,
       "error": null
     },
     "4": {
@@ -29,15 +29,15 @@
       "max_points": 1.5,
       "points": 0.3,
       "notes": "USD total not within 3% of expected (~714,860.72)",
-      "time": 13.8,
+      "time": 8.8,
       "error": null
     },
     "5": {
-      "score": 0.75,
+      "score": 0.55,
       "max_points": 1.5,
-      "points": 1.12,
-      "notes": "Top endpoint p95 not found (~1977ms)",
-      "time": 9.5,
+      "points": 0.83,
+      "notes": "Top endpoint error rate not found (~15.6%); Top endpoint p95 not found (~1977ms)",
+      "time": 9.7,
       "error": null
     },
     "6": {
@@ -45,7 +45,7 @@
       "max_points": 2.0,
       "points": 1.85,
       "notes": "OK",
-      "time": 10.9,
+      "time": 9.6,
       "error": null
     },
     "7": {
@@ -53,7 +53,7 @@
       "max_points": 2.0,
       "points": 1.2,
       "notes": "Only 0/24 anomaly products mentioned; Report has 24 anomalies, expected ~39",
-      "time": 17.2,
+      "time": 20.5,
       "error": null
     },
     "8": {
@@ -61,7 +61,7 @@
       "max_points": 2.0,
       "points": 1.0,
       "notes": "department_summary missing or empty; understocked_products is empty but expected entries; endpoint_health missing or empty",
-      "time": 66.2,
+      "time": 50.4,
       "error": null
     },
     "9": {
@@ -69,7 +69,7 @@
       "max_points": 2.5,
       "points": 0.38,
       "notes": "Did not identify returns/negative quantities in CSV; Did not identify empty/missing totals in CSV; Did not identify unknown currencies (CHF) in CSV; Did not identify duplicate order IDs in CSV; Did not identify multi-line stack traces in logs; Did not identify malformed lines in logs; Did not identify alternate timestamp formats in logs; Did not discover database integrity bug (aggregates missing 99 4xx errors); Audit only covers 1 file(s)",
-      "time": 23.6,
+      "time": 45.9,
       "error": null
     }
   },
@@ -90,20 +90,11 @@
       "agent\\tool_1.py: hardcoded filename: employees.json",
       "agent\\tool_1.py: hardcoded column name: department",
       "agent\\tool_1.py: hardcoded column name: salary",
-      "agent\\tool_2.py: hardcoded filename: employees.json",
       "agent\\tool_2.py: hardcoded filename: sales.csv",
-      "agent\\tool_2.py: hardcoded filename: app.log",
-      "agent\\tool_3.py: hardcoded filename: employees.json",
       "agent\\tool_3.py: hardcoded filename: sales.csv",
-      "agent\\tool_3.py: hardcoded filename: app.log",
       "agent\\tool_3.py: hardcoded column name: category",
-      "agent\\tool_4.py: hardcoded filename: employees.json",
-      "agent\\tool_4.py: hardcoded filename: sales.csv",
-      "agent\\tool_4.py: hardcoded filename: app.log",
       "agent\\tool_4.py: HTTP library hint",
       "agent\\tool_4.py: task-specific hint (exchange rate)",
-      "agent\\tool_5.py: hardcoded filename: employees.json",
-      "agent\\tool_5.py: hardcoded filename: sales.csv",
       "agent\\tool_5.py: hardcoded filename: app.log",
       "agent\\tool_5.py: hardcoded column name: endpoint",
       "agent\\tool_5.py: hardcoded column name: latency_ms",
@@ -114,9 +105,7 @@
       "agent\\tool_6.py: hardcoded column name: latency_ms",
       "agent\\tool_6.py: statistical formula hint (p95/p99)",
       "agent\\tool_6.py: SQLite-specific hint",
-      "agent\\tool_7.py: hardcoded filename: employees.json",
       "agent\\tool_7.py: hardcoded filename: sales.csv",
-      "agent\\tool_7.py: hardcoded filename: app.log",
       "agent\\tool_7.py: hardcoded column name: product_id",
       "agent\\tool_8.py: hardcoded filename: employees.json",
       "agent\\tool_8.py: hardcoded filename: sales.csv",
@@ -131,7 +120,7 @@
       "agent\\tool_9.py: hardcoded column name: order_id"
     ]
   },
-  "r4_score": 7.9,
+  "r4_score": 8.410000000000002,
   "r4_max": 15.0,
-  "total_time_seconds": 185.6
+  "total_time_seconds": 167.6
 }
