@@ -288,3 +288,26 @@ Strict constraints ensure:
 > The goal is to make the behavior predictable.
 
 **Generic reasoning + strict constraints = reliable LLM tools**
+
+## Future Work
+
+Instead of using a single monolithic prompt, the system can be extended to a **modular prompt composition approach**.
+
+Each logical component would be generated independently by the LLM, for example:
+
+- File discovery
+- Grouping / aggregation logic
+- Database access
+- Parsing rules
+- Output formatting
+
+These smaller prompt blocks would then be **combined into a final prompt** dynamically.
+
+### Benefits
+
+- Better control over each responsibility  
+- Easier debugging and iteration  
+- Improved genericity without overcomplicating a single prompt  
+- Reusable building blocks across tasks  
+
+> The goal is to move from one large prompt → to composable prompt modules.
