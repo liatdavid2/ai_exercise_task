@@ -563,10 +563,61 @@ FAILURE → INVALID SOLUTION
         f.write(str(data))
         multiple json.dump calls
     """
+    AUDIT_RULES = """
+    DATA AUDIT TASK (CRITICAL):
 
+    - You MUST analyze ALL data files:
+        - CSV
+        - JSON
+        - LOG
+        - DB
+
+    CHECKS REQUIRED:
+
+    CSV:
+    - duplicate records (e.g. order_id)
+    - missing / empty values
+    - negative values
+    - unexpected values (e.g. unknown currency)
+
+    LOG:
+    - malformed lines
+    - inconsistent formats
+    - multi-line entries
+
+    JSON:
+    - missing fields
+    - inconsistent structure
+
+    DB:
+    - mismatch between raw data and aggregates
+    - missing rows
+    - inconsistent values
+
+    OUTPUT (CRITICAL):
+
+    - You MUST return:
+
+    {
+        "file_name": [
+            {
+                "issue_type": "...",
+                "description": "...",
+                "affected_count": ...,
+                "examples": [...]
+            }
+        ]
+    }
+
+    - You MUST include AT LEAST one issue per file if issues exist
+
+    - Returning empty result is INVALID
+    """
     # Routing
     if "dashboard" in t or "cross-source" in t or "multiple" in t:
         rules_block = FILE_DISCOVERY_RULES + MULTI_SOURCE_RULES
+    elif "audit" in t or "integrity" in t or "quality" in t:
+        rules_block = FILE_DISCOVERY_RULES + AUDIT_RULES
     elif ".db" in t or "sqlite" in t or "database" in t:
         rules_block = DB_RULES
     elif ".log" in t or "log" in t:
