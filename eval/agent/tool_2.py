@@ -4,63 +4,63 @@ import os
 from datetime import datetime
 
 def tool():
-    # Search for CSV files
+    # Step 1: Discover relevant files dynamically by extension
     files = glob.glob('data/**/*.csv', recursive=True) + glob.glob('**/*.csv', recursive=True)
     files = list(set(files))  # Remove duplicates
 
     # Prefer files inside 'data/' if exist
-    preferred_files = [f for f in files if f.startswith('data/')]
-    if preferred_files:
-        files = preferred_files
-
     if not files:
-        # Fallback search
-        known_files = ['sales.csv']
+        # Fallback to known filenames
+        known_files = ['employees.json', 'sales.csv', 'app.log']
+        for known_file in known_files:
+            if os.path.exists(known_file):
+                files.append(known_file)
+
+        # Try os.walk('data/')
         for root, dirs, filenames in os.walk('data/'):
             for filename in filenames:
-                if filename in known_files:
+                if filename.endswith('.csv'):
                     files.append(os.path.join(root, filename))
-        if not files:
-            return "No matching file found"
 
-    # Read the first CSV file found
-    file_path = files[0]
+    if not files:
+        return "No matching file found"
+
+    # Step 2: Inspect the actual schema
+    file_path = files[0]  # Use the first found file
     with open(file_path, mode='r', newline='', encoding='utf-8') as f:
         reader = csv.DictReader(f)
+        headers = reader.fieldnames or []
         rows = list(reader)
 
-        # Get the first 10 rows
-        first_10_rows = rows[:10]
+    # Step 3: Infer relevant fields and gather data
+    total_rows = len(rows)
+    date_range = []
+    
+    for row in rows:
+        # Check for date-like fields
+        date_key = find_key(row, ["date", "order_date", "timestamp", "created_at"]) or "date"
+        if date_key in row and row[date_key]:
+            try:
+                date_value = datetime.fromisoformat(row[date_key])
+                date_range.append(date_value)
+            except ValueError:
+                continue  # Skip invalid date formats
 
-        # Inspect headers
-        headers = reader.fieldnames or []
-        
-        # Determine date range and total rows
-        date_key = find_key(first_10_rows[0], ["date", "order_date", "timestamp", "created_at"])
-        if date_key:
-            dates = []
-            for row in rows:
-                date_str = row.get(date_key, "")
-                try:
-                    date = datetime.fromisoformat(date_str)
-                    dates.append(date)
-                except ValueError:
-                    continue
-            if dates:
-                date_range = (min(dates).strftime('%Y-%m-%d'), max(dates).strftime('%Y-%m-%d'))
-            else:
-                date_range = ("Unknown", "Unknown")
-        else:
-            date_range = ("Unknown", "Unknown")
+    # Step 4: Determine the date range
+    if date_range:
+        min_date = min(date_range)
+        max_date = max(date_range)
+    else:
+        min_date = max_date = None
 
-        total_rows = len(rows)
-
-    return {
-        "first_10_rows": first_10_rows,
+    # Prepare the result
+    result = {
         "columns": headers,
-        "date_range": date_range,
+        "date_range": (min_date.isoformat() if min_date else None, max_date.isoformat() if max_date else None),
         "total_rows": total_rows
     }
+
+    return result
 
 def find_key(d, options):
     for k in d:

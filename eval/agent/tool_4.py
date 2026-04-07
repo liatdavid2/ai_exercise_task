@@ -10,72 +10,85 @@ def find_key(d, options):
                 return k
     return None
 
-def fetch_exchange_rates():
-    url = "https://open.er-api.com/v6/latest/USD"
-    try:
-        with urllib.request.urlopen(url) as response:
-            data = json.load(response)
-            return data.get("rates", {})
-    except Exception as e:
-        return {}
-
 def tool():
-    # Discover CSV files
+    # Step 1: Discover relevant files
     files = glob.glob('data/**/*.csv', recursive=True) + glob.glob('**/*.csv', recursive=True)
     files = list(set(files))  # Remove duplicates
-    files = [f for f in files if 'data/' in f] or files  # Prefer files inside 'data/'
+
+    # Prefer files inside 'data/' if exist
+    if not files:
+        # Fallback to known filenames
+        known_files = ['employees.json', 'sales.csv', 'app.log']
+        for known_file in known_files:
+            if glob.glob(known_file):
+                files.append(known_file)
+
+        # Try os.walk('data/')
+        import os
+        for root, dirs, filenames in os.walk('data/'):
+            for filename in filenames:
+                if filename.endswith('.csv'):
+                    files.append(os.path.join(root, filename))
 
     if not files:
         return "No matching file found"
 
-    # Fetch exchange rates
-    rates = fetch_exchange_rates()
+    # Step 2: Load the first CSV file found
+    with open(files[0], mode='r', newline='', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        rows = list(reader)
+
+    if not rows:
+        return "No valid transactions found"
+
+    # Step 3: Infer relevant fields
+    first_row = rows[0]
+    amount_key = find_key(first_row, ["total", "revenue", "amount", "sales", "value", "price"]) or "amount"
+    currency_key = find_key(first_row, ["currency", "curr", "currency_code", "code"]) or "currency"
+    quantity_key = find_key(first_row, ["quantity", "qty", "count", "units"]) or "quantity"
+    unit_price_key = find_key(first_row, ["unit_price", "price"]) or "unit_price"
+
+    # Step 4: Fetch exchange rates
+    with urllib.request.urlopen("https://open.er-api.com/v6/latest/USD") as response:
+        data = json.load(response)
+        rates = data.get("rates", {})
 
     total_usd = 0.0
 
-    for file in files:
-        with open(file, newline='', encoding='utf-8') as csvfile:
-            reader = csv.DictReader(csvfile)
-            rows = list(reader)
-            if not rows:
-                continue
+    # Step 5: Process the data
+    for row in rows:
+        amount = row.get(amount_key)
+        currency = row.get(currency_key)
 
-            # Detect relevant fields
-            first_row = rows[0]
-            amount_key = find_key(first_row, ["total", "revenue", "amount", "sales", "value", "price", "unit_price"])
-            currency_key = find_key(first_row, ["currency", "curr", "currency_code", "code"])
-            quantity_key = find_key(first_row, ["quantity", "qty", "count", "units"])
-            unit_price_key = find_key(first_row, ["unit_price", "price_per_unit"])
-
-            for row in rows:
+        # Handle amount calculation if necessary
+        if amount is None and quantity_key in row and unit_price_key in row:
+            quantity = row.get(quantity_key)
+            unit_price = row.get(unit_price_key)
+            if quantity and unit_price:
                 try:
-                    amount = float(row.get(amount_key, 0))
-                except ValueError:
-                    amount = 0
+                    amount = float(quantity) * float(unit_price)
+                except (ValueError, TypeError):
+                    amount = None
 
-                if amount == 0 and quantity_key and unit_price_key:
-                    try:
-                        quantity = float(row.get(quantity_key, 0))
-                        unit_price = float(row.get(unit_price_key, 0))
-                        amount = quantity * unit_price
-                    except ValueError:
-                        amount = 0
+        if amount is not None:
+            try:
+                amount = float(amount)
+            except (ValueError, TypeError):
+                continue  # Skip this row if amount is not valid
 
-                if amount > 0:
-                    currency = row.get(currency_key, "USD").upper()
-                    rate = rates.get(currency, 1)
-                    if currency == "USD":
-                        usd_value = amount
-                    elif rate > 0:
-                        usd_value = amount / rate
-                    else:
-                        continue  # Skip rows with invalid currency
+            # Currency conversion logic
+            if currency == "USD":
+                usd_value = amount
+            else:
+                rate = rates.get(currency, 1)  # Default to 1 if rate is missing
+                if rate > 0:
+                    usd_value = amount / rate
+                else:
+                    continue  # Skip this row if rate is invalid
 
-                    total_usd += usd_value
+            total_usd += usd_value
 
-    if total_usd == 0:
-        return "No valid transactions found"
-
+    # Step 6: Return the result
     return {
         "total_revenue_usd": round(total_usd, 2),
         "description": "All transactions converted to USD using live exchange rates"

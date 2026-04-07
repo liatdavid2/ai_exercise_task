@@ -1,8 +1,8 @@
-import csv
-import json
 import glob
+import json
 import os
 from datetime import datetime
+from collections import defaultdict
 from math import sqrt
 
 def find_key(d, options):
@@ -13,121 +13,123 @@ def find_key(d, options):
     return None
 
 def tool():
-    # Step 1: Discover the relevant CSV file
+    # Step 1: File discovery
     files = glob.glob('data/**/*.csv', recursive=True) + glob.glob('**/*.csv', recursive=True)
     files = list(set(files))  # Remove duplicates
-    sales_file = None
 
-    for file in files:
-        if 'sales.csv' in file:
-            sales_file = file
-            break
-
-    if not sales_file:
+    if not files:
+        # Fallback to known filenames
+        known_files = ['employees.json', 'sales.csv', 'app.log']
+        for known_file in known_files:
+            if os.path.exists(known_file):
+                files.append(known_file)
+    
+    if not files:
+        # Fallback to os.walk
+        for root, dirs, filenames in os.walk('data/'):
+            for filename in filenames:
+                if filename.endswith('.csv'):
+                    files.append(os.path.join(root, filename))
+    
+    if not files:
         return "No matching file found"
 
-    # Step 2: Inspect the schema and process the data
-    with open(sales_file, newline='') as csvfile:
-        reader = csv.DictReader(csvfile)
-        rows = list(reader)
+    # Step 2: Inspect schema
+    with open(files[0], 'r') as f:
+        header = f.readline().strip().split(',')
+    
+    # Step 3: Infer relevant fields
+    date_key = find_key(header, ["date"]) or "date"
+    product_id_key = find_key(header, ["product_id"]) or "product_id"
+    product_name_key = find_key(header, ["product_name"]) or "product_name"
+    quantity_key = find_key(header, ["quantity"]) or "quantity"
 
-    if not rows:
-        return "No data found"
+    # Step 4: Process the data
+    data = []
+    for file in files:
+        with open(file, 'r') as f:
+            next(f)  # Skip header
+            for line in f:
+                row = line.strip().split(',')
+                if len(row) < len(header):
+                    continue  # Skip malformed rows
+                data.append({
+                    date_key: row[header.index(date_key)],
+                    product_id_key: row[header.index(product_id_key)],
+                    product_name_key: row[header.index(product_name_key)],
+                    quantity_key: row[header.index(quantity_key)]
+                })
 
-    # Detect relevant fields
-    date_key = find_key(rows[0], ["date"]) or "date"
-    product_id_key = find_key(rows[0], ["product_id"]) or "product_id"
-    product_name_key = find_key(rows[0], ["product_name"]) or "product_name"
-    quantity_key = find_key(rows[0], ["quantity"]) or "quantity"
-
-    # Step 1: Date Filter
-    filtered_rows = []
-    for row in rows:
+    # Step 5: Filter by date
+    filtered_data = []
+    for row in data:
         try:
-            date = datetime.strptime(row[date_key], '%Y-%m-%d')
-            if datetime(2024, 10, 1) <= date <= datetime(2024, 12, 31):
-                row[date_key] = date
-                filtered_rows.append(row)
+            date_value = datetime.strptime(row[date_key], '%Y-%m-%d')
+            if datetime(2024, 10, 1) <= date_value <= datetime(2024, 12, 31):
+                filtered_data.append(row)
         except ValueError:
-            continue
+            continue  # Skip rows with invalid date
 
-    # Step 2: Product Filter
-    product_totals = {}
-    for row in filtered_rows:
-        product_id = row[product_id_key]
+    # Step 6: Compute total quantity per product
+    total_quantity = defaultdict(float)
+    for row in filtered_data:
         try:
-            quantity = float(row[quantity_key])
-        except ValueError:
-            continue
+            quantity_value = float(row[quantity_key])
+            total_quantity[row[product_id_key]] += quantity_value
+        except (ValueError, TypeError):
+            continue  # Skip non-numeric quantities
 
-        if product_id not in product_totals:
-            product_totals[product_id] = 0
-        product_totals[product_id] += quantity
+    # Step 7: Filter products with total_quantity >= 20
+    valid_products = {pid for pid, qty in total_quantity.items() if qty >= 20}
 
-    valid_products = {pid for pid, total in product_totals.items() if total >= 20}
+    # Step 8: Daily aggregation
+    daily_totals = defaultdict(lambda: defaultdict(float))
+    for row in filtered_data:
+        if row[product_id_key] in valid_products:
+            try:
+                quantity_value = float(row[quantity_key])
+                date_value = row[date_key]
+                daily_totals[row[product_id_key]][date_value] += quantity_value
+            except (ValueError, TypeError):
+                continue  # Skip non-numeric quantities
 
-    # Step 3: Daily Aggregation
-    daily_aggregation = {}
-    for row in filtered_rows:
-        product_id = row[product_id_key]
-        if product_id not in valid_products:
-            continue
-
-        date = row[date_key]
-        try:
-            quantity = float(row[quantity_key])
-        except ValueError:
-            continue
-
-        key = (product_id, date)
-        if key not in daily_aggregation:
-            daily_aggregation[key] = 0
-        daily_aggregation[key] += quantity
-
-    # Step 4: Stats Per Product
-    product_stats = {}
-    for (product_id, date), daily_quantity in daily_aggregation.items():
-        if product_id not in product_stats:
-            product_stats[product_id] = []
-        product_stats[product_id].append(daily_quantity)
-
-    product_means = {}
-    product_stds = {}
-    for product_id, quantities in product_stats.items():
-        mean = sum(quantities) / len(quantities)
-        std = sqrt(sum((x - mean) ** 2 for x in quantities) / len(quantities))
-        product_means[product_id] = mean
-        product_stds[product_id] = std
-
-    # Step 5: Anomaly Detection
+    # Step 9: Stats per product
     anomalies = []
-    for (product_id, date), daily_quantity in daily_aggregation.items():
-        mean = product_means[product_id]
-        std = product_stds[product_id]
-        if std == 0:
-            continue
+    for product_id in valid_products:
+        daily_values = list(daily_totals[product_id].values())
+        if len(daily_values) < 2:
+            continue  # Not enough data for stats
 
-        z_score = (daily_quantity - mean) / std
-        if z_score > 3:
-            product_name = next((row[product_name_key] for row in filtered_rows if row[product_id_key] == product_id), "")
-            anomalies.append({
-                "product_id": product_id,
-                "product_name": product_name,
-                "date": date.strftime('%Y-%m-%d'),
-                "daily_quantity": round(daily_quantity, 2),
-                "mean_quantity": round(mean, 2),
-                "std_dev": round(std, 2),
-                "z_score": round(z_score, 2)
-            })
+        mean = sum(daily_values) / len(daily_values)
+        variance = sum((x - mean) ** 2 for x in daily_values) / len(daily_values)
+        std_dev = sqrt(variance)
 
-    # Step 6: Output
-    os.makedirs('output', exist_ok=True)
-    with open('output/anomaly_report.json', 'w') as f:
-        json.dump(anomalies, f, indent=4)
+        if std_dev == 0:
+            continue  # Skip if no variation
 
+        # Step 10: Anomaly detection
+        for date, daily_quantity in daily_totals[product_id].items():
+            z_score = (daily_quantity - mean) / std_dev
+            if z_score > 3:
+                anomalies.append({
+                    "product_id": product_id,
+                    "product_name": next(row[product_name_key] for row in filtered_data if row[product_id_key] == product_id),
+                    "date": date,
+                    "daily_quantity": round(daily_quantity, 2),
+                    "mean_quantity": round(mean, 2),
+                    "std_dev": round(std_dev, 2),
+                    "z_score": round(z_score, 2)
+                })
+
+    # Step 11: Write anomalies to output file
+    output_path = 'output/anomaly_report.json'
+    with open(output_path, 'w') as f:
+        json.dump(anomalies, f)
+
+    # Step 12: Summary
     summary = {
         "total_anomalies": len(anomalies),
-        "affected_products": list(set(anomaly["product_id"] for anomaly in anomalies))
+        "affected_products": list(valid_products)
     }
 
     return summary
