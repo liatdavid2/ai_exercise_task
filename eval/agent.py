@@ -537,6 +537,56 @@ FILE TYPE RULES (CRITICAL)
     Use sqlite3 only
 
 --------------------------------------------------
+SALES + CURRENCY RULES (CRITICAL - MUST FOLLOW)
+--------------------------------------------------
+
+- You MUST use csv.DictReader
+- You MUST access fields by column name ONLY
+- NEVER access columns by index
+
+COLUMN TYPES:
+
+- currency → STRING (USD / EUR / GBP / JPY)
+- quantity → numeric
+- unit_price → numeric
+- total → numeric (preferred)
+
+STRICT:
+
+- NEVER do float(row['currency'])
+- NEVER attempt to convert ALL row values to float
+- NEVER scan values to guess numeric fields
+
+REVENUE LOGIC:
+
+- Prefer:
+    total = float(row['total'])
+
+- If 'total' is missing or invalid:
+    total = quantity * unit_price
+
+CURRENCY CONVERSION:
+
+- Fetch rates from:
+    https://open.er-api.com/v6/latest/USD
+
+- rates structure:
+    rates["USD"] = 1.0
+    rates["EUR"] = float
+    rates["GBP"] = float
+
+- Conversion MUST be:
+
+    usd_value = local_value / rates[currency]
+
+- currency MUST be treated as uppercase string
+
+INVALID:
+
+- float(row['currency'])
+- float(value) for every column
+- guessing columns dynamically
+--------------------------------------------------
 SINGLE LOAD RULE (IMPORTANT)
 --------------------------------------------------
 
@@ -620,6 +670,9 @@ INVALID if:
 - JSON file contains multiple objects
 - Wrong parsing method used (json.load on log/db)
 """
+  
+  
+  
     AUDIT_RULES = """
     DATA AUDIT TASK (CRITICAL):
 
