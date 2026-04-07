@@ -1,4 +1,3 @@
-
 LOG ANALYSIS TASK (CRITICAL):
 
 Log format is mostly:
@@ -33,7 +32,7 @@ STEP 2 — EXTRACT FIELDS (STRICT)
 
     import re
     raw = data.get("latency_ms", "0")
-    m = re.search(r'(\\d+\\.?\\d*)', raw)
+    m = re.search(r'(\d+\.?\d*)', raw)
     latency = float(m.group(1)) if m else 0
 
 --------------------------------------------------
@@ -44,7 +43,7 @@ If endpoint is missing:
 
     import re
 
-    m = re.search(r'/api/\\S+', line)
+    m = re.search(r'/api/\S+', line)
     endpoint = m.group(0) if m else None
 
 If still missing → skip line
@@ -105,4 +104,3 @@ IMPORTANT RULES
 - DO NOT overcomplicate parsing
 - You MUST process many rows (not just a few)
 - Returning empty result is INVALID
-

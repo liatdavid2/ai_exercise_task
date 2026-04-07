@@ -1,0 +1,101 @@
+ANOMALY TASK (CRITICAL):
+
+--------------------------------------------------
+STEP 1 — DATE FILTER
+--------------------------------------------------
+
+- Keep rows where:
+    2024-10-01 <= date <= 2024-12-31
+
+--------------------------------------------------
+STEP 2 — PRODUCT FILTER
+--------------------------------------------------
+
+- Compute total_quantity per product:
+    total_quantity = SUM(quantity across ALL rows)
+
+- Keep ONLY products where:
+    total_quantity >= 20
+
+--------------------------------------------------
+STEP 3 — DAILY AGGREGATION
+--------------------------------------------------
+
+- For each (product_id, date):
+
+    daily_quantity = SUM(quantity)
+
+--------------------------------------------------
+STEP 4 — STATS PER PRODUCT
+--------------------------------------------------
+
+- For EACH product:
+
+    values = list of daily_quantity
+
+    mean = sum(values) / len(values)
+
+    std = sqrt(sum((x - mean)^2) / len(values))
+
+- DO NOT use statistics.stdev
+
+--------------------------------------------------
+STEP 5 — ANOMALY DETECTION
+--------------------------------------------------
+
+- For each (product, date):
+
+    z_score = (daily_quantity - mean) / std
+
+- anomaly if:
+    z_score > 3
+
+- If std == 0 → skip that product
+
+--------------------------------------------------
+STEP 6 — OUTPUT
+--------------------------------------------------
+
+Each anomaly MUST include:
+
+- product_id
+- product_name
+- date (YYYY-MM-DD)
+- daily_quantity
+- mean_quantity
+- std_dev
+- z_score
+
+- Round ONLY at final output (2 decimal places)
+
+--------------------------------------------------
+FILE OUTPUT
+--------------------------------------------------
+
+- Write ALL anomalies to:
+
+    output/anomaly_report.json
+
+- Format:
+    [{...}, {...}]
+
+--------------------------------------------------
+SUMMARY (REQUIRED)
+--------------------------------------------------
+
+Return ALSO:
+
+{
+"total_anomalies": int,
+"affected_products": [product_id list]
+}
+
+--------------------------------------------------
+IMPORTANT RULES
+--------------------------------------------------
+
+- Use SUM(quantity), NOT row count
+- Use daily aggregated values (NOT raw rows)
+- Do NOT round before calculations
+- Do NOT skip valid data
+- Returning only summary → INVALID

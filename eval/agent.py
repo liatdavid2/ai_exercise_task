@@ -1,9 +1,12 @@
 import os
 import json
+import glob
 import traceback
+from typing import TypedDict, Optional, Any, Dict
+
 from dotenv import load_dotenv
 from openai import OpenAI
-from eval.agents import RulesAgent
+from langgraph.graph import StateGraph, END
 
 # ---------------------------
 # ENV
@@ -24,945 +27,318 @@ TOOLS = {}
 
 
 # ---------------------------
-# UTIL: CLEAN CODE
+# STATE
 # ---------------------------
-def clean_code(code: str) -> str:
-    if "```" in code:
-        code = code.split("```")[1]
-    code = code.replace("python", "")
-    return code.strip()
-
-def safe_json(obj):
-    import datetime
-
-    # dict
-    if isinstance(obj, dict):
-        return {str(k): safe_json(v) for k, v in obj.items()}
-
-    # list / tuple
-    if isinstance(obj, (list, tuple)):
-        return [safe_json(v) for v in obj]
-
-    # datetime / date
-    if isinstance(obj, (datetime.datetime, datetime.date)):
-        return obj.isoformat()
-
-    # set
-    if isinstance(obj, set):
-        return list(obj)
-
-    # fallback for anything weird
-    try:
-        json.dumps(obj)
-        return obj
-    except:
-        return str(obj)
-# ---------------------------
-# UTIL: RUN TOOL
-# ---------------------------
-def run_generated_tool(code: str):
-    local_scope = {}
-
-    try:
-        exec(code, local_scope, local_scope)
-    except Exception as e:
-        return None, str(e)
-
-    if "tool" not in local_scope:
-        return None, "tool() not found"
-
-    try:
-        result = local_scope["tool"]()
-        return result, None
-    except Exception as e:
-        return None, str(e)
+class AgentState(TypedDict, total=False):
+    task: str
+    task_type: str
+    rules: str
+    reused_code: Optional[str]
+    code: Optional[str]
+    result: Any
+    error: Optional[str]
+    attempts: int
+    max_attempts: int
+    success: bool
 
 
 # ---------------------------
-# TOOL REUSE (GENERIC)
+# RULES AGENT
 # ---------------------------
-def find_reusable_tool(task: str):
-    return None
+class RulesAgent:
+    def __init__(self, rules_dir: str = "rules"):
+        self.rules_dir = rules_dir
 
-def save_tool_to_file(code: str, index: int):
-    folder = "agent"
+    def load_rule(self, name: str) -> str:
+        path = os.path.join(self.rules_dir, f"{name}.txt")
 
-    os.makedirs(folder, exist_ok=True)
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                return f.read()
 
-    path = os.path.join(folder, f"tool_{index}.py")
+        return self._default_rule(name)
 
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(code)
-
-    print(f"[DEBUG] Saved tool to {path}")
-
-def detect_task_type(task: str):
-    t = task.lower()
-
-    if ".db" in t or "sqlite" in t or "database" in t:
-        return "db"
-    if "anomaly" in t:
-        return "anomaly"
-    if ".csv" in t:
-        return "csv"
-    if ".log" in t:
-        return "log"
-
-    return "generic"
-# ---------------------------
-# GENERATE TOOL
-# ---------------------------
-def generate_tool_code(task: str) -> str:
-    rules_block = ""
-
-    t = task.lower()
-
-    FILE_DISCOVERY_RULES = """
+    def _default_rule(self, name: str) -> str:
+        defaults = {
+            "file": """
 FILE DISCOVERY (CRITICAL):
 
+- You MUST import glob when searching files
 - You MUST search using BOTH:
 
     glob.glob('data/**/*.ext', recursive=True)
     glob.glob('**/*.ext', recursive=True)
 
-- Combine results:
-
-    files = glob.glob('data/**/*.ext', recursive=True) + glob.glob('**/*.ext', recursive=True)
-
+- Combine results
 - Remove duplicates
-
-- Prefer files inside 'data/' if exist
-
+- Prefer files inside 'data/' if they exist
 - NEVER assume only one location
-
-
 
 NO FILE FOUND HANDLING (CRITICAL):
 
 - If no file found:
     - DO NOT immediately return
-
-    - Try fallback:
-
-        1. Try searching for known filenames:
-            employees.json
-            sales.csv
-            app.log
-
-        2. Try os.walk('data/')
-
+    - Try fallback known filenames if task strongly implies them
+    - Try os.walk('data/')
     - ONLY if still nothing:
         return "No matching file found"
 
-
 JSON HANDLING (CRITICAL):
 
-- If JSON file contains list:
+- If JSON contains list:
     iterate over items
 
 - If dict:
     use values()
 
-- You MUST inspect structure:
-
-    data = json.load(f)
-
-    if isinstance(data, list):
-        rows = data
-    elif isinstance(data, dict):
-        rows = list(data.values())
-"""
-
-    CURRENCY_OUTPUT_RULES = """
-    CURRENCY CONVERSION OUTPUT (CRITICAL):
-
-    - You MUST return a result that EXPLICITLY mentions USD conversion
-
-    - The output MUST include at least one of:
-        - "USD"
-        - "converted"
-        - "exchange rate"
-
-    - Preferred formats:
-
-    STRING:
-        "Total revenue in USD: <value>"
-
-    OR DICT:
-        {
-            "total_revenue_usd": <value>,
-            "description": "All transactions converted to USD using live exchange rates"
-        }
-
-    - Returning ONLY a number is INVALID
-"""
-
-    ANOMALY_RULES = """
-    ANOMALY TASK (CRITICAL):
-
-    --------------------------------------------------
-    STEP 1 — DATE FILTER
-    --------------------------------------------------
-
-    - Keep rows where:
-        2024-10-01 <= date <= 2024-12-31
-
-    --------------------------------------------------
-    STEP 2 — PRODUCT FILTER
-    --------------------------------------------------
-
-    - Compute total_quantity per product:
-        total_quantity = SUM(quantity across ALL rows)
-
-    - Keep ONLY products where:
-        total_quantity >= 20
-
-    --------------------------------------------------
-    STEP 3 — DAILY AGGREGATION
-    --------------------------------------------------
-
-    - For each (product_id, date):
-
-        daily_quantity = SUM(quantity)
-
-    --------------------------------------------------
-    STEP 4 — STATS PER PRODUCT
-    --------------------------------------------------
-
-    - For EACH product:
-
-        values = list of daily_quantity
-
-        mean = sum(values) / len(values)
-
-        std = sqrt(sum((x - mean)^2) / len(values))
-
-    - DO NOT use statistics.stdev
-
-    --------------------------------------------------
-    STEP 5 — ANOMALY DETECTION
-    --------------------------------------------------
-
-    - For each (product, date):
-
-        z_score = (daily_quantity - mean) / std
-
-    - anomaly if:
-        z_score > 3
-
-    - If std == 0 → skip that product
-
-    --------------------------------------------------
-    STEP 6 — OUTPUT
-    --------------------------------------------------
-
-    Each anomaly MUST include:
-
-    - product_id
-    - product_name
-    - date (YYYY-MM-DD)
-    - daily_quantity
-    - mean_quantity
-    - std_dev
-    - z_score
-
-    - Round ONLY at final output (2 decimal places)
-
-    --------------------------------------------------
-    FILE OUTPUT
-    --------------------------------------------------
-
-    - Write ALL anomalies to:
-
-        output/anomaly_report.json
-
-    - Format:
-        [{...}, {...}]
-
-    --------------------------------------------------
-    SUMMARY (REQUIRED)
-    --------------------------------------------------
-
-    Return ALSO:
-
-    {
-    "total_anomalies": int,
-    "affected_products": [product_id list]
-    }
-
-    --------------------------------------------------
-    IMPORTANT RULES
-    --------------------------------------------------
-
-    - Use SUM(quantity), NOT row count
-    - Use daily aggregated values (NOT raw rows)
-    - Do NOT round before calculations
-    - Do NOT skip valid data
-    - Returning only summary → INVALID
-    """
-  
-  
-    LOG_RULES = """
-    LOG ANALYSIS TASK (CRITICAL):
-
-    Log format is mostly:
-
-        method=GET endpoint=/api/... status=200 latency_ms=123
-
-    --------------------------------------------------
-    STEP 1 — PARSE (PRIMARY - STRICT)
-    --------------------------------------------------
-
-    You MUST parse using:
-
-        parts = line.strip().split()
-
-        data = {}
-        for p in parts:
-            if '=' in p:
-                k, v = p.split('=', 1)
-                data[k] = v
-
-    --------------------------------------------------
-    STEP 2 — EXTRACT FIELDS (STRICT)
-    --------------------------------------------------
-
-    - Use EXACT keys first:
-
-        method = data.get("method", "GET")
-        endpoint = data.get("endpoint")
-        status = int(data.get("status", 200))
-
-    - For latency:
-
-        import re
-        raw = data.get("latency_ms", "0")
-        m = re.search(r'(\\d+\\.?\\d*)', raw)
-        latency = float(m.group(1)) if m else 0
-
-    --------------------------------------------------
-    STEP 3 — FALLBACK (ONLY IF endpoint missing)
-    --------------------------------------------------
-
-    If endpoint is missing:
-
-        import re
-
-        m = re.search(r'/api/\\S+', line)
-        endpoint = m.group(0) if m else None
-
-    If still missing → skip line
-
-    --------------------------------------------------
-    STEP 4 — GROUPING
-    --------------------------------------------------
-
-    - Group by (method, endpoint)
-
-    - For each group:
-
-        total_requests = count
-        avg_latency = sum(latencies) / count
-        error_rate = count(status >= 400) / total_requests
-
-    - Store ALL latency values
-
-    --------------------------------------------------
-    STEP 5 — P95
-    --------------------------------------------------
-
-    - values = sorted(latencies)
-
-    - index = int(0.95 * (len(values) - 1))
-
-    - p95_latency = values[index]
-
-    --------------------------------------------------
-    STEP 6 — SORT
-    --------------------------------------------------
-
-    - Sort by error_rate DESC
-
-    --------------------------------------------------
-    STEP 7 — OUTPUT
-    --------------------------------------------------
-
-    - Return top 5 groups
-
-    - Each row:
-
-    {
-    "method": "...",
-    "endpoint": "...",
-    "total_requests": int,
-    "avg_latency": float,
-    "error_rate": float,
-    "p95_latency": float
-    }
-
-    --------------------------------------------------
-    IMPORTANT RULES
-    --------------------------------------------------
-
-    - DO NOT skip rows if endpoint exists
-    - DO NOT require flexible field names
-    - DO NOT overcomplicate parsing
-    - You MUST process many rows (not just a few)
-    - Returning empty result is INVALID
-    """
-
-
-    DB_RULES = """
-    DATABASE TASK (CRITICAL):
-
-    - You MUST use sqlite3 (standard library only)
-    - You MUST NOT use pandas
-    - You MUST NOT search for CSV files
-
-    STEP 1 — CONNECT:
-    - Connect using sqlite3.connect(path)
-
-    STEP 2 — DISCOVER SCHEMA:
-    - Run:
-        SELECT name FROM sqlite_master WHERE type='table'
-    - For each table:
-        PRAGMA table_info(table_name)
-
-    - Prefer table named 'requests' if exists
-    - Otherwise choose table with most rows
-
-    STEP 3 — LOAD DATA:
-    - You MUST load ALL rows into Python
-    - Example:
-        SELECT * FROM table
-
-    STEP 4 — DETECT COLUMNS (CRITICAL):
-
-    You MUST detect columns using BOTH name and values:
-
-    - endpoint column:
-        name contains: endpoint, path, route, uri
-        OR values contain '/'
-
-    - status column:
-        name contains: status, status_code, code
-        values are integers between 100–599
-
-    - latency column:
-        name contains: latency, response_time, duration, ms
-        values are numeric
-
-    - If detection fails:
-        fallback to:
-            endpoint → endpoint
-            status → status_code
-            latency → latency_ms
-
-    STEP 5 — GROUPING:
-    - When grouping:
-        - You MUST append latency values per endpoint
-        - Skip endpoints with empty latency list
-    - You MUST group by endpoint
-
-    For EACH endpoint:
-        - total_requests = count
-        - error_rate = count(status >= 400) / total_requests
-
-        - Compute p99:
-            values = sorted(latencies)
-            index = int(0.99 * (len(values) - 1))
-            p99_latency = values[index]
-
-    STEP 6 — SORT + FILTER:
-
-    - Sort by p99_latency DESC
-    - Return TOP 10 endpoints
-
-    STEP 7 — OUTPUT FORMAT (CRITICAL):
-
-    - Output MUST be a list of dicts
-
-    - Each row MUST include:
-        - endpoint
-        - total_requests
-        - error_rate
-        - p99_latency
-
-    - Returning [] is INVALID
-"""
- 
- 
-    MULTI_SOURCE_RULES = """
+- Inspect structure before processing
+""",
+            "multi": """
 MULTI-SOURCE DASHBOARD TASK (CRITICAL):
 
-This task combines MULTIPLE data sources:
+This task combines MULTIPLE data sources.
 
-- sales.csv
-- inventory.json
-- employees.json
-- app.log
-- metrics.db
+FILE TYPE RULES:
+- JSON -> use json.load only
+- LOG -> parse line by line
+- DB -> use sqlite3 only
 
---------------------------------------------------
-FILE DISCOVERY (STRICT)
---------------------------------------------------
-
-- You MUST find files using glob
-- You MUST EXCLUDE:
-
-    output/
-    agent/
-    __pycache__/
-    .git/
-    venv/
-    .venv/
-
-- Prefer files under data/
-
-- You MUST match files by name:
-
-    "sales" → CSV
-    "inventory" → JSON
-    "employees" → JSON
-    "app" → LOG
-    "metrics" → DB
-
---------------------------------------------------
-FILE TYPE RULES (CRITICAL)
---------------------------------------------------
-
-- JSON:
-    ONLY use json.load for .json files
-
-- LOG:
-    NEVER use json.load
-    Parse line by line
-
-- DB:
-    NEVER use json.load
-    Use sqlite3 only
-
---------------------------------------------------
-SALES + CURRENCY RULES (CRITICAL - MUST FOLLOW)
---------------------------------------------------
-
-- You MUST use csv.DictReader
-- You MUST access fields by column name ONLY
-- NEVER access columns by index
-
-COLUMN TYPES:
-
-- currency → STRING (USD / EUR / GBP / JPY)
-- quantity → numeric
-- unit_price → numeric
-- total → numeric (preferred)
-
-STRICT:
-
-- NEVER do float(row['currency'])
-- NEVER attempt to convert ALL row values to float
-- NEVER scan values to guess numeric fields
-
-REVENUE LOGIC:
-
-- Prefer:
-    total = float(row['total'])
-
-- If 'total' is missing or invalid:
-    total = quantity * unit_price
-
-CURRENCY CONVERSION:
-
-- Fetch rates from:
-    https://open.er-api.com/v6/latest/USD
-
-- rates structure:
-    rates["USD"] = 1.0
-    rates["EUR"] = float
-    rates["GBP"] = float
-
-- Conversion MUST be:
-
-    usd_value = local_value / rates[currency]
-
-- currency MUST be treated as uppercase string
-
-INVALID:
-
-- float(row['currency'])
-- float(value) for every column
-- guessing columns dynamically
---------------------------------------------------
-SINGLE LOAD RULE (IMPORTANT)
---------------------------------------------------
-
+SINGLE LOAD RULE:
 - Each file MUST be loaded ONCE
-- Store results in memory
-- Reuse data (DO NOT reload multiple times)
+- Store in memory and reuse
 
---------------------------------------------------
-DATA INTEGRATION (STRICT)
---------------------------------------------------
+DATA INTEGRATION:
+You MUST compute all requested sections from all relevant sources.
 
-You MUST compute ALL sections:
-
-1. top_products_by_revenue
-   - Use sales.csv
-   - Convert to USD using live rates
-   - Use:
-        usd = float(total) / rate
-
-2. understocked_products
-   - inventory.json + sales.csv
-   - condition:
-        stock < reorder_point
-        AND total_sales_count > 15
-
-3. endpoint_health
-   - combine:
-        app.log + metrics.db
-
-   - MUST include BOTH:
-        log_* metrics
-        db_* metrics
-
-4. department_summary
-   - employees.json
-   - compute:
-        headcount
-        avg_salary
-        total_salary
-
-5. daily_revenue_trend
-   - sales.csv grouped by date
-   - converted to USD
-
---------------------------------------------------
-OUTPUT FILE (CRITICAL)
---------------------------------------------------
-
-- You MUST write EXACTLY ONE JSON object:
-
+OUTPUT FILE:
+- Write EXACTLY ONE JSON object to:
     output/executive_dashboard.json
 
-- Use:
-
-    with open(path, 'w') as f:
-        json.dump(data, f)
-
-- DO NOT:
-    - write multiple JSON objects
-    - append
-    - write strings
-
---------------------------------------------------
-RETURN VALUE (IMPORTANT)
---------------------------------------------------
-
+RETURN VALUE:
 - Return a SHORT TEXT summary only
-- NOT the full JSON
+""",
+            "audit": """
+DATA AUDIT TASK (CRITICAL):
 
-Example:
-"Dashboard created with 5 sections and written to output/executive_dashboard.json"
+You MUST analyze all relevant data sources.
 
---------------------------------------------------
-FAIL CONDITIONS
---------------------------------------------------
+CSV CHECKS:
+- duplicate records
+- missing / empty values
+- invalid numeric values
+- unexpected categorical values
 
-INVALID if:
+LOG CHECKS:
+- malformed lines
+- missing fields
+- invalid latency
+- inconsistent format
 
-- Any key is missing
-- Any section is empty when data exists
-- JSON file contains multiple objects
-- Wrong parsing method used (json.load on log/db)
-"""
-  
-  
-  
-    AUDIT_RULES = """
-    DATA AUDIT TASK (CRITICAL):
+JSON CHECKS:
+- missing fields
+- invalid negative values
 
-    You MUST analyze ALL data sources:
-    - CSV
-    - JSON
-    - LOG
-    - DB
+DB CHECKS:
+- validate aggregates against raw data when possible
+- verify error counts correctly include all relevant statuses
 
-    --------------------------------------------------
-    CSV CHECKS (STRICT - MUST IMPLEMENT ALL)
-    --------------------------------------------------
+OUTPUT FORMAT:
+Return structured issues grouped by file.
+""",
+            "db": """
+DATABASE TASK (CRITICAL):
 
-    You MUST detect:
+- Use sqlite3 only
+- Do NOT use pandas
+- Do NOT search for CSV files
 
-    1. DUPLICATE RECORDS:
-    - Detect duplicate order_id
-    - Count duplicates (excluding first occurrence)
+STEP 1:
+- Connect with sqlite3.connect(path)
 
-    2. MISSING / EMPTY VALUES:
-    - Fields with "" or None
-    - Especially:
-        - total
-        - quantity
-        - currency
+STEP 2:
+- Discover tables:
+    SELECT name FROM sqlite_master WHERE type='table'
 
-    3. INVALID NUMERIC VALUES:
-    - quantity < 0  (returns / negative sales)
-    - total == "" or not numeric
+STEP 3:
+- Inspect schema with:
+    PRAGMA table_info(table_name)
 
-    4. UNKNOWN / UNEXPECTED VALUES:
-    - currencies NOT in:
-        USD, EUR, GBP, JPY
-    - Example: CHF → MUST be flagged
+STEP 4:
+- Load all rows into Python
 
-    --------------------------------------------------
-    LOG CHECKS (STRICT)
-    --------------------------------------------------
+STEP 5:
+- Detect useful columns dynamically using names + values
 
-    You MUST detect:
+STEP 6:
+- Return structured non-empty output when data exists
+""",
+            "log": """
+LOG ANALYSIS TASK (CRITICAL):
 
-    1. MALFORMED LINES:
-    - Lines that do NOT contain key=value pairs
+Primary format is key=value pairs.
 
-    2. MULTI-LINE ENTRIES:
-    - Stack traces spanning multiple lines
+PARSING:
+- Split line into parts
+- Parse only parts containing '='
 
-    3. INCONSISTENT FORMATS:
-    - Lines missing method/endpoint/status
+FIELDS:
+- Prefer exact keys:
+    method, endpoint, status, latency_ms
 
-    4. INVALID LATENCY:
-    - latency not numeric
+FALLBACK:
+- If endpoint missing, try regex from raw line
 
-    --------------------------------------------------
-    JSON CHECKS (STRICT)
-    --------------------------------------------------
+GROUPING:
+- Group by (method, endpoint)
 
-    You MUST detect:
+METRICS:
+- total_requests
+- avg_latency
+- error_rate
+- percentile if requested
 
-    1. MISSING FIELDS:
-    - e.g. product_id, stock, reorder_point
+IMPORTANT:
+- Returning empty result when valid lines exist is INVALID
+""",
+            "anomaly": """
+ANOMALY TASK (CRITICAL):
 
-    2. INVALID VALUES:
-    - negative stock
-    - reorder_point missing or invalid
+STEP 1:
+- Filter dates if task requires range
 
-    --------------------------------------------------
-    DB CHECKS (CRITICAL - MUST IMPLEMENT)
-    --------------------------------------------------
+STEP 2:
+- Aggregate daily quantities per entity if task requires time anomaly detection
 
-    You MUST verify data integrity:
+STEP 3:
+- Compute mean and std manually
+- Do NOT use statistics.stdev
 
-    1. RAW vs AGGREGATE MISMATCH:
+STEP 4:
+- z_score = (value - mean) / std
+- Skip groups with std == 0
 
-    - If DB contains:
-            raw request table AND aggregated metrics
+STEP 5:
+- Write structured anomaly output if task requests file output
 
-    - You MUST:
-            compute metrics manually from raw data
-            compare with stored aggregates
+IMPORTANT:
+- Use aggregated values, not raw row count
+- Do NOT round before final output
+""",
+            "currency": """
+CURRENCY CONVERSION OUTPUT (CRITICAL):
 
-    2. ERROR COUNT VALIDATION:
+- Output MUST explicitly mention USD conversion
 
-    - Check if 4xx errors include ALL values:
-            400–499
+PREFERRED:
+- "Total revenue in USD: <value>"
+OR
+- {
+    "total_revenue_usd": <value>,
+    "description": "All transactions converted to USD using live exchange rates"
+  }
 
-    - Specifically verify:
-            499 errors are NOT missing
+IMPORTANT:
+- Returning ONLY a number is INVALID
+""",
+            "generic": """
+GENERIC TASK RULES:
 
-    - If mismatch → MUST report
-
-    --------------------------------------------------
-    OUTPUT FORMAT (STRICT)
-    --------------------------------------------------
-
-    Return:
-
-    {
-        "file_name": [
-            {
-                "issue_type": "...",
-                "description": "...",
-                "affected_count": int,
-                "examples": [...]
-            }
-        ]
-    }
-
-    --------------------------------------------------
-    IMPORTANT RULES
-    --------------------------------------------------
-
-    - You MUST report at least one issue per file IF issues exist
-    - Returning empty result is INVALID
-    - Do NOT skip files
-    - Do NOT summarize only → must return structured issues
-    """
-    # Routing
-    if "dashboard" in t or "cross-source" in t or "multiple" in t:
-        rules_block = FILE_DISCOVERY_RULES + MULTI_SOURCE_RULES
-    elif "audit" in t or "integrity" in t or "quality" in t:
-        rules_block = FILE_DISCOVERY_RULES + AUDIT_RULES
-    elif ".db" in t or "sqlite" in t or "database" in t:
-        rules_block = DB_RULES
-    elif ".log" in t or "log" in t:
-        rules_block = FILE_DISCOVERY_RULES + LOG_RULES
-    elif "anomaly" in t:
-        rules_block = FILE_DISCOVERY_RULES + ANOMALY_RULES
-    elif "exchange" in t or "currency" in t or "usd" in t:
-        rules_block = FILE_DISCOVERY_RULES + CURRENCY_OUTPUT_RULES
-    else:
-        rules_block = FILE_DISCOVERY_RULES
-
-    prompt = f"""
-You are a Python expert.
-
-Write a function:
-
-def tool():
-
-That solves the task.
-
-IMPORTANT PRACTICAL RULES:
-
-- For CSV:
-    - Prefer numeric columns representing aggregated values (e.g. totals)
-    - If 'total' exists → use it for revenue
-    - If 'category' exists → group by it
-    - If 'date' exists → parse and filter by date
-
-- NEVER return empty result unless dataset is empty
-
-If task involves currency conversion:
-- You MUST:
-    usd_value = float(total) / rates[currency]
-- Always:
-    total_usd += usd_value
-- Do NOT skip rows
-- Do NOT return 0 unless file is empty
-
-{rules_block}
-
-STRICT RULES:
 - Use only Python standard library
-- You MUST import glob when searching files
-
-GENERICITY (CRITICAL):
-
-- You MUST detect fields dynamically
-
-- BUT:
-    If exact fields exist → USE THEM
-
-- Use this helper:
-
-    def find_key(d, options):
-        for k in d:
-            for opt in options:
-                if opt in k.lower():
-                    return k
-        return None
-
-- Example:
-    department_key = find_key(row, ["department"]) or "department"
-    salary_key = find_key(row, ["salary", "income"]) or "salary"
-
-- DO NOT ignore valid fields that already exist
-
-- If dynamic detection fails → fallback to common names
-
-- Returning empty result when data exists → INVALID
-
-
-EMPTY RESULT PROTECTION (CRITICAL):
-
-- If dataset is NOT empty:
-    - You MUST return non-empty result
-
-- If all rows skipped → your logic is WRONG
-
-- You MUST process at least one row
-
-
-COMMON FIELD FALLBACKS:
-
-JSON:
-- department
-- salary
-- name
-
-CSV:
-- date
-- total
-- category
-- quantity
-
-- If these exist → USE THEM
-
-
-IMPORTANT OUTPUT REQUIREMENT:
-
-- When grouping:
-    - Return ALL groups (not just max)
-    - Also return filtered subset (e.g. December)
-
-SAFE HANDLING:
-
-- When accessing rates:
-    rate = rates.get(currency)
-
-- If rate is missing:
-    - Assume value is already in USD (rate = 1)
-    - DO NOT crash
-
-Task:
-{task}
+- Detect fields dynamically
+- Prefer exact field names if they exist
+- Return structured non-empty output when data exists
 """
+        }
+        return defaults.get(name, "")
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0
-    )
+    def detect_task_type(self, task: str) -> str:
+        t = task.lower()
 
-    return response.choices[0].message.content
+        if ".db" in t or "sqlite" in t or "database" in t:
+            return "db"
+        if "dashboard" in t or "cross-source" in t or "multiple" in t:
+            return "multi"
+        if "audit" in t or "integrity" in t or "quality" in t:
+            return "audit"
+        if "anomaly" in t:
+            return "anomaly"
+        if ".log" in t or " log" in t or t.startswith("log"):
+            return "log"
+        if "exchange" in t or "currency" in t or "usd" in t:
+            return "currency"
+        if ".csv" in t:
+            return "csv"
+
+        return "generic"
+
+    def detect_rule_names(self, task: str):
+        task_type = self.detect_task_type(task)
+
+        if task_type == "db":
+            return ["db"]
+
+        names = ["file"]
+
+        if task_type == "multi":
+            names.append("multi")
+        elif task_type == "audit":
+            names.append("audit")
+        elif task_type == "log":
+            names.append("log")
+        elif task_type == "anomaly":
+            names.append("anomaly")
+        elif task_type == "currency":
+            names.append("currency")
+        else:
+            names.append("generic")
+
+        return names
+
+    def get_rules(self, task: str) -> str:
+        rule_names = self.detect_rule_names(task)
+        return "\n".join(self.load_rule(name) for name in rule_names)
 
 
 # ---------------------------
-# FIX CODE (RETRY)
+# UTIL: CLEAN CODE
 # ---------------------------
-def fix_code(task: str, code: str, error: str) -> str:
-    prompt = f"""
-You are a Python expert.
+def clean_code(code: str) -> str:
+    code = code.strip()
 
-The following code failed.
+    if code.startswith("```"):
+        parts = code.split("```")
+        if len(parts) >= 2:
+            code = parts[1].strip()
 
-Task:
-{task}
+    if code.startswith("python"):
+        code = code[len("python"):].strip()
 
-Error:
-{error}
-
-Code:
-{code}
-
-Fix the code.
-
-Return ONLY corrected Python code.
-"""
-
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0
-    )
-
-    return response.choices[0].message.content
+    return code.strip()
 
 
-# ---------------------------
-# NORMALIZE OUTPUT (GENERIC)
-# ---------------------------
+def safe_json(obj):
+    import datetime
+
+    if isinstance(obj, dict):
+        return {str(k): safe_json(v) for k, v in obj.items()}
+
+    if isinstance(obj, (list, tuple)):
+        return [safe_json(v) for v in obj]
+
+    if isinstance(obj, (datetime.datetime, datetime.date)):
+        return obj.isoformat()
+
+    if isinstance(obj, set):
+        return list(obj)
+
+    try:
+        json.dumps(obj)
+        return obj
+    except Exception:
+        return str(obj)
+
+
 def normalize_output(result):
-    # ensure JSON-safe + structured
     if isinstance(result, (int, float)):
         return {"value": round(result, 2)}
 
@@ -973,61 +349,377 @@ def normalize_output(result):
 
 
 # ---------------------------
-# MAIN SOLVER
+# AGENTS
 # ---------------------------
-def solve_task(task: str) -> str:
-    print("\n==============================")
-    print("[DEBUG] TASK:", task)
-    print("==============================")
+class ReuseAgent:
+    def find_reusable_tool(self, task: str) -> Optional[str]:
+        return None
 
-    max_attempts = 5
-    code = None
-    error = None
 
-    for attempt in range(max_attempts):
-        print(f"[DEBUG] Attempt {attempt + 1}")
+class ToolGenerationAgent:
+    def __init__(self, client: OpenAI):
+        self.client = client
+
+    def generate_tool_code(self, task: str, rules: str) -> str:
+        prompt = f"""
+You are a Python expert.
+
+Write a function:
+
+def tool():
+
+That solves the task.
+
+{rules}
+
+STRICT RULES:
+- Use only Python standard library
+- Return ONLY raw Python code
+- Do NOT wrap code with markdown fences
+- Do NOT print -> return result
+- NEVER return empty result unless dataset is truly empty
+
+GENERICITY (CRITICAL):
+- Detect fields dynamically
+- BUT if exact fields exist -> USE THEM
+
+Use this helper pattern when needed:
+
+def find_key(d, options):
+    for k in d:
+        for opt in options:
+            if opt in k.lower():
+                return k
+    return None
+
+SAFE HANDLING:
+- Handle missing values
+- Handle empty strings
+- Handle missing keys safely
+- If rate is missing in currency conversion:
+    assume 1
+
+OUTPUT RULES:
+- Return structured result
+- If task requests a file output, write it exactly as requested and also return a short summary
+
+Task:
+{task}
+"""
+        response = self.client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0
+        )
+        return response.choices[0].message.content
+
+
+class FixAgent:
+    def __init__(self, client: OpenAI):
+        self.client = client
+
+    def fix_code(self, task: str, rules: str, code: str, error: str) -> str:
+        prompt = f"""
+You are a Python expert.
+
+The following generated code failed.
+
+Task:
+{task}
+
+Rules:
+{rules}
+
+Error:
+{error}
+
+Code:
+{code}
+
+Fix the code.
+
+STRICT:
+- Return ONLY corrected Python code
+- Keep the solution generic
+- Use only Python standard library
+- Preserve required output format
+"""
+        response = self.client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0
+        )
+        return response.choices[0].message.content
+
+
+class ExecutionAgent:
+    def run_generated_tool(self, code: str):
+        local_scope: Dict[str, Any] = {}
 
         try:
-            if attempt == 0:
-                reused = find_reusable_tool(task)
-
-                if reused:
-                    print("[DEBUG] Reusing existing tool")
-                    code = reused
-                else:
-                    print("[DEBUG] Generating new tool")
-                    code = generate_tool_code(task)
-            else:
-                print("[DEBUG] Fixing code")
-                code = fix_code(task, code, error)
-
+            exec(code, local_scope, local_scope)
         except Exception as e:
-            error = str(e)
-            continue
+            return None, f"exec error: {e}"
 
-        if not code:
-            error = "Empty code"
-            continue
+        if "tool" not in local_scope:
+            return None, "tool() not found"
 
-        code = clean_code(code)
+        try:
+            result = local_scope["tool"]()
+            return result, None
+        except Exception as e:
+            return None, f"runtime error: {e}"
 
+
+class StorageAgent:
+    def save_tool_to_file(self, code: str, index: int):
+        folder = "agent"
+        os.makedirs(folder, exist_ok=True)
+
+        path = os.path.join(folder, f"tool_{index}.py")
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(code)
+
+        print(f"[DEBUG] Saved tool to {path}")
+
+
+# ---------------------------
+# ORCHESTRATOR WITH LANGGRAPH
+# ---------------------------
+class AgentOrchestrator:
+    def __init__(self):
+        self.rules_agent = RulesAgent()
+        self.reuse_agent = ReuseAgent()
+        self.tool_generation_agent = ToolGenerationAgent(client)
+        self.fix_agent = FixAgent(client)
+        self.execution_agent = ExecutionAgent()
+        self.storage_agent = StorageAgent()
+        self.graph = self._build_graph()
+
+    def _build_graph(self):
+        graph = StateGraph(AgentState)
+
+        graph.add_node("prepare", self.prepare_node)
+        graph.add_node("reuse", self.reuse_node)
+        graph.add_node("generate", self.generate_node)
+        graph.add_node("fix", self.fix_node)
+        graph.add_node("execute", self.execute_node)
+        graph.add_node("store", self.store_node)
+
+        graph.set_entry_point("prepare")
+
+        graph.add_edge("prepare", "reuse")
+
+        graph.add_conditional_edges(
+            "reuse",
+            self.after_reuse_router,
+            {
+                "execute": "execute",
+                "generate": "generate",
+            },
+        )
+
+        graph.add_edge("generate", "execute")
+        graph.add_edge("fix", "execute")
+
+        graph.add_conditional_edges(
+            "execute",
+            self.after_execute_router,
+            {
+                "store": "store",
+                "fix": "fix",
+                "end": END,
+            },
+        )
+
+        graph.add_edge("store", END)
+
+        return graph.compile()
+
+    def prepare_node(self, state: AgentState) -> AgentState:
+        task = state["task"]
+        task_type = self.rules_agent.detect_task_type(task)
+        rules = self.rules_agent.get_rules(task)
+
+        print("\n==============================")
+        print("[DEBUG] TASK:", task)
+        print("==============================")
+        print("[DEBUG] Task type:", task_type)
+
+        return {
+            **state,
+            "task_type": task_type,
+            "rules": rules,
+            "attempts": 0,
+            "max_attempts": 2,
+            "success": False,
+            "error": None,
+        }
+
+    def reuse_node(self, state: AgentState) -> AgentState:
+        reused_code = self.reuse_agent.find_reusable_tool(state["task"])
+
+        if reused_code:
+            print("[DEBUG] Reusing existing tool")
+            return {**state, "reused_code": clean_code(reused_code), "code": clean_code(reused_code)}
+
+        print("[DEBUG] No reusable tool found")
+        return {**state, "reused_code": None}
+
+    def generate_node(self, state: AgentState) -> AgentState:
+        print("[DEBUG] Generating new tool")
+        code = self.tool_generation_agent.generate_tool_code(
+            task=state["task"],
+            rules=state["rules"],
+        )
+        return {**state, "code": clean_code(code)}
+
+    def fix_node(self, state: AgentState) -> AgentState:
+        print("[DEBUG] Fixing code")
+        fixed_code = self.fix_agent.fix_code(
+            task=state["task"],
+            rules=state["rules"],
+            code=state["code"] or "",
+            error=state["error"] or "Unknown error",
+        )
+        return {
+            **state,
+            "attempts": state.get("attempts", 0) + 1,
+            "code": clean_code(fixed_code),
+        }
+
+    def execute_node(self, state: AgentState) -> AgentState:
         print("[DEBUG] Running tool...")
-        result, error = run_generated_tool(code)
+        result, error = self.execution_agent.run_generated_tool(state["code"] or "")
 
         if error is None:
             print("[DEBUG] Success")
-
-            # save tool for reuse
-            tool_name = f"tool_{len(TOOLS)}"
-            TOOLS[tool_name] = code
-            save_tool_to_file(code, len(TOOLS))
-
-            return json.dumps(safe_json(result))
+            return {
+                **state,
+                "result": result,
+                "error": None,
+                "success": True,
+            }
 
         print("[DEBUG] Error:", error)
-        print("[DEBUG] Retrying...")
+        return {
+            **state,
+            "result": None,
+            "error": error,
+            "success": False,
+        }
 
-    return json.dumps({
-        "error": "Failed after retries",
-        "last_error": error
-    })
+    def store_node(self, state: AgentState) -> AgentState:
+        code = state.get("code") or ""
+        tool_name = f"tool_{len(TOOLS)}"
+        TOOLS[tool_name] = code
+        self.storage_agent.save_tool_to_file(code, len(TOOLS))
+        return state
+
+    def after_reuse_router(self, state: AgentState) -> str:
+        if state.get("reused_code"):
+            return "execute"
+        return "generate"
+
+    def after_execute_router(self, state: AgentState) -> str:
+        if state.get("success"):
+            return "store"
+
+        attempts = state.get("attempts", 0)
+        max_attempts = state.get("max_attempts", 2)
+
+        if attempts < max_attempts - 1:
+            print("[DEBUG] Retrying...")
+            return "fix"
+
+        return "end"
+
+    def solve_task(self, task: str) -> str:
+        final_state = self.graph.invoke({"task": task})
+
+        if final_state.get("success"):
+            normalized = normalize_output(final_state.get("result"))
+            return json.dumps(safe_json(normalized), ensure_ascii=False, indent=2)
+
+        return json.dumps(
+            {
+                "error": "Failed after retries",
+                "last_error": final_state.get("error"),
+            },
+            ensure_ascii=False,
+            indent=2
+        )
+
+
+# ---------------------------
+# BACKWARD COMPATIBILITY
+# ---------------------------
+_orchestrator = AgentOrchestrator()
+
+
+def detect_task_type(task: str):
+    return _orchestrator.rules_agent.detect_task_type(task)
+
+
+def generate_tool_code(task: str) -> str:
+    rules = _orchestrator.rules_agent.get_rules(task)
+    return _orchestrator.tool_generation_agent.generate_tool_code(task, rules)
+
+
+def fix_code(task: str, code: str, error: str) -> str:
+    rules = _orchestrator.rules_agent.get_rules(task)
+    return _orchestrator.fix_agent.fix_code(task, rules, code, error)
+
+
+def run_generated_tool(code: str):
+    return _orchestrator.execution_agent.run_generated_tool(code)
+
+
+def save_tool_to_file(code: str, index: int):
+    return _orchestrator.storage_agent.save_tool_to_file(code, index)
+
+
+def find_reusable_tool(task: str):
+    return _orchestrator.reuse_agent.find_reusable_tool(task)
+
+
+def solve_task(task: str) -> str:
+    return _orchestrator.solve_task(task)
+
+
+# ---------------------------
+# DIRECT RUN
+# ---------------------------
+if __name__ == "__main__":
+    os.makedirs("agent", exist_ok=True)
+    os.makedirs("output", exist_ok=True)
+
+    print("AI Agent Runner")
+    print("Type your task and press Enter.")
+    print("To exit, type: exit")
+    print()
+
+    while True:
+        try:
+            task = input("Task> ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\nExiting.")
+            break
+
+        if not task:
+            continue
+
+        if task.lower() in {"exit", "quit"}:
+            print("Exiting.")
+            break
+
+        try:
+            result = solve_task(task)
+            print("\nRESULT:")
+            print(result)
+            print()
+        except Exception as e:
+            print("\nERROR:")
+            print(str(e))
+            print(traceback.format_exc())
+            print()

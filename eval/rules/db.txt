@@ -74,4 +74,3 @@ STEP 7 — OUTPUT FORMAT (CRITICAL):
     - p99_latency
 
 - Returning [] is INVALID
-

@@ -1,3 +1,4 @@
 /.venv
 /eval/__pycache__
 .env
+/eval/agents/__pycache__

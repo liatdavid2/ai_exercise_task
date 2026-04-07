@@ -1,89 +1,67 @@
-import glob
-import os
-import re
-from collections import defaultdict
-
 def tool():
-    # Step 1: Discover files
-    files = glob.glob('data/**/*.log', recursive=True) + glob.glob('**/*.log', recursive=True)
-    files = list(set(files))  # Remove duplicates
+    import sqlite3
 
-    # Prefer files inside 'data/' if exist
-    if not files:
-        # Fallback to known filenames
-        known_files = ['employees.json', 'sales.csv', 'app.log']
-        for known_file in known_files:
-            if os.path.exists(known_file):
-                files.append(known_file)
+    # Step 1: Connect to the SQLite database
+    conn = sqlite3.connect('data/metrics.db')
+    cursor = conn.cursor()
 
-        # Try os.walk('data/')
-        for root, _, filenames in os.walk('data/'):
-            for filename in filenames:
-                if filename.endswith('.log'):
-                    files.append(os.path.join(root, filename))
+    # Step 2: Discover tables
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    tables = cursor.fetchall()
 
-    if not files:
-        return "No matching file found"
+    # Step 3: Inspect schema for the 'requests' table
+    requests_table = 'requests'
+    if (requests_table,) in tables:
+        cursor.execute(f"PRAGMA table_info({requests_table})")
+        columns = cursor.fetchall()
+        column_names = [col[1] for col in columns]
 
-    # Step 2: Initialize data structures
-    log_data = defaultdict(list)
+        # Step 4: Load all rows into Python
+        cursor.execute(f"SELECT * FROM {requests_table}")
+        rows = cursor.fetchall()
 
-    # Step 3: Read and parse the log file
-    for file in files:
-        if not file.endswith('.log'):
-            continue
-        with open(file, 'r') as f:
-            for line in f:
-                parts = line.strip().split()
-                data = {}
-                for p in parts:
-                    if '=' in p:
-                        k, v = p.split('=', 1)
-                        data[k] = v
+        # Step 5: Detect useful columns dynamically
+        p99_key = find_key(column_names, ['p99'])
+        status_code_key = find_key(column_names, ['status_code'])
+        endpoint_key = find_key(column_names, ['endpoint'])
+        
+        if p99_key and status_code_key and endpoint_key:
+            # Prepare to calculate total request count and error rate
+            endpoint_stats = {}
+            for row in rows:
+                endpoint = row[column_names.index(endpoint_key)]
+                p99_latency = row[column_names.index(p99_key)]
+                status_code = row[column_names.index(status_code_key)]
 
-                # Extract fields
-                method = data.get("method", "GET")
-                endpoint = data.get("endpoint")
-                status = int(data.get("status", 200))
-                raw_latency = data.get("latency_ms", "0")
-                m = re.search(r'(\d+\.?\d*)', raw_latency)
-                latency = float(m.group(1)) if m else 0
+                if endpoint not in endpoint_stats:
+                    endpoint_stats[endpoint] = {
+                        'total_requests': 0,
+                        'error_count': 0,
+                        'p99_latency': 0
+                    }
 
-                # Fallback for missing endpoint
-                if not endpoint:
-                    m = re.search(r'/api/\S+', line)
-                    endpoint = m.group(0) if m else None
+                endpoint_stats[endpoint]['total_requests'] += 1
+                endpoint_stats[endpoint]['p99_latency'] += p99_latency
+                if status_code >= 400:
+                    endpoint_stats[endpoint]['error_count'] += 1
 
-                if endpoint:
-                    log_data[(method, endpoint)].append((status, latency))
+            # Calculate average p99 latency and error rate
+            results = []
+            for endpoint, stats in endpoint_stats.items():
+                avg_p99_latency = stats['p99_latency'] / stats['total_requests']
+                error_rate = stats['error_count'] / stats['total_requests'] if stats['total_requests'] > 0 else 0
+                results.append((endpoint, avg_p99_latency, stats['total_requests'], error_rate))
 
-    # Step 4: Compute metrics
-    results = []
-    for (method, endpoint), entries in log_data.items():
-        total_requests = len(entries)
-        latencies = [latency for _, latency in entries]
-        avg_latency = sum(latencies) / total_requests if total_requests > 0 else 0
-        error_count = sum(1 for status, _ in entries if status >= 400)
-        error_rate = (error_count / total_requests) * 100 if total_requests > 0 else 0
-        p95_latency = sorted(latencies)[int(0.95 * (len(latencies) - 1))] if latencies else 0
+            # Step 6: Return structured non-empty output when data exists
+            results.sort(key=lambda x: x[1], reverse=True)  # Sort by p99 latency descending
+            return results[:10]  # Return top 10 endpoints
 
-        results.append({
-            "method": method,
-            "endpoint": endpoint,
-            "total_requests": total_requests,
-            "avg_latency": avg_latency,
-            "error_rate": error_rate,
-            "p95_latency": p95_latency
-        })
+    conn.close()
+    return []  # Return empty if no relevant data found
 
-    # Step 5: Sort results by error rate descending and get top 5
-    results.sort(key=lambda x: x['error_rate'], reverse=True)
-    top_results = results[:5]
-
-    return top_results
-
-# Example usage
-if __name__ == "__main__":
-    output = tool()
-    for entry in output:
-        print(entry)
+def find_key(d, options):
+    for k in d:
+        for opt in options:
+            if opt in k.lower():
+                return k
+    return None
