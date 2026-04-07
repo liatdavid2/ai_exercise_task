@@ -301,153 +301,114 @@ JSON HANDLING (CRITICAL):
         - Returning partial anomalies is INVALID
         - You MUST analyze ALL dates in range
     """
-  
+
     LOG_RULES = """
     LOG ANALYSIS TASK (CRITICAL):
 
-    - Log lines are in key=value format
+    Log format is mostly:
 
-    Example:
-        method=GET endpoint=/api/users status=200 latency_ms=123
+        method=GET endpoint=/api/... status=200 latency_ms=123
 
-    STEP 1 — PARSE:
+    --------------------------------------------------
+    STEP 1 — PARSE (PRIMARY - STRICT)
+    --------------------------------------------------
 
-    - You MUST split each line by spaces
-    - Then split each part by '='
-    - Build dict per line
+    You MUST parse using:
 
-    Example:
         parts = line.strip().split()
+
         data = {}
         for p in parts:
             if '=' in p:
                 k, v = p.split('=', 1)
                 data[k] = v
 
-    STEP 2 — REQUIRED FIELDS:
+    --------------------------------------------------
+    STEP 2 — EXTRACT FIELDS (STRICT)
+    --------------------------------------------------
 
-    - method
-    - endpoint
-    - status
-    - latency (latency_ms or similar)
+    - Use EXACT keys first:
 
-    FLEXIBLE FIELDS (CRITICAL):
-    - Field names may vary
-    - endpoint:
-        endpoint, path, route, uri
-    - status:
-        status, status_code, code
-    - latency:
-        latency_ms, latency, response_time, duration, ms
-    - You MUST detect fields dynamically
-    - DO NOT assume exact column names
+        method = data.get("method", "GET")
+        endpoint = data.get("endpoint")
+        status = int(data.get("status", 200))
 
-    STEP 3 — TYPE CONVERSION:
+    - For latency:
 
-    - status → int
-    - latency → float
+        import re
+        raw = data.get("latency_ms", "0")
+        m = re.search(r'(\\d+\\.?\\d*)', raw)
+        latency = float(m.group(1)) if m else 0
 
-    LATENCY PARSING (CRITICAL):
+    --------------------------------------------------
+    STEP 3 — FALLBACK (ONLY IF endpoint missing)
+    --------------------------------------------------
 
-    - You MUST extract numeric values safely:
+    If endpoint is missing:
 
-        Examples:
-            "123ms" → 123
-            "123.45ms" → 123.45
-            "123.45" → 123.45
+        import re
 
-    - Use regex or safe parsing:
-        extract digits + optional decimal
+        m = re.search(r'/api/\\S+', line)
+        endpoint = m.group(0) if m else None
 
-    - DO NOT remove decimal points
+    If still missing → skip line
 
-    
-    RELAXED FIELD REQUIREMENT (CRITICAL):
-
-    - You MUST NOT require all fields
-
-    - Minimum required:
-        endpoint AND latency
-
-    - If status is missing:
-        assume status = 200
-
-    - If method is missing:
-        use "UNKNOWN"
-
-    - Only skip line if BOTH endpoint AND latency are missing
-    - You MUST:
-        - skip invalid lines
-        - continue processing
-    - You MUST ensure at least some valid rows exist
-
-    
-    FALLBACK PARSING (CRITICAL):
-
-    - If structured parsing fails, you MUST extract values using regex:
-
-        endpoint:
-            search for pattern "/api/..."
-
-        method:
-            search for GET / POST / PUT / DELETE in line
-
-        status:
-            search for 3-digit number (100–599)
-
-        latency:
-            search for number followed by "ms"
-
-- Example:
-
-    import re
-
-    endpoint = re.search(r'/api/\\S+', line)
-    latency = re.search(r'(\\d+\\.?\\d*)ms', line)
-
-- You MUST use fallback if primary parsing fails
-
-
-    STEP 4 — GROUPING:
+    --------------------------------------------------
+    STEP 4 — GROUPING
+    --------------------------------------------------
 
     - Group by (method, endpoint)
 
-    For each group:
-        - total_requests
-        - avg_latency
-        - error_rate = status >= 400
-        - p95 latency:
-            sorted_values
-            index = int(0.95 * (len(values) - 1))
-    - You MUST append latency values per group:
-        groups[(method, endpoint)].append(latency)
-    - Groups MUST NOT be empty
-    - Skip groups with empty latency list
+    - For each group:
 
-    
+        total_requests = count
+        avg_latency = sum(latencies) / count
+        error_rate = count(status >= 400) / total_requests
 
-    STEP 5 — OUTPUT:
+    - Store ALL latency values
 
-    Return top 5 by error_rate DESC
+    --------------------------------------------------
+    STEP 5 — P95
+    --------------------------------------------------
 
-    Each row:
+    - values = sorted(latencies)
+
+    - index = int(0.95 * (len(values) - 1))
+
+    - p95_latency = values[index]
+
+    --------------------------------------------------
+    STEP 6 — SORT
+    --------------------------------------------------
+
+    - Sort by error_rate DESC
+
+    --------------------------------------------------
+    STEP 7 — OUTPUT
+    --------------------------------------------------
+
+    - Return top 5 groups
+
+    - Each row:
+
     {
-        "method": "GET",
-        "endpoint": "/api/users",
-        "total_requests": 100,
-        "avg_latency": 120.5,
-        "error_rate": 0.15,
-        "p95_latency": 1977
+    "method": "...",
+    "endpoint": "...",
+    "total_requests": int,
+    "avg_latency": float,
+    "error_rate": float,
+    "p95_latency": float
     }
 
-    -OUTPUT VALIDATION (CRITICAL):
+    --------------------------------------------------
+    IMPORTANT RULES
+    --------------------------------------------------
 
-    - You MUST return at least 1 row
-
-    - If computed result is empty:
-        return "No results computed"
-
-    - Returning [] is INVALID
+    - DO NOT skip rows if endpoint exists
+    - DO NOT require flexible field names
+    - DO NOT overcomplicate parsing
+    - You MUST process many rows (not just a few)
+    - Returning empty result is INVALID
     """
 
     DB_RULES = """
