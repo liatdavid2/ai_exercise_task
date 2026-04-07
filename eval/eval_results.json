@@ -1,76 +1,76 @@
 {
   "task_results": {
     "1": {
-      "score": 0,
+      "score": 0.8,
       "max_points": 1.0,
-      "points": 0,
-      "notes": "'RulesAgent' object has no attribute 'detect_task_type'",
-      "time": 0.0,
-      "error": "'RulesAgent' object has no attribute 'detect_task_type'"
+      "points": 0.8,
+      "notes": "Missing salary: 210000",
+      "time": 6.9,
+      "error": null
     },
     "2": {
-      "score": 0,
+      "score": 1.0,
       "max_points": 1.0,
-      "points": 0,
-      "notes": "'RulesAgent' object has no attribute 'detect_task_type'",
-      "time": 0.0,
-      "error": "'RulesAgent' object has no attribute 'detect_task_type'"
+      "points": 1.0,
+      "notes": "OK",
+      "time": 11.4,
+      "error": null
     },
     "3": {
-      "score": 0,
+      "score": 0.8,
       "max_points": 1.5,
-      "points": 0,
-      "notes": "'RulesAgent' object has no attribute 'detect_task_type'",
-      "time": 0.0,
-      "error": "'RulesAgent' object has no attribute 'detect_task_type'"
+      "points": 1.2,
+      "notes": "No other December category totals found within tolerance",
+      "time": 8.5,
+      "error": null
     },
     "4": {
-      "score": 0,
+      "score": 0.8,
       "max_points": 1.5,
-      "points": 0,
-      "notes": "'RulesAgent' object has no attribute 'detect_task_type'",
-      "time": 0.0,
-      "error": "'RulesAgent' object has no attribute 'detect_task_type'"
+      "points": 1.2,
+      "notes": "OK",
+      "time": 7.7,
+      "error": null
     },
     "5": {
-      "score": 0,
+      "score": 0.55,
       "max_points": 1.5,
-      "points": 0,
-      "notes": "'RulesAgent' object has no attribute 'detect_task_type'",
-      "time": 0.0,
-      "error": "'RulesAgent' object has no attribute 'detect_task_type'"
+      "points": 0.83,
+      "notes": "Top endpoint error rate not found (~15.6%); Top endpoint p95 not found (~1977ms)",
+      "time": 7.0,
+      "error": null
     },
     "6": {
-      "score": 0,
+      "score": 0.925,
       "max_points": 2.0,
-      "points": 0,
-      "notes": "'RulesAgent' object has no attribute 'detect_task_type'",
-      "time": 0.0,
-      "error": "'RulesAgent' object has no attribute 'detect_task_type'"
+      "points": 1.85,
+      "notes": "OK",
+      "time": 8.4,
+      "error": null
     },
     "7": {
-      "score": 0,
+      "score": 0.6,
       "max_points": 2.0,
-      "points": 0,
-      "notes": "'RulesAgent' object has no attribute 'detect_task_type'",
-      "time": 0.0,
-      "error": "'RulesAgent' object has no attribute 'detect_task_type'"
+      "points": 1.2,
+      "notes": "Only 0/24 anomaly products mentioned; Report has 24 anomalies, expected ~39",
+      "time": 18.3,
+      "error": null
     },
     "8": {
-      "score": 0,
+      "score": 0.0,
       "max_points": 2.0,
-      "points": 0,
-      "notes": "'RulesAgent' object has no attribute 'detect_task_type'",
-      "time": 0.0,
-      "error": "'RulesAgent' object has no attribute 'detect_task_type'"
+      "points": 0.0,
+      "notes": "Missing keys: {'daily_revenue_trend', 'endpoint_health', 'department_summary', 'understocked_products', 'top_products_by_revenue'}; department_summary missing or empty; top_products_by_revenue missing or empty; understocked_products is empty but expected entries; endpoint_health missing or empty; daily_revenue_trend missing or empty",
+      "time": 51.3,
+      "error": null
     },
     "9": {
-      "score": 0,
+      "score": 0.25,
       "max_points": 2.5,
-      "points": 0,
-      "notes": "'RulesAgent' object has no attribute 'detect_task_type'",
-      "time": 0.0,
-      "error": "'RulesAgent' object has no attribute 'detect_task_type'"
+      "points": 0.62,
+      "notes": "Did not identify returns/negative quantities in CSV; Did not identify empty/missing totals in CSV; Did not identify unknown currencies (CHF) in CSV; Did not identify duplicate order IDs in CSV; Did not identify multi-line stack traces in logs; Did not identify malformed lines in logs; Did not identify alternate timestamp formats in logs; Did not discover database integrity bug (aggregates missing 99 4xx errors)",
+      "time": 41.0,
+      "error": null
     }
   },
   "dynamic_tools": [
@@ -91,16 +91,10 @@
       "agent\\tool_1.py: hardcoded filename: app.log",
       "agent\\tool_1.py: hardcoded column name: department",
       "agent\\tool_1.py: hardcoded column name: salary",
-      "agent\\tool_2.py: hardcoded filename: employees.json",
       "agent\\tool_2.py: hardcoded filename: sales.csv",
-      "agent\\tool_2.py: hardcoded filename: app.log",
-      "agent\\tool_3.py: hardcoded filename: employees.json",
       "agent\\tool_3.py: hardcoded filename: sales.csv",
-      "agent\\tool_3.py: hardcoded filename: app.log",
       "agent\\tool_3.py: hardcoded column name: category",
-      "agent\\tool_4.py: hardcoded filename: employees.json",
       "agent\\tool_4.py: hardcoded filename: sales.csv",
-      "agent\\tool_4.py: hardcoded filename: app.log",
       "agent\\tool_4.py: HTTP library hint",
       "agent\\tool_4.py: task-specific hint (exchange rate)",
       "agent\\tool_5.py: hardcoded filename: employees.json",
@@ -115,9 +109,7 @@
       "agent\\tool_6.py: hardcoded column name: latency_ms",
       "agent\\tool_6.py: statistical formula hint (p95/p99)",
       "agent\\tool_6.py: SQLite-specific hint",
-      "agent\\tool_7.py: hardcoded filename: employees.json",
       "agent\\tool_7.py: hardcoded filename: sales.csv",
-      "agent\\tool_7.py: hardcoded filename: app.log",
       "agent\\tool_7.py: hardcoded column name: product_id",
       "agent\\tool_8.py: hardcoded column name: endpoint",
       "agent\\tool_8.py: hardcoded column name: status_code",
@@ -126,7 +118,7 @@
       "agent\\tool_8.py: SQLite-specific hint"
     ]
   },
-  "r4_score": 0,
+  "r4_score": 8.7,
   "r4_max": 15.0,
-  "total_time_seconds": 0.0
+  "total_time_seconds": 160.5
 }

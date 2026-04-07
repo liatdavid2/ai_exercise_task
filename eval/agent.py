@@ -71,18 +71,19 @@ class RulesAgent:
     def detect_task_type(self, task: str) -> str:
         t = task.lower()
 
-        if ".db" in t or "sqlite" in t or "database" in t:
-            return "db"
+        if "dashboard" in t or "cross-source" in t or "multiple data sources" in t:
+            return "multi"
         if "audit" in t or "integrity" in t or "quality" in t:
             return "audit"
+        if ".db" in t or "sqlite" in t or "database" in t:
+            return "db"
         if "anomaly" in t:
             return "anomaly"
         if ".log" in t or " log" in t or t.startswith("log"):
             return "log"
         if "exchange" in t or "currency" in t or "usd" in t:
             return "currency"
-        if "dashboard" in t or "cross-source" in t or "multiple data sources" in t:
-            return "multi"
+
 
         return "generic"
 
@@ -220,7 +221,7 @@ Task:
 {task}
 """
         response = self.client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4o",
             messages=[{"role": "user", "content": prompt}],
             temperature=0
         )
@@ -258,7 +259,7 @@ STRICT:
 - Preserve required output format
 """
         response = self.client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4o",
             messages=[{"role": "user", "content": prompt}],
             temperature=0
         )

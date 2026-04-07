@@ -1,8 +1,6 @@
 import csv
 import glob
-import json
 import os
-from collections import defaultdict
 from datetime import datetime
 
 def find_key(d, options):
@@ -13,69 +11,74 @@ def find_key(d, options):
     return None
 
 def tool():
-    # Discover files
+    # Search for CSV files
     files = glob.glob('data/**/*.csv', recursive=True) + glob.glob('**/*.csv', recursive=True)
     files = list(set(files))  # Remove duplicates
 
-    # Fallback if no CSV files found
-    if not files:
-        known_files = ['employees.json', 'sales.csv', 'app.log']
-        for known_file in known_files:
-            if os.path.exists(known_file):
-                files.append(known_file)
+    # Prefer files inside 'data/' if exist
+    files = sorted(files, key=lambda x: 0 if x.startswith('data/') else 1)
 
-        if not files:
-            for root, _, filenames in os.walk('data/'):
-                for filename in filenames:
+    if not files:
+        # Fallback search
+        known_files = ['sales.csv']
+        for root, dirs, filenames in os.walk('data/'):
+            for filename in filenames:
+                if filename in known_files:
                     files.append(os.path.join(root, filename))
+        if not files:
+            return "No matching file found"
 
-    if not files:
-        return "No matching file found"
-
-    # Process the first found CSV file
-    total_revenue = defaultdict(float)
-    highest_revenue = 0
-    highest_category = None
+    total_revenue_by_category = {}
+    december_revenue_by_category = {}
 
     for file in files:
-        if not file.endswith('.csv'):
-            continue
-
-        with open(file, mode='r', newline='', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            date_key = find_key(reader.fieldnames, ["date"]) or "date"
-            total_key = find_key(reader.fieldnames, ["total"]) or "total"
-            category_key = find_key(reader.fieldnames, ["category"]) or "category"
-
+        with open(file, newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
             for row in reader:
-                if date_key in row and total_key in row and category_key in row:
-                    try:
-                        date_value = row[date_key]
-                        total_value = row[total_key]
-                        category_value = row[category_key]
+                # Detect fields dynamically
+                date_key = find_key(row, ["date"]) or "date"
+                total_key = find_key(row, ["total"]) or "total"
+                category_key = find_key(row, ["category"]) or "category"
 
-                        # Parse date and filter for December 2024
-                        date_parsed = datetime.strptime(date_value, '%Y-%m-%d')
-                        if date_parsed.year == 2024 and date_parsed.month == 12:
-                            revenue = float(total_value) if total_value else 0
-                            total_revenue[category_value] += revenue
+                # Parse and filter by date
+                date_str = row.get(date_key, "")
+                try:
+                    date = datetime.strptime(date_str, "%Y-%m-%d")
+                except ValueError:
+                    continue
 
-                    except (ValueError, TypeError):
-                        continue
+                # Calculate total revenue
+                try:
+                    total = float(row.get(total_key, 0))
+                except ValueError:
+                    total = 0
 
-    # Calculate the highest revenue category
-    for category, revenue in total_revenue.items():
-        if revenue > highest_revenue:
-            highest_revenue = revenue
-            highest_category = category
+                category = row.get(category_key, "Unknown")
+
+                # Aggregate total revenue by category
+                if category not in total_revenue_by_category:
+                    total_revenue_by_category[category] = 0
+                total_revenue_by_category[category] += total
+
+                # Check for December 2024
+                if date.year == 2024 and date.month == 12:
+                    if category not in december_revenue_by_category:
+                        december_revenue_by_category[category] = 0
+                    december_revenue_by_category[category] += total
+
+    # Find the category with the highest revenue in December 2024
+    if december_revenue_by_category:
+        highest_december_category = max(december_revenue_by_category, key=december_revenue_by_category.get)
+        highest_december_revenue = december_revenue_by_category[highest_december_category]
+    else:
+        highest_december_category = None
+        highest_december_revenue = 0
 
     # Prepare the result
     result = {
-        "total_revenue_per_category": {k: round(v, 2) for k, v in total_revenue.items()},
-        "highest_revenue_category": {
-            "category": highest_category,
-            "revenue": round(highest_revenue, 2)
-        }
+        "total_revenue_by_category": {k: round(v, 2) for k, v in total_revenue_by_category.items()},
+        "highest_december_category": highest_december_category,
+        "highest_december_revenue": round(highest_december_revenue, 2)
     }
 
     return result

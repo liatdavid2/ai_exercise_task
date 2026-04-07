@@ -1,43 +1,28 @@
 import glob
 import re
-import json
 from collections import defaultdict
 
-def find_key(d, options):
-    for k in d:
-        for opt in options:
-            if opt in k.lower():
-                return k
-    return None
-
 def tool():
-    # Step 1: File discovery
+    # Step 1: File Discovery
     files = glob.glob('data/**/*.log', recursive=True) + glob.glob('**/*.log', recursive=True)
     files = list(set(files))  # Remove duplicates
+    files = [f for f in files if 'data/' in f] or files  # Prefer files inside 'data/' if exist
 
     if not files:
-        # Fallback to known filenames
-        known_files = ['employees.json', 'sales.csv', 'app.log']
-        for known_file in known_files:
-            if glob.glob(known_file):
-                files.append(known_file)
+        # Fallback search
+        files = glob.glob('employees.json') + glob.glob('sales.csv') + glob.glob('app.log')
+        if not files:
+            import os
+            for root, dirs, filenames in os.walk('data/'):
+                for filename in filenames:
+                    if filename.endswith('.log'):
+                        files.append(os.path.join(root, filename))
+            if not files:
+                return "No matching file found"
 
-        # Fallback to os.walk
-        import os
-        for root, dirs, filenames in os.walk('data/'):
-            for filename in filenames:
-                if filename.endswith('.log'):
-                    files.append(os.path.join(root, filename))
-
-        files = list(set(files))  # Remove duplicates
-
-    if not files:
-        return "No matching file found"
-
-    # Step 2: Initialize data structures
-    log_data = defaultdict(list)
-
-    # Step 3: Parse log files
+    # Step 2: Parse Log File
+    log_data = defaultdict(lambda: {'count': 0, 'latencies': [], 'errors': 0})
+    
     for file in files:
         with open(file, 'r') as f:
             for line in f:
@@ -48,32 +33,39 @@ def tool():
                         k, v = p.split('=', 1)
                         data[k] = v
 
-                # Step 4: Extract fields
+                # Step 3: Extract Fields
                 method = data.get("method", "GET")
                 endpoint = data.get("endpoint")
                 status = int(data.get("status", 200))
+
+                # Fallback if endpoint is missing
+                if not endpoint:
+                    m = re.search(r'/api/\S+', line)
+                    endpoint = m.group(0) if m else None
+                    if not endpoint:
+                        continue  # Skip line if endpoint is still missing
 
                 # Extract latency
                 raw = data.get("latency_ms", "0")
                 m = re.search(r'(\d+\.?\d*)', raw)
                 latency = float(m.group(1)) if m else 0
 
-                if endpoint:
-                    log_data[(method, endpoint)].append((status, latency))
+                # Step 4: Grouping
+                key = (method, endpoint)
+                log_data[key]['count'] += 1
+                log_data[key]['latencies'].append(latency)
+                if status >= 400:
+                    log_data[key]['errors'] += 1
 
-    # Step 5: Grouping and calculations
+    # Step 5: Calculate Metrics
     results = []
-    for (method, endpoint), entries in log_data.items():
-        total_requests = len(entries)
-        latencies = [latency for _, latency in entries]
-        error_count = sum(1 for status, _ in entries if status >= 400)
-        error_rate = (error_count / total_requests) * 100 if total_requests > 0 else 0
-        avg_latency = sum(latencies) / total_requests if total_requests > 0 else 0
-
-        # Calculate P95 latency
-        values = sorted(latencies)
-        index = int(0.95 * (len(values) - 1)) if values else 0
-        p95_latency = values[index] if values else 0
+    for (method, endpoint), metrics in log_data.items():
+        total_requests = metrics['count']
+        avg_latency = sum(metrics['latencies']) / total_requests
+        error_rate = metrics['errors'] / total_requests
+        latencies_sorted = sorted(metrics['latencies'])
+        index = int(0.95 * (len(latencies_sorted) - 1))
+        p95_latency = latencies_sorted[index]
 
         results.append({
             "method": method,
@@ -84,8 +76,8 @@ def tool():
             "p95_latency": p95_latency
         })
 
-    # Step 6: Sort by error rate descending
+    # Step 6: Sort by error_rate DESC
     results.sort(key=lambda x: x['error_rate'], reverse=True)
 
-    # Step 7: Return top 5 groups
+    # Step 7: Output Top 5
     return results[:5]

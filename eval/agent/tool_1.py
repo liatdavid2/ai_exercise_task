@@ -1,6 +1,6 @@
+import os
 import glob
 import json
-import os
 
 def find_key(d, options):
     for k in d:
@@ -10,73 +10,79 @@ def find_key(d, options):
     return None
 
 def tool():
-    # Discover files
-    files = glob.glob('data/**/*.json', recursive=True) + glob.glob('**/*.json', recursive=True)
+    # Step 1: List all data files in the data/ directory
+    files = glob.glob('data/**/*.*', recursive=True) + glob.glob('**/*.*', recursive=True)
     files = list(set(files))  # Remove duplicates
+    files_in_data = [f for f in files if f.startswith('data/')]
+    if files_in_data:
+        files = files_in_data
 
-    # Fallback if no files found
-    if not files:
-        fallback_files = ['employees.json', 'sales.csv', 'app.log']
-        for fallback in fallback_files:
-            if os.path.exists(fallback):
-                files.append(fallback)
-
-    # If still no files found, try os.walk
-    if not files:
-        for root, dirs, filenames in os.walk('data/'):
-            for filename in filenames:
-                if filename.endswith('.json'):
-                    files.append(os.path.join(root, filename))
-
-    # If no files found after all attempts
-    if not files:
-        return "No matching file found"
-
-    # Read employees.json
-    employees_data = None
+    # Step 2: Read employees.json
+    employees_file = None
     for file in files:
-        if 'employees.json' in file:
-            with open(file, 'r') as f:
-                employees_data = json.load(f)
+        if file.endswith('employees.json'):
+            employees_file = file
             break
 
-    if employees_data is None:
+    if not employees_file:
+        # Fallback to known filenames
+        known_files = ['employees.json', 'sales.csv', 'app.log']
+        for known_file in known_files:
+            if os.path.exists(known_file):
+                employees_file = known_file
+                break
+
+    if not employees_file:
+        # Final fallback using os.walk
+        for root, dirs, files in os.walk('data/'):
+            for file in files:
+                if file == 'employees.json':
+                    employees_file = os.path.join(root, file)
+                    break
+            if employees_file:
+                break
+
+    if not employees_file:
         return "No matching file found"
 
-    # Process the data
-    if isinstance(employees_data, list):
-        rows = employees_data
-    elif isinstance(employees_data, dict):
-        rows = list(employees_data.values())
-    else:
-        return "Invalid data structure"
+    # Step 3: Process employees.json
+    with open(employees_file, 'r') as f:
+        data = json.load(f)
 
-    department_counts = {}
+    if isinstance(data, list):
+        rows = data
+    elif isinstance(data, dict):
+        rows = list(data.values())
+    else:
+        return "Invalid JSON structure"
+
+    department_key = find_key(rows[0], ["department"]) or "department"
+    salary_key = find_key(rows[0], ["salary", "income"]) or "salary"
+    name_key = find_key(rows[0], ["name"]) or "name"
+
+    department_count = {}
     highest_paid_employee = None
+    highest_salary = float('-inf')
 
     for row in rows:
-        department_key = find_key(row, ["department"]) or "department"
-        salary_key = find_key(row, ["salary", "income"]) or "salary"
-        
-        department = row.get(department_key)
-        salary = row.get(salary_key)
+        department = row.get(department_key, "Unknown")
+        salary = float(row.get(salary_key, 0))
+        name = row.get(name_key, "Unknown")
 
-        if department and salary:
-            # Count employees in each department
-            department_counts[department] = department_counts.get(department, 0) + 1
-            
-            # Determine the highest-paid employee
-            if highest_paid_employee is None or salary > highest_paid_employee['salary']:
-                highest_paid_employee = {
-                    'name': row.get('name', 'Unknown'),
-                    'salary': salary,
-                    'department': department
-                }
+        # Count employees per department
+        if department in department_count:
+            department_count[department] += 1
+        else:
+            department_count[department] = 1
 
-    # Prepare the result
+        # Find the highest-paid employee
+        if salary > highest_salary:
+            highest_salary = salary
+            highest_paid_employee = name
+
     result = {
-        'department_counts': department_counts,
-        'highest_paid_employee': highest_paid_employee
+        "department_count": department_count,
+        "highest_paid_employee": highest_paid_employee
     }
 
     return result
