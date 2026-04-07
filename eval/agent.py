@@ -164,48 +164,101 @@ FAILURE → INVALID SOLUTION
     - Returning ONLY a number is INVALID
 """
 
-    ANOMALY_RULES = ""
-    if "anomaly" in t:
-        ANOMALY_RULES = """
+    ANOMALY_RULES = """
     ANOMALY TASK (CRITICAL):
 
     - You MUST:
 
-    1. Group data by:
-        product_id, date
+    1. DATE FILTER (CRITICAL):
+        - You MUST filter data to:
+            2024-10-01 <= date <= 2024-12-31
+        - Rows outside this range MUST be ignored
 
-    2. Compute:
-        daily_quantity = sum(quantity per day)
+    2. GROUP:
+        - Group data by:
+            product_id, date
 
-    3. For EACH product:
-        - compute mean of daily_quantity
-        - compute std deviation
+    3. COMPUTE:
+        - daily_quantity = sum(quantity per day)
 
-    4. Filter:
-        only products with >= 20 total records
+    4. FILTER (CRITICAL):
+        - ONLY keep products where:
+            total_quantity = sum(quantity across ALL rows for that product)
+            total_quantity >= 20
 
-    5. Detect anomaly:
-        z_score = (value - mean) / std
-        anomaly if z_score > 3
+        - DO NOT use number of rows
+        - MUST use SUM(quantity)
 
-    6. You MUST return FULL anomaly records:
-        - product_id
-        - product_name
-        - date
-        - daily_quantity
-        - mean_quantity
-        - std_dev
-        - z_score
+    5. STATS:
+        For EACH product:
+            - compute mean of daily_quantity
+            - compute std deviation
 
-    7. You MUST write JSON file:
-        output/anomaly_report.json
+    6. DETECT ANOMALY:
+        - z_score = (value - mean) / std
+        - anomaly if z_score > 3
 
-    8. Returning only summary is INVALID
+    7. ROUNDING (CRITICAL):
+        - Round ALL numeric values to 2 decimal places:
+            daily_quantity
+            mean_quantity
+            std_dev
+            z_score
 
-    9. You MUST analyze ALL dates (not partial)
+    8. OUTPUT RECORDS (CRITICAL):
+        - You MUST return FULL anomaly records:
+            - product_id
+            - product_name
+            - date
+            - daily_quantity
+            - mean_quantity
+            - std_dev
+            - z_score
 
-    10. If anomalies < expected → logic is WRONG
-"""
+        - date MUST be string in format "YYYY-MM-DD"
+
+    9. DATE SERIALIZATION (CRITICAL):
+        - You MUST convert date to string BEFORE writing JSON:
+            date = date.strftime("%Y-%m-%d")
+
+        - NEVER write datetime objects to JSON
+        - JSON must contain only: string, number, list, dict
+
+    10. FILE OUTPUT (CRITICAL):
+        - You MUST write JSON file:
+            output/anomaly_report.json
+        - File must contain ALL anomaly records
+        - anomaly records MUST be a flat list
+        - DO NOT wrap list inside another list
+        INVALID:
+            [[{...}]]
+        VALID:
+            [{...}, {...}]
+
+
+    11. PRODUCT NAME (CRITICAL):
+
+        - You MUST populate product_name
+
+        - If multiple rows exist:
+            take first non-empty value
+
+        - product_name MUST NOT be null
+
+
+    12. SUMMARY (CRITICAL):
+        - You MUST also return:
+            {
+                "total_anomalies": <int>,
+                "affected_products": [list of product_id]
+            }
+
+    13. VALIDATION:
+        - Returning only summary is INVALID
+        - Returning partial anomalies is INVALID
+        - You MUST analyze ALL dates in range
+    """
+  
     LOG_RULES = """
     LOG ANALYSIS TASK (CRITICAL):
 
@@ -235,13 +288,82 @@ FAILURE → INVALID SOLUTION
     - status
     - latency (latency_ms or similar)
 
+    FLEXIBLE FIELDS (CRITICAL):
+    - Field names may vary
+    - endpoint:
+        endpoint, path, route, uri
+    - status:
+        status, status_code, code
+    - latency:
+        latency_ms, latency, response_time, duration, ms
+    - You MUST detect fields dynamically
+    - DO NOT assume exact column names
+
     STEP 3 — TYPE CONVERSION:
 
     - status → int
     - latency → float
 
-    - You MUST strip non-numeric parts:
-        "123ms" → 123
+    LATENCY PARSING (CRITICAL):
+
+    - You MUST extract numeric values safely:
+
+        Examples:
+            "123ms" → 123
+            "123.45ms" → 123.45
+            "123.45" → 123.45
+
+    - Use regex or safe parsing:
+        extract digits + optional decimal
+
+    - DO NOT remove decimal points
+
+    
+    RELAXED FIELD REQUIREMENT (CRITICAL):
+
+    - You MUST NOT require all fields
+
+    - Minimum required:
+        endpoint AND latency
+
+    - If status is missing:
+        assume status = 200
+
+    - If method is missing:
+        use "UNKNOWN"
+
+    - Only skip line if BOTH endpoint AND latency are missing
+    - You MUST:
+        - skip invalid lines
+        - continue processing
+    - You MUST ensure at least some valid rows exist
+
+    
+    FALLBACK PARSING (CRITICAL):
+
+    - If structured parsing fails, you MUST extract values using regex:
+
+        endpoint:
+            search for pattern "/api/..."
+
+        method:
+            search for GET / POST / PUT / DELETE in line
+
+        status:
+            search for 3-digit number (100–599)
+
+        latency:
+            search for number followed by "ms"
+
+- Example:
+
+    import re
+
+    endpoint = re.search(r'/api/\\S+', line)
+    latency = re.search(r'(\\d+\\.?\\d*)ms', line)
+
+- You MUST use fallback if primary parsing fails
+
 
     STEP 4 — GROUPING:
 
@@ -254,6 +376,12 @@ FAILURE → INVALID SOLUTION
         - p95 latency:
             sorted_values
             index = int(0.95 * (len(values) - 1))
+    - You MUST append latency values per group:
+        groups[(method, endpoint)].append(latency)
+    - Groups MUST NOT be empty
+    - Skip groups with empty latency list
+
+    
 
     STEP 5 — OUTPUT:
 
@@ -268,6 +396,13 @@ FAILURE → INVALID SOLUTION
         "error_rate": 0.15,
         "p95_latency": 1977
     }
+
+    -OUTPUT VALIDATION (CRITICAL):
+
+    - You MUST return at least 1 row
+
+    - If computed result is empty:
+        return "No results computed"
 
     - Returning [] is INVALID
     """
@@ -350,9 +485,66 @@ FAILURE → INVALID SOLUTION
 
     - Returning [] is INVALID
 """
+    MULTI_SOURCE_RULES = """
+    MULTI-SOURCE TASK (CRITICAL):
+
+    - This task requires combining MULTIPLE data sources:
+        - sales.csv
+        - inventory.json
+        - employees.json
+        - app.log
+        - metrics.db
+
+    FILE DISCOVERY (CRITICAL):
+
+    - You MUST find EACH file separately using glob
+
+    Example:
+
+        json_files = glob.glob('**/*.json', recursive=True)
+        csv_files = glob.glob('**/*.csv', recursive=True)
+        log_files = glob.glob('**/*.log', recursive=True)
+        db_files = glob.glob('**/*.db', recursive=True)
+
+    - Then match by name:
+
+        inventory_path = next(f for f in json_files if "inventory" in f.lower())
+        sales_path = next(f for f in csv_files if "sales" in f.lower())
+        employees_path = next(f for f in json_files if "employees" in f.lower())
+        log_path = next(f for f in log_files if "app" in f.lower())
+        db_path = next(f for f in db_files if "metrics" in f.lower())
+
+    - You MUST NOT use hardcoded filenames
+
+    CONSISTENCY (CRITICAL):
+
+    - Once a path is selected → reuse it
+    - DO NOT re-search files multiple times
+
+    DATA INTEGRATION (CRITICAL):
+
+    - You MUST combine data across sources
+
+    Examples:
+    - sales + exchange rates
+    - inventory + sales count
+    - logs + database metrics
+    - employees aggregation
+
+    OUTPUT (CRITICAL):
+
+    - You MUST build ONE final JSON object with all required keys
+
+    - Write to:
+        output/executive_dashboard.json
+
+    - Returning partial data is INVALID
+    """
 
     # Routing
-    if ".db" in t or "sqlite" in t or "database" in t:
+    if "dashboard" in t or "cross-source" in t or "multiple" in t:
+        rules_block = FILE_DISCOVERY_RULES + MULTI_SOURCE_RULES
+    elif ".db" in t or "sqlite" in t or "database" in t:
         rules_block = DB_RULES
     elif ".log" in t or "log" in t:
         rules_block = FILE_DISCOVERY_RULES + LOG_RULES
