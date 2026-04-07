@@ -199,109 +199,106 @@ JSON HANDLING (CRITICAL):
     ANOMALY_RULES = """
     ANOMALY TASK (CRITICAL):
 
-    - You MUST:
+    --------------------------------------------------
+    STEP 1 — DATE FILTER
+    --------------------------------------------------
 
-    1. DATE FILTER (CRITICAL):
-        - You MUST filter data to:
-            2024-10-01 <= date <= 2024-12-31
-        - Rows outside this range MUST be ignored
+    - Keep rows where:
+        2024-10-01 <= date <= 2024-12-31
 
-    2. GROUP:
-        - Group data by:
-            product_id, date
+    --------------------------------------------------
+    STEP 2 — PRODUCT FILTER
+    --------------------------------------------------
 
-    3. COMPUTE:
-        - daily_quantity = sum(quantity per day)
+    - Compute total_quantity per product:
+        total_quantity = SUM(quantity across ALL rows)
 
-    4. FILTER (CRITICAL - STRICT ORDER):
+    - Keep ONLY products where:
+        total_quantity >= 20
 
-        - You MUST FIRST compute total_quantity per product:
-            total_quantity = sum(quantity across ALL rows)
+    --------------------------------------------------
+    STEP 3 — DAILY AGGREGATION
+    --------------------------------------------------
 
-        - ONLY THEN filter:
-            keep products where total_quantity >= 20
+    - For each (product_id, date):
 
-        - This MUST be done BEFORE daily grouping
+        daily_quantity = SUM(quantity)
 
-        - DO NOT use number of rows
-        - MUST use SUM(quantity)
+    --------------------------------------------------
+    STEP 4 — STATS PER PRODUCT
+    --------------------------------------------------
 
-        - WRONG:
-            count(rows) >= 20
+    - For EACH product:
 
-        - CORRECT:
-            sum(quantity) >= 20
+        values = list of daily_quantity
 
-    5. STATS:
-        For EACH product:
-            - compute mean of daily_quantity
-            - compute std deviation
+        mean = sum(values) / len(values)
 
-    6. DETECT ANOMALY:
-        - z_score = (value - mean) / std
-        - anomaly if z_score > 3
+        std = sqrt(sum((x - mean)^2) / len(values))
 
-    7. ROUNDING (CRITICAL):
-        - Round ALL numeric values to 2 decimal places:
-            daily_quantity
-            mean_quantity
-            std_dev
-            z_score
+    - DO NOT use statistics.stdev
 
-    8. OUTPUT RECORDS (CRITICAL):
-        - You MUST return FULL anomaly records:
-            - product_id
-            - product_name
-            - date
-            - daily_quantity
-            - mean_quantity
-            - std_dev
-            - z_score
+    --------------------------------------------------
+    STEP 5 — ANOMALY DETECTION
+    --------------------------------------------------
 
-        - date MUST be string in format "YYYY-MM-DD"
+    - For each (product, date):
 
-    9. DATE SERIALIZATION (CRITICAL):
-        - You MUST convert date to string BEFORE writing JSON:
-            date = date.strftime("%Y-%m-%d")
+        z_score = (daily_quantity - mean) / std
 
-        - NEVER write datetime objects to JSON
-        - JSON must contain only: string, number, list, dict
+    - anomaly if:
+        z_score > 3
 
-    10. FILE OUTPUT (CRITICAL):
-        - You MUST write JSON file:
-            output/anomaly_report.json
-        - File must contain ALL anomaly records
-        - anomaly records MUST be a flat list
-        - DO NOT wrap list inside another list
-        INVALID:
-            [[{...}]]
-        VALID:
-            [{...}, {...}]
+    - If std == 0 → skip that product
 
+    --------------------------------------------------
+    STEP 6 — OUTPUT
+    --------------------------------------------------
 
-    11. PRODUCT NAME (CRITICAL):
+    Each anomaly MUST include:
 
-        - You MUST populate product_name
+    - product_id
+    - product_name
+    - date (YYYY-MM-DD)
+    - daily_quantity
+    - mean_quantity
+    - std_dev
+    - z_score
 
-        - If multiple rows exist:
-            take first non-empty value
+    - Round ONLY at final output (2 decimal places)
 
-        - product_name MUST NOT be null
+    --------------------------------------------------
+    FILE OUTPUT
+    --------------------------------------------------
 
+    - Write ALL anomalies to:
 
-    12. SUMMARY (CRITICAL):
-        - You MUST also return:
-            {
-                "total_anomalies": <int>,
-                "affected_products": [list of product_id]
-            }
+        output/anomaly_report.json
 
-    13. VALIDATION:
-        - Returning only summary is INVALID
-        - Returning partial anomalies is INVALID
-        - You MUST analyze ALL dates in range
+    - Format:
+        [{...}, {...}]
+
+    --------------------------------------------------
+    SUMMARY (REQUIRED)
+    --------------------------------------------------
+
+    Return ALSO:
+
+    {
+    "total_anomalies": int,
+    "affected_products": [product_id list]
+    }
+
+    --------------------------------------------------
+    IMPORTANT RULES
+    --------------------------------------------------
+
+    - Use SUM(quantity), NOT row count
+    - Use daily aggregated values (NOT raw rows)
+    - Do NOT round before calculations
+    - Do NOT skip valid data
+    - Returning only summary → INVALID
     """
-
     LOG_RULES = """
     LOG ANALYSIS TASK (CRITICAL):
 
