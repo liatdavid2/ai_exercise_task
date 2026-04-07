@@ -122,7 +122,29 @@ FILE DISCOVERY (CRITICAL):
 
 FAILURE → INVALID SOLUTION
 """
+    CURRENCY_OUTPUT_RULES = """
+    CURRENCY CONVERSION OUTPUT (CRITICAL):
 
+    - You MUST return a result that EXPLICITLY mentions USD conversion
+
+    - The output MUST include at least one of:
+        - "USD"
+        - "converted"
+        - "exchange rate"
+
+    - Preferred formats:
+
+    STRING:
+        "Total revenue in USD: <value>"
+
+    OR DICT:
+        {
+            "total_revenue_usd": <value>,
+            "description": "All transactions converted to USD using live exchange rates"
+        }
+
+    - Returning ONLY a number is INVALID
+    """
     ANOMALY_RULES = ""
 
     if "anomaly" in task.lower():
@@ -231,6 +253,7 @@ If task involves currency conversion:
 {DB_RULES}
 
 {ANOMALY_RULES}
+{CURRENCY_OUTPUT_RULES}
 
 STRICT RULES:
 - Use only Python standard library
@@ -240,7 +263,7 @@ STRICT RULES:
 - Return Python object (dict/list/number)
 - No explanations
 - Return ONLY code
-- DO NOT use pandas
+- You MUST import pandas when searching files
 - DO NOT use advanced SQL functions (SQLite limitation)
 
 IMPORTANT OUTPUT REQUIREMENT:
