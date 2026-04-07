@@ -76,26 +76,14 @@ class RulesAgent:
 
         if "audit" in t or "integrity" in t or "quality" in t:
             return "audit"
-
-        if "exchange" in t or "currency" in t or "usd" in t:
-            return "currency"
-
         if ".db" in t or "sqlite" in t or "database" in t:
             return "db"
-
         if "anomaly" in t:
             return "anomaly"
-
         if ".log" in t or " log" in t or t.startswith("log"):
             return "log"
-
-        csv_hints = [
-            ".csv", "sales", "revenue", "category", "categories",
-            "total revenue", "per product", "per category",
-            "december", "date range", "rows", "group by"
-        ]
-        if any(h in t for h in csv_hints):
-            return "csv"
+        if "exchange" in t or "currency" in t or "usd" in t:
+            return "currency"
 
         return "generic"
 
@@ -103,7 +91,6 @@ class RulesAgent:
         t = task.lower()
 
         names = ["default"]
-
         if "exchange" in t or "currency" in t or "usd" in t:
             names += ["file", "currency"]
         elif "dashboard" in t or "cross-source" in t or "multiple" in t:
@@ -116,11 +103,6 @@ class RulesAgent:
             names += ["file", "log"]
         elif "anomaly" in t:
             names += ["file", "anomaly"]
-        elif (
-            ".csv" in t or "sales" in t or "revenue" in t or
-            "category" in t or "december" in t or "group by" in t
-        ):
-            names += ["file", "csv"]
         else:
             names += ["file"]
 

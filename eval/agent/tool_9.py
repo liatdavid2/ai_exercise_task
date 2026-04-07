@@ -1,7 +1,7 @@
+import os
 import glob
 import json
-import os
-import re
+import csv
 
 def find_key(d, options):
     for k in d:
@@ -11,20 +11,19 @@ def find_key(d, options):
     return None
 
 def tool():
-    files = glob.glob('data/**/*.csv', recursive=True) + glob.glob('**/*.csv', recursive=True)
+    files = glob.glob('data/**/*.ext', recursive=True) + glob.glob('**/*.ext', recursive=True)
     files = list(set(files))  # Remove duplicates
 
+    # Fallback file search
     if not files:
-        # Fallback to known filenames
-        known_files = ['employees.json', 'sales.csv', 'app.log']
-        for known_file in known_files:
-            if os.path.exists(known_file):
-                files.append(known_file)
+        fallback_files = ['employees.json', 'sales.csv', 'app.log']
+        for filename in fallback_files:
+            if os.path.exists(filename):
+                files.append(filename)
 
-        # Fallback to os.walk
-        for root, _, filenames in os.walk('data/'):
-            for filename in filenames:
-                if filename.endswith('.json') or filename.endswith('.log'):
+        if not files:
+            for root, dirs, filenames in os.walk('data/'):
+                for filename in filenames:
                     files.append(os.path.join(root, filename))
 
     if not files:
@@ -33,153 +32,152 @@ def tool():
     issues = {}
 
     for file in files:
+        file_issues = []
         if file.endswith('.csv'):
-            with open(file, 'r') as f:
-                header = f.readline().strip().split(',')
-                rows = [dict(zip(header, line.strip().split(','))) for line in f.readlines()]
+            with open(file, newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                rows = list(reader)
+                if not rows:
+                    continue
 
-            # Check for duplicates
-            order_id_key = find_key(rows[0], ["order_id"]) or "order_id"
-            order_ids = {}
-            for row in rows:
-                order_id = row.get(order_id_key)
-                if order_id:
-                    if order_id in order_ids:
-                        order_ids[order_id] += 1
+                # Detect fields
+                total_key = find_key(rows[0], ['total']) or 'total'
+                quantity_key = find_key(rows[0], ['quantity']) or 'quantity'
+                currency_key = find_key(rows[0], ['currency']) or 'currency'
+                order_id_key = find_key(rows[0], ['order_id']) or 'order_id'
+
+                # Check for duplicates
+                seen_order_ids = set()
+                duplicate_count = 0
+                for row in rows:
+                    order_id = row.get(order_id_key)
+                    if order_id in seen_order_ids:
+                        duplicate_count += 1
                     else:
-                        order_ids[order_id] = 1
+                        seen_order_ids.add(order_id)
 
-            duplicates = {k: v for k, v in order_ids.items() if v > 1}
-            if duplicates:
-                issues[file] = issues.get(file, []) + [{
-                    "issue_type": "DUPLICATE_RECORDS",
-                    "description": "Duplicate order_id found.",
-                    "affected_count": sum(duplicates.values()) - len(duplicates),
-                    "examples": list(duplicates.keys())
-                }]
+                if duplicate_count > 0:
+                    file_issues.append({
+                        "issue_type": "DUPLICATE RECORDS",
+                        "description": "Duplicate order_id found.",
+                        "affected_count": duplicate_count,
+                        "examples": [row for row in rows if row.get(order_id_key) in seen_order_ids]
+                    })
 
-            # Check for missing values
-            missing_values = {}
-            for row in rows:
-                for key in row:
-                    if row[key] in ["", None]:
-                        missing_values[key] = missing_values.get(key, 0) + 1
+                # Check for missing/empty values
+                missing_count = sum(1 for row in rows if not row.get(total_key) or not row.get(quantity_key) or not row.get(currency_key))
+                if missing_count > 0:
+                    file_issues.append({
+                        "issue_type": "MISSING / EMPTY VALUES",
+                        "description": "Missing or empty values in total, quantity, or currency.",
+                        "affected_count": missing_count,
+                        "examples": [row for row in rows if not row.get(total_key) or not row.get(quantity_key) or not row.get(currency_key)]
+                    })
 
-            if missing_values:
-                issues[file] = issues.get(file, []) + [{
-                    "issue_type": "MISSING_VALUES",
-                    "description": "Missing or empty values found.",
-                    "affected_count": sum(missing_values.values()),
-                    "examples": list(missing_values.keys())
-                }]
+                # Check for invalid numeric values
+                invalid_count = sum(1 for row in rows if (row.get(quantity_key) and float(row.get(quantity_key)) < 0) or (not row.get(total_key) or not row.get(total_key).replace('.', '', 1).isdigit()))
+                if invalid_count > 0:
+                    file_issues.append({
+                        "issue_type": "INVALID NUMERIC VALUES",
+                        "description": "Invalid numeric values found in quantity or total.",
+                        "affected_count": invalid_count,
+                        "examples": [row for row in rows if (row.get(quantity_key) and float(row.get(quantity_key)) < 0) or (not row.get(total_key) or not row.get(total_key).replace('.', '', 1).isdigit())]
+                    })
 
-            # Check for invalid numeric values
-            invalid_numeric = []
-            for row in rows:
-                total_key = find_key(row, ["total", "amount", "revenue"]) or "total"
-                quantity_key = find_key(row, ["quantity", "count"]) or "quantity"
-                total = row.get(total_key)
-                quantity = row.get(quantity_key)
-
-                if total == "" or not re.match(r'^\d+(\.\d+)?$', total):
-                    invalid_numeric.append(row)
-                if quantity and (not quantity.isdigit() or int(quantity) < 0):
-                    invalid_numeric.append(row)
-
-            if invalid_numeric:
-                issues[file] = issues.get(file, []) + [{
-                    "issue_type": "INVALID_NUMERIC_VALUES",
-                    "description": "Invalid numeric values found.",
-                    "affected_count": len(invalid_numeric),
-                    "examples": [row for row in invalid_numeric]
-                }]
-
-            # Check for unexpected currency values
-            currency_key = find_key(rows[0], ["currency"]) or "currency"
-            unexpected_currencies = []
-            valid_currencies = {"USD", "EUR", "GBP", "JPY"}
-            for row in rows:
-                currency = row.get(currency_key)
-                if currency and currency not in valid_currencies:
-                    unexpected_currencies.append(currency)
-
-            if unexpected_currencies:
-                issues[file] = issues.get(file, []) + [{
-                    "issue_type": "UNEXPECTED_CURRENCY_VALUES",
-                    "description": "Unexpected currency values found.",
-                    "affected_count": len(unexpected_currencies),
-                    "examples": list(set(unexpected_currencies))
-                }]
+                # Check for unknown currencies
+                valid_currencies = {'USD', 'EUR', 'GBP', 'JPY'}
+                unknown_currency_count = sum(1 for row in rows if row.get(currency_key) and row[currency_key] not in valid_currencies)
+                if unknown_currency_count > 0:
+                    file_issues.append({
+                        "issue_type": "UNKNOWN / UNEXPECTED VALUES",
+                        "description": "Unknown currency values found.",
+                        "affected_count": unknown_currency_count,
+                        "examples": [row for row in rows if row.get(currency_key) and row[currency_key] not in valid_currencies]
+                    })
 
         elif file.endswith('.json'):
-            with open(file, 'r') as f:
-                data = json.load(f)
+            with open(file) as jsonfile:
+                data = json.load(jsonfile)
                 rows = data if isinstance(data, list) else list(data.values())
+                if not rows:
+                    continue
 
-            # Check for missing fields
-            missing_fields = {}
-            for row in rows:
-                product_id_key = find_key(row, ["product_id"]) or "product_id"
-                stock_key = find_key(row, ["stock"]) or "stock"
-                reorder_point_key = find_key(row, ["reorder_point"]) or "reorder_point"
+                # Detect fields
+                stock_key = find_key(rows[0], ['stock']) or 'stock'
+                reorder_point_key = find_key(rows[0], ['reorder_point']) or 'reorder_point'
 
-                if product_id_key not in row:
-                    missing_fields[product_id_key] = missing_fields.get(product_id_key, 0) + 1
-                if stock_key not in row or row[stock_key] < 0:
-                    missing_fields[stock_key] = missing_fields.get(stock_key, 0) + 1
-                if reorder_point_key not in row or row[reorder_point_key] == "":
-                    missing_fields[reorder_point_key] = missing_fields.get(reorder_point_key, 0) + 1
+                # Check for missing fields
+                missing_fields_count = sum(1 for row in rows if not row.get(stock_key) or (row.get(reorder_point_key) is None))
+                if missing_fields_count > 0:
+                    file_issues.append({
+                        "issue_type": "MISSING FIELDS",
+                        "description": "Missing stock or reorder_point fields.",
+                        "affected_count": missing_fields_count,
+                        "examples": [row for row in rows if not row.get(stock_key) or (row.get(reorder_point_key) is None)]
+                    })
 
-            if missing_fields:
-                issues[file] = issues.get(file, []) + [{
-                    "issue_type": "MISSING_FIELDS",
-                    "description": "Missing fields found.",
-                    "affected_count": sum(missing_fields.values()),
-                    "examples": list(missing_fields.keys())
-                }]
+                # Check for invalid values
+                invalid_stock_count = sum(1 for row in rows if row.get(stock_key) and row[stock_key] < 0)
+                if invalid_stock_count > 0:
+                    file_issues.append({
+                        "issue_type": "INVALID VALUES",
+                        "description": "Negative stock values found.",
+                        "affected_count": invalid_stock_count,
+                        "examples": [row for row in rows if row.get(stock_key) and row[stock_key] < 0]
+                    })
 
         elif file.endswith('.log'):
-            with open(file, 'r') as f:
-                lines = f.readlines()
+            with open(file) as logfile:
+                lines = logfile.readlines()
+                malformed_count = sum(1 for line in lines if '=' not in line)
+                if malformed_count > 0:
+                    file_issues.append({
+                        "issue_type": "MALFORMED LINES",
+                        "description": "Lines that do NOT contain key=value pairs.",
+                        "affected_count": malformed_count,
+                        "examples": [line.strip() for line in lines if '=' not in line]
+                    })
 
-            malformed_lines = []
-            multi_line_entries = []
-            inconsistent_formats = []
-            invalid_latency = []
+                # Check for multi-line entries (simple heuristic)
+                multi_line_count = sum(1 for i in range(len(lines) - 1) if lines[i].strip() and not lines[i + 1].strip())
+                if multi_line_count > 0:
+                    file_issues.append({
+                        "issue_type": "MULTI-LINE ENTRIES",
+                        "description": "Detected potential multi-line entries.",
+                        "affected_count": multi_line_count,
+                        "examples": [lines[i].strip() for i in range(len(lines) - 1) if lines[i].strip() and not lines[i + 1].strip()]
+                    })
 
-            for line in lines:
-                if '=' not in line:
-                    malformed_lines.append(line.strip())
-                elif 'latency' in line:
-                    latency_value = line.split('latency=')[-1].strip()
-                    if not latency_value.isdigit():
-                        invalid_latency.append(line.strip())
+                # Check for inconsistent formats
+                inconsistent_count = sum(1 for line in lines if not any(keyword in line for keyword in ['method', 'endpoint', 'status']))
+                if inconsistent_count > 0:
+                    file_issues.append({
+                        "issue_type": "INCONSISTENT FORMATS",
+                        "description": "Lines missing method/endpoint/status.",
+                        "affected_count": inconsistent_count,
+                        "examples": [line.strip() for line in lines if not any(keyword in line for keyword in ['method', 'endpoint', 'status'])]
+                    })
 
-            if malformed_lines:
-                issues[file] = issues.get(file, []) + [{
-                    "issue_type": "MALFORMED_LINES",
-                    "description": "Malformed lines found.",
-                    "affected_count": len(malformed_lines),
-                    "examples": malformed_lines
-                }]
+                # Check for invalid latency
+                invalid_latency_count = sum(1 for line in lines if 'latency' in line and not line.split('=')[1].strip().isdigit())
+                if invalid_latency_count > 0:
+                    file_issues.append({
+                        "issue_type": "INVALID LATENCY",
+                        "description": "Latency values are not numeric.",
+                        "affected_count": invalid_latency_count,
+                        "examples": [line.strip() for line in lines if 'latency' in line and not line.split('=')[1].strip().isdigit()]
+                    })
 
-            if invalid_latency:
-                issues[file] = issues.get(file, []) + [{
-                    "issue_type": "INVALID_LATENCY",
-                    "description": "Invalid latency values found.",
-                    "affected_count": len(invalid_latency),
-                    "examples": invalid_latency
-                }]
+        if file_issues:
+            issues[file] = file_issues
 
-    # Write issues to output file
-    output_file = 'output/data_audit.json'
-    with open(output_file, 'w') as f:
-        json.dump(issues, f, indent=4)
+    # Write findings to output file
+    with open('output/data_audit.json', 'w') as outfile:
+        json.dump(issues, outfile)
 
-    # Create summary
+    # Summary of findings
     summary = []
-    for file, issue_list in issues.items():
-        total_issues = sum(issue['affected_count'] for issue in issue_list)
-        summary.append(f"{file}: {total_issues} issues found.")
-
-    return "\n".join(summary)
+    for file, file_issues in issues.items():
+        summary.append(f"{file}: {len(file_issues)} issues found.")
+    
+    return "\n".join(summary) if summary else "No issues found."

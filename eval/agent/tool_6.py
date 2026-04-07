@@ -17,16 +17,15 @@ def tool():
     tables = cursor.fetchall()
 
     # Prefer 'requests' table if it exists
-    table_name = 'requests' if ('requests',) in tables else tables[0][0]
-
-    # Get the columns of the chosen table
-    cursor.execute(f"PRAGMA table_info({table_name})")
-    columns_info = cursor.fetchall()
-    columns = [col[1] for col in columns_info]
+    table_name = 'requests'
+    if table_name not in [t[0] for t in tables]:
+        # Otherwise choose the table with the most rows
+        table_name = max(tables, key=lambda t: cursor.execute(f"SELECT COUNT(*) FROM {t[0]}").fetchone()[0])[0]
 
     # Step 3: Load data
     cursor.execute(f"SELECT * FROM {table_name}")
     rows = cursor.fetchall()
+    columns = [column[0] for column in cursor.description]
 
     # Step 4: Detect columns
     endpoint_key = find_key(columns, ["endpoint", "path", "route", "uri"]) or "endpoint"
@@ -35,7 +34,6 @@ def tool():
 
     # Step 5: Grouping
     endpoint_data = {}
-    
     for row in rows:
         endpoint = row[columns.index(endpoint_key)]
         status = row[columns.index(status_key)]
@@ -54,7 +52,7 @@ def tool():
         if isinstance(latency, (int, float)):
             endpoint_data[endpoint]['latencies'].append(latency)
 
-    # Step 6: Calculate metrics and filter
+    # Step 6: Calculate metrics
     results = []
     for endpoint, data in endpoint_data.items():
         if data['latencies']:
@@ -68,11 +66,6 @@ def tool():
                 'p99_latency': p99_latency
             })
 
-    # Sort by p99_latency DESC and get top 10
+    # Step 7: Sort by p99_latency DESC and return top 10
     results.sort(key=lambda x: x['p99_latency'], reverse=True)
-    top_results = results[:10]
-
-    # Close the database connection
-    conn.close()
-
-    return top_results if top_results else []
+    return results[:10] if results else []
