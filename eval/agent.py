@@ -64,12 +64,6 @@ GLOBAL RULES:
 - Do NOT use pandas
 - Do NOT crash on missing fields
 - NEVER return empty or zero unless dataset is empty
-
-NO HARDCODING:
-
-- NEVER use specific column names
-- NEVER rely on known dataset semantics
-- ALWAYS infer from data
 """
 
     EXTRA_RULES = ""
@@ -204,65 +198,36 @@ INVALID IF:
     # ---------------- LOG ----------------
     if task_type == "log":
         EXTRA_RULES += """
-LOG TASK (CRITICAL):
+   LOG TASK (CRITICAL):
 
 FILE DISCOVERY (MANDATORY):
+
 - You MUST locate the log file dynamically
-- Search recursively under 'data/' directory
-- Prefer 'data/logs/' but fallback to any '.log' file
-- Use os.walk('data/')
-- Pick the FIRST file that endswith('.log')
-- FAIL if no file found
+- Search for files ending with '.log' inside 'data/' directory
 
-SCHEMA DISCOVERY (MANDATORY):
-- DO NOT assume fixed structure
-- Read first 20 lines to infer format
-- Detect:
-  - key=value pairs (e.g. endpoint=/api/...)
-  - positional format (e.g. GET /api/... 200 123ms)
-  - mixed formats
+Example approach:
+- os.walk('data/')
+- find file that endswith('.log')
 
-FIELD EXTRACTION (ROBUST):
-You must dynamically extract:
-- method → token in [GET, POST, PUT, DELETE, PATCH]
-- endpoint → token starting with '/'
-- status → integer between 100–599
-- latency → integer (may include 'ms' or key=value)
+- Use the FIRST matching file
 
-Support BOTH:
-1) positional:
-   GET /api/users 200 123ms
-2) key=value:
-   method=GET endpoint=/api/users status=200 latency_ms=123
+PARSING:
 
-RULES:
-- DO NOT skip lines unless parsing truly fails
-- DO NOT rely on fixed indices
-- Prefer pattern detection over positions
-- Strip 'ms' if exists
-- Ignore malformed lines (do not crash)
+- Read file line by line
+- Ignore empty lines
+- Lines are space-separated
 
-AGGREGATION:
-For each (method, endpoint):
-- total request count
-- average latency (ms)
-- error rate (%) where status >= 400
-- p95 latency (ms)
+Example:
+GET /api/payments 500 123ms
 
-P95:
-- sort latencies
-- index = ceil(0.95 * N) - 1
-
-OUTPUT:
-- Sort by error rate DESC
-- Return TOP 5 endpoints
-
-FORMAT:
-- Return a TABLE STRING (aligned columns)
+Extract:
+- method = parts[0]
+- endpoint = parts[1]
+- status = int(parts[2])
+- latency = int(parts[3].replace('ms',''))
 
 INVALID IF:
 - no .log file found
-- no valid rows parsed
 - result is empty
     """
 
