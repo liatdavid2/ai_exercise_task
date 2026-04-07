@@ -89,6 +89,50 @@ def find_reusable_tool(task: str):
 # ---------------------------
 def generate_tool_code(task: str) -> str:
 
+    ANOMALY_RULES = ""
+
+    if "anomaly" in task.lower():
+        ANOMALY_RULES = """
+    ANOMALY TASK (CRITICAL):
+
+    - You MUST:
+
+    1. Group data by:
+        product_id, date
+
+    2. Compute:
+        daily_quantity = sum(quantity per day)
+
+    3. For EACH product:
+        - compute mean of daily_quantity
+        - compute std deviation
+
+    4. Filter:
+        only products with >= 20 total records
+
+    5. Detect anomaly:
+        z_score = (value - mean) / std
+        anomaly if z_score > 3
+
+    6. You MUST return FULL anomaly records:
+        - product_id
+        - product_name
+        - date
+        - daily_quantity
+        - mean_quantity
+        - std_dev
+        - z_score
+
+    7. You MUST write JSON file:
+        output/anomaly_report.json
+
+    8. Returning only summary is INVALID
+
+    9. You MUST analyze ALL dates (not partial)
+
+    10. If anomalies < expected → logic is WRONG
+    """
+
     DB_RULES = """
     DATABASE TASK (CRITICAL):
 
@@ -148,6 +192,8 @@ If task involves currency conversion:
 - Do NOT return 0 unless file is empty
 
 {DB_RULES}
+
+{ANOMALY_RULES}
 
 STRICT RULES:
 - Use only Python standard library
