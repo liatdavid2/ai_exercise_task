@@ -3,6 +3,7 @@ import json
 import os
 import csv
 from collections import defaultdict
+from datetime import datetime
 
 def tool():
     # Step 1: File discovery
@@ -10,33 +11,31 @@ def tool():
     files = list(set(files))  # Remove duplicates
 
     # Prefer files inside 'data/' if exist
-    if not files:
-        # Fallback: known filenames
-        known_files = ['data/employees.json', 'data/sales.csv', 'data/app.log']
-        for known_file in known_files:
-            if os.path.exists(known_file):
-                files.append(known_file)
+    data_files = [f for f in files if 'data/' in f]
+    if data_files:
+        files = data_files
 
-        # Fallback: os.walk
-        for root, dirs, filenames in os.walk('data/'):
-            for filename in filenames:
-                if filename.endswith('.csv'):
-                    files.append(os.path.join(root, filename))
+    # Step 2: Fallback if no files found
+    if not files:
+        known_filenames = ['employees.json', 'sales.csv', 'app.log']
+        for filename in known_filenames:
+            if os.path.exists(filename):
+                files.append(filename)
+
+        if not files:
+            for root, _, filenames in os.walk('data/'):
+                for filename in filenames:
+                    if filename.endswith('.csv'):
+                        files.append(os.path.join(root, filename))
 
     if not files:
         return "No matching file found"
 
-    # Step 2: Process sales.csv
-    sales_file = None
-    for file in files:
-        if 'sales.csv' in file:
-            sales_file = file
-            break
-
+    # Step 3: Process sales.csv
+    sales_file = next((f for f in files if 'sales.csv' in f), None)
     if not sales_file:
-        return "No matching file found"
+        return "No matching sales file found"
 
-    # Step 3: Read and process the CSV file
     revenue_per_category = defaultdict(float)
 
     with open(sales_file, mode='r', newline='', encoding='utf-8') as f:
@@ -50,22 +49,23 @@ def tool():
             if category and revenue and date:
                 try:
                     revenue = float(revenue)
-                    if '2024-12' in date:  # Check for December 2024
+                    date_obj = datetime.strptime(date, '%Y-%m-%d')
+                    if date_obj.year == 2024 and date_obj.month == 12:
                         revenue_per_category[category] += revenue
                 except ValueError:
                     continue  # Skip rows with invalid revenue
 
     # Step 4: Identify the category with the highest revenue in December 2024
     if not revenue_per_category:
-        return "No matching file found"
+        return "No revenue data found for December 2024"
 
-    highest_category = max(revenue_per_category.items(), key=lambda x: x[1], default=(None, 0))
-    highest_category_name, highest_revenue = highest_category
+    highest_category = max(revenue_per_category, key=revenue_per_category.get)
+    highest_revenue = revenue_per_category[highest_category]
 
-    # Step 5: Prepare the structured result
+    # Step 5: Prepare the result
     result = {
         'total_revenue_per_category': {k: round(v, 2) for k, v in revenue_per_category.items()},
-        'highest_category': highest_category_name,
+        'highest_category': highest_category,
         'highest_revenue': round(highest_revenue, 2)
     }
 

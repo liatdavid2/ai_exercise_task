@@ -1,13 +1,6 @@
-import sqlite3
-
-def find_key(d, options):
-    for k in d:
-        for opt in options:
-            if opt in k.lower():
-                return k
-    return None
-
 def tool():
+    import sqlite3
+
     # Step 1: Connect to the SQLite database
     conn = sqlite3.connect('data/metrics.db')
     cursor = conn.cursor()
@@ -16,37 +9,49 @@ def tool():
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
     tables = cursor.fetchall()
 
-    # Prefer 'requests' table if it exists, otherwise choose the table with the most rows
-    table_name = 'requests'
-    if table_name not in [t[0] for t in tables]:
-        # Find the table with the most rows
-        max_rows = 0
-        for table in tables:
-            cursor.execute(f"SELECT COUNT(*) FROM {table[0]}")
-            row_count = cursor.fetchone()[0]
-            if row_count > max_rows:
-                max_rows = row_count
-                table_name = table[0]
+    target_table = None
+    max_rows = 0
+
+    for (table_name,) in tables:
+        cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
+        row_count = cursor.fetchone()[0]
+        if table_name == 'requests':
+            target_table = table_name
+            break
+        elif row_count > max_rows:
+            max_rows = row_count
+            target_table = table_name
+
+    if target_table is None:
+        return []
 
     # Step 3: Load data
-    cursor.execute(f"SELECT * FROM {table_name}")
+    cursor.execute(f"SELECT * FROM {target_table}")
     rows = cursor.fetchall()
 
     # Get column names
     column_names = [description[0] for description in cursor.description]
 
     # Step 4: Detect columns
-    endpoint_key = find_key(column_names, ["endpoint", "path", "route", "uri"]) or "endpoint"
-    status_key = find_key(column_names, ["status", "status_code", "code"]) or "status_code"
-    latency_key = find_key(column_names, ["latency", "response_time", "duration", "ms"]) or "latency_ms"
+    endpoint_col = find_key(column_names, ['endpoint', 'path', 'route', 'uri'])
+    status_col = find_key(column_names, ['status', 'status_code', 'code'])
+    latency_col = find_key(column_names, ['latency', 'response_time', 'duration', 'ms'])
+
+    # Fallback if detection fails
+    if endpoint_col is None:
+        endpoint_col = 'endpoint'
+    if status_col is None:
+        status_col = 'status_code'
+    if latency_col is None:
+        latency_col = 'latency_ms'
 
     # Step 5: Grouping
     endpoint_data = {}
-    
+
     for row in rows:
-        endpoint = row[column_names.index(endpoint_key)]
-        status = row[column_names.index(status_key)]
-        latency = row[column_names.index(latency_key)]
+        endpoint = row[column_names.index(endpoint_col)]
+        status = row[column_names.index(status_col)]
+        latency = row[column_names.index(latency_col)]
 
         if endpoint not in endpoint_data:
             endpoint_data[endpoint] = {
@@ -58,11 +63,12 @@ def tool():
         endpoint_data[endpoint]['total_requests'] += 1
         if status >= 400:
             endpoint_data[endpoint]['error_count'] += 1
-        if isinstance(latency, (int, float)):
+        if isinstance(latency, (int, float)) and latency is not None:
             endpoint_data[endpoint]['latencies'].append(latency)
 
-    # Step 6: Calculate metrics and filter
+    # Prepare results
     results = []
+
     for endpoint, data in endpoint_data.items():
         if data['latencies']:
             total_requests = data['total_requests']
@@ -75,18 +81,15 @@ def tool():
                 'p99_latency': p99_latency
             })
 
-    # Sort by p99_latency DESC and get top 10
+    # Step 6: Sort + Filter
     results.sort(key=lambda x: x['p99_latency'], reverse=True)
-    top_10_results = results[:10]
 
-    # Step 7: Output format
-    if not top_10_results:
-        raise ValueError("No valid results found, but data exists.")
+    # Return TOP 10 endpoints
+    return results[:10]
 
-    return top_10_results
-
-# Example usage
-if __name__ == "__main__":
-    output = tool()
-    for entry in output:
-        print(entry)
+def find_key(d, options):
+    for k in d:
+        for opt in options:
+            if opt in k.lower():
+                return k
+    return None

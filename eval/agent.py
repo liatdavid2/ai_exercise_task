@@ -256,8 +256,6 @@ GENERIC TASK RULES:
 
         if ".db" in t or "sqlite" in t or "database" in t:
             return "db"
-        if "dashboard" in t or "cross-source" in t or "multiple" in t:
-            return "multi"
         if "audit" in t or "integrity" in t or "quality" in t:
             return "audit"
         if "anomaly" in t:
@@ -266,31 +264,29 @@ GENERIC TASK RULES:
             return "log"
         if "exchange" in t or "currency" in t or "usd" in t:
             return "currency"
-        if ".csv" in t:
-            return "csv"
+        if "dashboard" in t or "cross-source" in t or "multiple data sources" in t:
+            return "multi"
 
         return "generic"
 
     def detect_rule_names(self, task: str):
-        task_type = self.detect_task_type(task)
+        t = task.lower()
 
-        if task_type == "db":
-            return ["db"]
-
-        names = ["file"]
-
-        if task_type == "multi":
-            names.append("multi")
-        elif task_type == "audit":
-            names.append("audit")
-        elif task_type == "log":
-            names.append("log")
-        elif task_type == "anomaly":
-            names.append("anomaly")
-        elif task_type == "currency":
-            names.append("currency")
+        names = ["default"]
+        if "exchange" in t or "currency" in t or "usd" in t:
+            names += ["file", "currency"]
+        elif "dashboard" in t or "cross-source" in t or "multiple" in t:
+            names += ["file", "multi"]
+        elif "audit" in t or "integrity" in t or "quality" in t:
+            names += ["file", "audit"]
+        elif ".db" in t or "sqlite" in t or "database" in t:
+            names += ["db"]
+        elif ".log" in t or "log" in t:
+            names += ["file", "log"]
+        elif "anomaly" in t:
+            names += ["file", "anomaly"]
         else:
-            names.append("generic")
+            names += ["file"]
 
         return names
 
