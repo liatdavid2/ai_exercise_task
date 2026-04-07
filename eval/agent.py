@@ -132,7 +132,7 @@ That solves the task.
 IMPORTANT PRACTICAL RULES:
 
 - For CSV:
-    - If 'total' exists → use it for revenue
+    - Prefer numeric columns representing aggregated values (e.g. totals)
     - If 'category' exists → group by it
     - If 'date' exists → parse and filter by date
 
