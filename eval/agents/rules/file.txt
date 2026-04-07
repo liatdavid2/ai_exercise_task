@@ -1,0 +1,55 @@
+FILE DISCOVERY (CRITICAL):
+
+- You MUST search using BOTH:
+
+    glob.glob('data/**/*.ext', recursive=True)
+    glob.glob('**/*.ext', recursive=True)
+
+- Combine results:
+
+    files = glob.glob('data/**/*.ext', recursive=True) + glob.glob('**/*.ext', recursive=True)
+
+- Remove duplicates
+
+- Prefer files inside 'data/' if exist
+
+- NEVER assume only one location
+
+
+
+NO FILE FOUND HANDLING (CRITICAL):
+
+- If no file found:
+    - DO NOT immediately return
+
+    - Try fallback:
+
+        1. Try searching for known filenames:
+            employees.json
+            sales.csv
+            app.log
+
+        2. Try os.walk('data/')
+
+    - ONLY if still nothing:
+        return "No matching file found"
+
+
+JSON HANDLING (CRITICAL):
+
+- If JSON file contains list:
+    iterate over items
+
+- If dict:
+    use values()
+
+- You MUST inspect structure:
+
+    data = json.load(f)
+
+    if isinstance(data, list):
+        rows = data
+    elif isinstance(data, dict):
+        rows = list(data.values())
+
+

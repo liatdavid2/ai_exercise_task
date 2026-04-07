@@ -1,0 +1,108 @@
+
+LOG ANALYSIS TASK (CRITICAL):
+
+Log format is mostly:
+
+    method=GET endpoint=/api/... status=200 latency_ms=123
+
+--------------------------------------------------
+STEP 1 — PARSE (PRIMARY - STRICT)
+--------------------------------------------------
+
+You MUST parse using:
+
+    parts = line.strip().split()
+
+    data = {}
+    for p in parts:
+        if '=' in p:
+            k, v = p.split('=', 1)
+            data[k] = v
+
+--------------------------------------------------
+STEP 2 — EXTRACT FIELDS (STRICT)
+--------------------------------------------------
+
+- Use EXACT keys first:
+
+    method = data.get("method", "GET")
+    endpoint = data.get("endpoint")
+    status = int(data.get("status", 200))
+
+- For latency:
+
+    import re
+    raw = data.get("latency_ms", "0")
+    m = re.search(r'(\\d+\\.?\\d*)', raw)
+    latency = float(m.group(1)) if m else 0
+
+--------------------------------------------------
+STEP 3 — FALLBACK (ONLY IF endpoint missing)
+--------------------------------------------------
+
+If endpoint is missing:
+
+    import re
+
+    m = re.search(r'/api/\\S+', line)
+    endpoint = m.group(0) if m else None
+
+If still missing → skip line
+
+--------------------------------------------------
+STEP 4 — GROUPING
+--------------------------------------------------
+
+- Group by (method, endpoint)
+
+- For each group:
+
+    total_requests = count
+    avg_latency = sum(latencies) / count
+    error_rate = count(status >= 400) / total_requests
+
+- Store ALL latency values
+
+--------------------------------------------------
+STEP 5 — P95
+--------------------------------------------------
+
+- values = sorted(latencies)
+
+- index = int(0.95 * (len(values) - 1))
+
+- p95_latency = values[index]
+
+--------------------------------------------------
+STEP 6 — SORT
+--------------------------------------------------
+
+- Sort by error_rate DESC
+
+--------------------------------------------------
+STEP 7 — OUTPUT
+--------------------------------------------------
+
+- Return top 5 groups
+
+- Each row:
+
+{
+"method": "...",
+"endpoint": "...",
+"total_requests": int,
+"avg_latency": float,
+"error_rate": float,
+"p95_latency": float
+}
+
+--------------------------------------------------
+IMPORTANT RULES
+--------------------------------------------------
+
+- DO NOT skip rows if endpoint exists
+- DO NOT require flexible field names
+- DO NOT overcomplicate parsing
+- You MUST process many rows (not just a few)
+- Returning empty result is INVALID
+

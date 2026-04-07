@@ -3,6 +3,7 @@ import json
 import traceback
 from dotenv import load_dotenv
 from openai import OpenAI
+from eval.agents import RulesAgent
 
 # ---------------------------
 # ENV
@@ -84,7 +85,7 @@ def find_reusable_tool(task: str):
     return None
 
 def save_tool_to_file(code: str, index: int):
-    folder = "tools"
+    folder = "agent"
 
     os.makedirs(folder, exist_ok=True)
 
@@ -299,6 +300,8 @@ JSON HANDLING (CRITICAL):
     - Do NOT skip valid data
     - Returning only summary → INVALID
     """
+  
+  
     LOG_RULES = """
     LOG ANALYSIS TASK (CRITICAL):
 
@@ -408,6 +411,7 @@ JSON HANDLING (CRITICAL):
     - Returning empty result is INVALID
     """
 
+
     DB_RULES = """
     DATABASE TASK (CRITICAL):
 
@@ -486,6 +490,8 @@ JSON HANDLING (CRITICAL):
 
     - Returning [] is INVALID
 """
+ 
+ 
     MULTI_SOURCE_RULES = """
 MULTI-SOURCE DASHBOARD TASK (CRITICAL):
 

@@ -1,0 +1,3976 @@
+{
+    "data/employees.json": [
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 1,
+                    "name": "Alice Chen",
+                    "department": "Engineering",
+                    "title": "Staff Engineer",
+                    "salary": 185000,
+                    "start_date": "2021-03-15",
+                    "location": "San Francisco"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 1,
+                    "name": "Alice Chen",
+                    "department": "Engineering",
+                    "title": "Staff Engineer",
+                    "salary": 185000,
+                    "start_date": "2021-03-15",
+                    "location": "San Francisco"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 2,
+                    "name": "Bob Martinez",
+                    "department": "Engineering",
+                    "title": "Senior Engineer",
+                    "salary": 165000,
+                    "start_date": "2022-01-10",
+                    "location": "San Francisco"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 2,
+                    "name": "Bob Martinez",
+                    "department": "Engineering",
+                    "title": "Senior Engineer",
+                    "salary": 165000,
+                    "start_date": "2022-01-10",
+                    "location": "San Francisco"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 3,
+                    "name": "Carol Wu",
+                    "department": "Engineering",
+                    "title": "Senior Engineer",
+                    "salary": 162000,
+                    "start_date": "2022-06-20",
+                    "location": "New York"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 3,
+                    "name": "Carol Wu",
+                    "department": "Engineering",
+                    "title": "Senior Engineer",
+                    "salary": 162000,
+                    "start_date": "2022-06-20",
+                    "location": "New York"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 4,
+                    "name": "David Kim",
+                    "department": "Engineering",
+                    "title": "Engineer",
+                    "salary": 135000,
+                    "start_date": "2023-02-01",
+                    "location": "San Francisco"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 4,
+                    "name": "David Kim",
+                    "department": "Engineering",
+                    "title": "Engineer",
+                    "salary": 135000,
+                    "start_date": "2023-02-01",
+                    "location": "San Francisco"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 5,
+                    "name": "Eva Novak",
+                    "department": "Engineering",
+                    "title": "Engineer",
+                    "salary": 132000,
+                    "start_date": "2023-05-15",
+                    "location": "Remote"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 5,
+                    "name": "Eva Novak",
+                    "department": "Engineering",
+                    "title": "Engineer",
+                    "salary": 132000,
+                    "start_date": "2023-05-15",
+                    "location": "Remote"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 6,
+                    "name": "Frank Liu",
+                    "department": "Engineering",
+                    "title": "Junior Engineer",
+                    "salary": 110000,
+                    "start_date": "2024-01-08",
+                    "location": "San Francisco"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 6,
+                    "name": "Frank Liu",
+                    "department": "Engineering",
+                    "title": "Junior Engineer",
+                    "salary": 110000,
+                    "start_date": "2024-01-08",
+                    "location": "San Francisco"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 7,
+                    "name": "Grace Patel",
+                    "department": "Engineering",
+                    "title": "Junior Engineer",
+                    "salary": 108000,
+                    "start_date": "2024-03-20",
+                    "location": "New York"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 7,
+                    "name": "Grace Patel",
+                    "department": "Engineering",
+                    "title": "Junior Engineer",
+                    "salary": 108000,
+                    "start_date": "2024-03-20",
+                    "location": "New York"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 8,
+                    "name": "Henry Zhang",
+                    "department": "Engineering",
+                    "title": "Engineering Manager",
+                    "salary": 195000,
+                    "start_date": "2020-11-01",
+                    "location": "San Francisco"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 8,
+                    "name": "Henry Zhang",
+                    "department": "Engineering",
+                    "title": "Engineering Manager",
+                    "salary": 195000,
+                    "start_date": "2020-11-01",
+                    "location": "San Francisco"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 9,
+                    "name": "Irene Foster",
+                    "department": "Marketing",
+                    "title": "Marketing Director",
+                    "salary": 170000,
+                    "start_date": "2021-08-01",
+                    "location": "New York"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 9,
+                    "name": "Irene Foster",
+                    "department": "Marketing",
+                    "title": "Marketing Director",
+                    "salary": 170000,
+                    "start_date": "2021-08-01",
+                    "location": "New York"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 10,
+                    "name": "Jake Thompson",
+                    "department": "Marketing",
+                    "title": "Content Manager",
+                    "salary": 120000,
+                    "start_date": "2022-09-15",
+                    "location": "Remote"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 10,
+                    "name": "Jake Thompson",
+                    "department": "Marketing",
+                    "title": "Content Manager",
+                    "salary": 120000,
+                    "start_date": "2022-09-15",
+                    "location": "Remote"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 11,
+                    "name": "Karen Lee",
+                    "department": "Marketing",
+                    "title": "Marketing Specialist",
+                    "salary": 95000,
+                    "start_date": "2023-04-01",
+                    "location": "New York"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 11,
+                    "name": "Karen Lee",
+                    "department": "Marketing",
+                    "title": "Marketing Specialist",
+                    "salary": 95000,
+                    "start_date": "2023-04-01",
+                    "location": "New York"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 12,
+                    "name": "Leo Ramirez",
+                    "department": "Marketing",
+                    "title": "SEO Specialist",
+                    "salary": 92000,
+                    "start_date": "2023-07-20",
+                    "location": "Remote"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 12,
+                    "name": "Leo Ramirez",
+                    "department": "Marketing",
+                    "title": "SEO Specialist",
+                    "salary": 92000,
+                    "start_date": "2023-07-20",
+                    "location": "Remote"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 13,
+                    "name": "Maya Johnson",
+                    "department": "Marketing",
+                    "title": "Social Media Manager",
+                    "salary": 88000,
+                    "start_date": "2024-02-10",
+                    "location": "New York"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 13,
+                    "name": "Maya Johnson",
+                    "department": "Marketing",
+                    "title": "Social Media Manager",
+                    "salary": 88000,
+                    "start_date": "2024-02-10",
+                    "location": "New York"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 14,
+                    "name": "Nathan Brooks",
+                    "department": "Sales",
+                    "title": "VP of Sales",
+                    "salary": 200000,
+                    "start_date": "2020-06-15",
+                    "location": "Chicago"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 14,
+                    "name": "Nathan Brooks",
+                    "department": "Sales",
+                    "title": "VP of Sales",
+                    "salary": 200000,
+                    "start_date": "2020-06-15",
+                    "location": "Chicago"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 15,
+                    "name": "Olivia Scott",
+                    "department": "Sales",
+                    "title": "Account Executive",
+                    "salary": 130000,
+                    "start_date": "2022-03-01",
+                    "location": "Chicago"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 15,
+                    "name": "Olivia Scott",
+                    "department": "Sales",
+                    "title": "Account Executive",
+                    "salary": 130000,
+                    "start_date": "2022-03-01",
+                    "location": "Chicago"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 16,
+                    "name": "Paul Nguyen",
+                    "department": "Sales",
+                    "title": "Account Executive",
+                    "salary": 125000,
+                    "start_date": "2022-08-15",
+                    "location": "New York"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 16,
+                    "name": "Paul Nguyen",
+                    "department": "Sales",
+                    "title": "Account Executive",
+                    "salary": 125000,
+                    "start_date": "2022-08-15",
+                    "location": "New York"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 17,
+                    "name": "Quinn Adams",
+                    "department": "Sales",
+                    "title": "Sales Rep",
+                    "salary": 85000,
+                    "start_date": "2023-11-01",
+                    "location": "Chicago"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 17,
+                    "name": "Quinn Adams",
+                    "department": "Sales",
+                    "title": "Sales Rep",
+                    "salary": 85000,
+                    "start_date": "2023-11-01",
+                    "location": "Chicago"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 18,
+                    "name": "Rachel Torres",
+                    "department": "Sales",
+                    "title": "Sales Rep",
+                    "salary": 82000,
+                    "start_date": "2024-01-15",
+                    "location": "Remote"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 18,
+                    "name": "Rachel Torres",
+                    "department": "Sales",
+                    "title": "Sales Rep",
+                    "salary": 82000,
+                    "start_date": "2024-01-15",
+                    "location": "Remote"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 19,
+                    "name": "Sam Wilson",
+                    "department": "Product",
+                    "title": "VP of Product",
+                    "salary": 210000,
+                    "start_date": "2020-04-01",
+                    "location": "San Francisco"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 19,
+                    "name": "Sam Wilson",
+                    "department": "Product",
+                    "title": "VP of Product",
+                    "salary": 210000,
+                    "start_date": "2020-04-01",
+                    "location": "San Francisco"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 20,
+                    "name": "Tina Park",
+                    "department": "Product",
+                    "title": "Senior Product Manager",
+                    "salary": 175000,
+                    "start_date": "2021-06-15",
+                    "location": "San Francisco"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 20,
+                    "name": "Tina Park",
+                    "department": "Product",
+                    "title": "Senior Product Manager",
+                    "salary": 175000,
+                    "start_date": "2021-06-15",
+                    "location": "San Francisco"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 21,
+                    "name": "Uma Krishnan",
+                    "department": "Product",
+                    "title": "Product Manager",
+                    "salary": 145000,
+                    "start_date": "2022-11-01",
+                    "location": "Remote"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 21,
+                    "name": "Uma Krishnan",
+                    "department": "Product",
+                    "title": "Product Manager",
+                    "salary": 145000,
+                    "start_date": "2022-11-01",
+                    "location": "Remote"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 22,
+                    "name": "Victor Okonkwo",
+                    "department": "Product",
+                    "title": "UX Designer",
+                    "salary": 130000,
+                    "start_date": "2023-03-15",
+                    "location": "New York"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 22,
+                    "name": "Victor Okonkwo",
+                    "department": "Product",
+                    "title": "UX Designer",
+                    "salary": 130000,
+                    "start_date": "2023-03-15",
+                    "location": "New York"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 23,
+                    "name": "Wendy Harris",
+                    "department": "Operations",
+                    "title": "Head of Operations",
+                    "salary": 160000,
+                    "start_date": "2021-01-15",
+                    "location": "Chicago"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 23,
+                    "name": "Wendy Harris",
+                    "department": "Operations",
+                    "title": "Head of Operations",
+                    "salary": 160000,
+                    "start_date": "2021-01-15",
+                    "location": "Chicago"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 24,
+                    "name": "Xavier Diaz",
+                    "department": "Operations",
+                    "title": "DevOps Engineer",
+                    "salary": 150000,
+                    "start_date": "2022-04-01",
+                    "location": "Remote"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 24,
+                    "name": "Xavier Diaz",
+                    "department": "Operations",
+                    "title": "DevOps Engineer",
+                    "salary": 150000,
+                    "start_date": "2022-04-01",
+                    "location": "Remote"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_FIELDS",
+            "description": "Missing required fields in JSON.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 25,
+                    "name": "Yuki Tanaka",
+                    "department": "Operations",
+                    "title": "Office Manager",
+                    "salary": 75000,
+                    "start_date": "2023-09-01",
+                    "location": "San Francisco"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_VALUES",
+            "description": "Reorder point is missing or invalid.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "id": 25,
+                    "name": "Yuki Tanaka",
+                    "department": "Operations",
+                    "title": "Office Manager",
+                    "salary": 75000,
+                    "start_date": "2023-09-01",
+                    "location": "San Francisco"
+                }
+            ]
+        }
+    ],
+    "data/sales.csv": [
+        {
+            "issue_type": "DUPLICATE_RECORDS",
+            "description": "Duplicate order_id found: ORD-00433",
+            "affected_count": 1,
+            "examples": [
+                "ORD-00433"
+            ]
+        },
+        {
+            "issue_type": "DUPLICATE_RECORDS",
+            "description": "Duplicate order_id found: ORD-00892",
+            "affected_count": 1,
+            "examples": [
+                "ORD-00892"
+            ]
+        },
+        {
+            "issue_type": "DUPLICATE_RECORDS",
+            "description": "Duplicate order_id found: ORD-01143",
+            "affected_count": 1,
+            "examples": [
+                "ORD-01143"
+            ]
+        },
+        {
+            "issue_type": "DUPLICATE_RECORDS",
+            "description": "Duplicate order_id found: ORD-01309",
+            "affected_count": 1,
+            "examples": [
+                "ORD-01309"
+            ]
+        },
+        {
+            "issue_type": "DUPLICATE_RECORDS",
+            "description": "Duplicate order_id found: ORD-02814",
+            "affected_count": 1,
+            "examples": [
+                "ORD-02814"
+            ]
+        },
+        {
+            "issue_type": "DUPLICATE_RECORDS",
+            "description": "Duplicate order_id found: ORD-01488",
+            "affected_count": 1,
+            "examples": [
+                "ORD-01488"
+            ]
+        },
+        {
+            "issue_type": "DUPLICATE_RECORDS",
+            "description": "Duplicate order_id found: ORD-01713",
+            "affected_count": 1,
+            "examples": [
+                "ORD-01713"
+            ]
+        },
+        {
+            "issue_type": "DUPLICATE_RECORDS",
+            "description": "Duplicate order_id found: ORD-02455",
+            "affected_count": 1,
+            "examples": [
+                "ORD-02455"
+            ]
+        },
+        {
+            "issue_type": "DUPLICATE_RECORDS",
+            "description": "Duplicate order_id found: ORD-02582",
+            "affected_count": 1,
+            "examples": [
+                "ORD-02582"
+            ]
+        },
+        {
+            "issue_type": "DUPLICATE_RECORDS",
+            "description": "Duplicate order_id found: ORD-02721",
+            "affected_count": 1,
+            "examples": [
+                "ORD-02721"
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-01",
+                    "order_id": "ORD-02872",
+                    "product_id": "P099",
+                    "product_name": "Indoor Basketball",
+                    "category": "Sports",
+                    "quantity": "-4",
+                    "unit_price": "4483.51",
+                    "currency": "JPY",
+                    "total": "-17934.04",
+                    "region": "Asia",
+                    "customer_id": "C0166"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-01",
+                    "order_id": "ORD-02872",
+                    "product_id": "P099",
+                    "product_name": "Indoor Basketball",
+                    "category": "Sports",
+                    "quantity": "-4",
+                    "unit_price": "4483.51",
+                    "currency": "JPY",
+                    "total": "-17934.04",
+                    "region": "Asia",
+                    "customer_id": "C0166"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-02",
+                    "order_id": "ORD-02879",
+                    "product_id": "P031",
+                    "product_name": "Classic T-Shirt",
+                    "category": "Clothing",
+                    "quantity": "-2",
+                    "unit_price": "22.99",
+                    "currency": "EUR",
+                    "total": "-45.98",
+                    "region": "EU",
+                    "customer_id": "C0099"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-02",
+                    "order_id": "ORD-02879",
+                    "product_id": "P031",
+                    "product_name": "Classic T-Shirt",
+                    "category": "Clothing",
+                    "quantity": "-2",
+                    "unit_price": "22.99",
+                    "currency": "EUR",
+                    "total": "-45.98",
+                    "region": "EU",
+                    "customer_id": "C0099"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-03",
+                    "order_id": "ORD-02891",
+                    "product_id": "P080",
+                    "product_name": "Soy Scented Candle",
+                    "category": "Home & Garden",
+                    "quantity": "-3",
+                    "unit_price": "15.63",
+                    "currency": "EUR",
+                    "total": "-46.89",
+                    "region": "EU",
+                    "customer_id": "C0153"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-03",
+                    "order_id": "ORD-02891",
+                    "product_id": "P080",
+                    "product_name": "Soy Scented Candle",
+                    "category": "Home & Garden",
+                    "quantity": "-3",
+                    "unit_price": "15.63",
+                    "currency": "EUR",
+                    "total": "-46.89",
+                    "region": "EU",
+                    "customer_id": "C0153"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_OR_EMPTY_VALUES",
+            "description": "Missing or empty values in total, quantity, or currency.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-03",
+                    "order_id": "ORD-02906",
+                    "product_id": "P125",
+                    "product_name": "Leadership Manual",
+                    "category": "Books",
+                    "quantity": "3",
+                    "unit_price": "24.99",
+                    "currency": "USD",
+                    "total": "",
+                    "region": "US",
+                    "customer_id": "C0069"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-03",
+                    "order_id": "ORD-02906",
+                    "product_id": "P125",
+                    "product_name": "Leadership Manual",
+                    "category": "Books",
+                    "quantity": "3",
+                    "unit_price": "24.99",
+                    "currency": "USD",
+                    "total": "",
+                    "region": "US",
+                    "customer_id": "C0069"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-04",
+                    "order_id": "ORD-02890",
+                    "product_id": "P092",
+                    "product_name": "Yoga Mat Premium",
+                    "category": "Sports",
+                    "quantity": "-2",
+                    "unit_price": "39.99",
+                    "currency": "USD",
+                    "total": "-79.98",
+                    "region": "US",
+                    "customer_id": "C0107"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-04",
+                    "order_id": "ORD-02890",
+                    "product_id": "P092",
+                    "product_name": "Yoga Mat Premium",
+                    "category": "Sports",
+                    "quantity": "-2",
+                    "unit_price": "39.99",
+                    "currency": "USD",
+                    "total": "-79.98",
+                    "region": "US",
+                    "customer_id": "C0107"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-05",
+                    "order_id": "ORD-02876",
+                    "product_id": "P046",
+                    "product_name": "Silk Scarf",
+                    "category": "Clothing",
+                    "quantity": "-4",
+                    "unit_price": "39.99",
+                    "currency": "USD",
+                    "total": "-159.96",
+                    "region": "US",
+                    "customer_id": "C0102"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-05",
+                    "order_id": "ORD-02876",
+                    "product_id": "P046",
+                    "product_name": "Silk Scarf",
+                    "category": "Clothing",
+                    "quantity": "-4",
+                    "unit_price": "39.99",
+                    "currency": "USD",
+                    "total": "-159.96",
+                    "region": "US",
+                    "customer_id": "C0102"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-05",
+                    "order_id": "ORD-02897",
+                    "product_id": "P023",
+                    "product_name": "Smart Plug",
+                    "category": "Electronics",
+                    "quantity": "-1",
+                    "unit_price": "17.99",
+                    "currency": "USD",
+                    "total": "-17.99",
+                    "region": "US",
+                    "customer_id": "C0186"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-05",
+                    "order_id": "ORD-02897",
+                    "product_id": "P023",
+                    "product_name": "Smart Plug",
+                    "category": "Electronics",
+                    "quantity": "-1",
+                    "unit_price": "17.99",
+                    "currency": "USD",
+                    "total": "-17.99",
+                    "region": "US",
+                    "customer_id": "C0186"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-11",
+                    "order_id": "ORD-02885",
+                    "product_id": "P030",
+                    "product_name": "LED Strip Lights",
+                    "category": "Electronics",
+                    "quantity": "-3",
+                    "unit_price": "3287.5",
+                    "currency": "JPY",
+                    "total": "-9862.5",
+                    "region": "Asia",
+                    "customer_id": "C0182"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-11",
+                    "order_id": "ORD-02885",
+                    "product_id": "P030",
+                    "product_name": "LED Strip Lights",
+                    "category": "Electronics",
+                    "quantity": "-3",
+                    "unit_price": "3287.5",
+                    "currency": "JPY",
+                    "total": "-9862.5",
+                    "region": "Asia",
+                    "customer_id": "C0182"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-11",
+                    "order_id": "ORD-02898",
+                    "product_id": "P061",
+                    "product_name": "Coffee Maker Deluxe",
+                    "category": "Home & Garden",
+                    "quantity": "-3",
+                    "unit_price": "89.99",
+                    "currency": "USD",
+                    "total": "-269.97",
+                    "region": "US",
+                    "customer_id": "C0006"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-11",
+                    "order_id": "ORD-02898",
+                    "product_id": "P061",
+                    "product_name": "Coffee Maker Deluxe",
+                    "category": "Home & Garden",
+                    "quantity": "-3",
+                    "unit_price": "89.99",
+                    "currency": "USD",
+                    "total": "-269.97",
+                    "region": "US",
+                    "customer_id": "C0006"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-11",
+                    "order_id": "ORD-02900",
+                    "product_id": "P130",
+                    "product_name": "Music Theory Basics",
+                    "category": "Books",
+                    "quantity": "-4",
+                    "unit_price": "3437.0",
+                    "currency": "JPY",
+                    "total": "-13748.0",
+                    "region": "Asia",
+                    "customer_id": "C0050"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-11",
+                    "order_id": "ORD-02900",
+                    "product_id": "P130",
+                    "product_name": "Music Theory Basics",
+                    "category": "Books",
+                    "quantity": "-4",
+                    "unit_price": "3437.0",
+                    "currency": "JPY",
+                    "total": "-13748.0",
+                    "region": "Asia",
+                    "customer_id": "C0050"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-15",
+                    "order_id": "ORD-02892",
+                    "product_id": "P064",
+                    "product_name": "Bamboo Cutting Board",
+                    "category": "Home & Garden",
+                    "quantity": "-1",
+                    "unit_price": "24.99",
+                    "currency": "USD",
+                    "total": "-24.99",
+                    "region": "US",
+                    "customer_id": "C0102"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-15",
+                    "order_id": "ORD-02892",
+                    "product_id": "P064",
+                    "product_name": "Bamboo Cutting Board",
+                    "category": "Home & Garden",
+                    "quantity": "-1",
+                    "unit_price": "24.99",
+                    "currency": "USD",
+                    "total": "-24.99",
+                    "region": "US",
+                    "customer_id": "C0102"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-19",
+                    "order_id": "ORD-02894",
+                    "product_id": "P102",
+                    "product_name": "Competition Swim Goggles",
+                    "category": "Sports",
+                    "quantity": "-4",
+                    "unit_price": "18.16",
+                    "currency": "GBP",
+                    "total": "-72.64",
+                    "region": "UK",
+                    "customer_id": "C0089"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-19",
+                    "order_id": "ORD-02894",
+                    "product_id": "P102",
+                    "product_name": "Competition Swim Goggles",
+                    "category": "Sports",
+                    "quantity": "-4",
+                    "unit_price": "18.16",
+                    "currency": "GBP",
+                    "total": "-72.64",
+                    "region": "UK",
+                    "customer_id": "C0089"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-20",
+                    "order_id": "ORD-02875",
+                    "product_id": "P055",
+                    "product_name": "Flannel Shirt",
+                    "category": "Clothing",
+                    "quantity": "-4",
+                    "unit_price": "36.79",
+                    "currency": "EUR",
+                    "total": "-147.16",
+                    "region": "EU",
+                    "customer_id": "C0124"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-20",
+                    "order_id": "ORD-02875",
+                    "product_id": "P055",
+                    "product_name": "Flannel Shirt",
+                    "category": "Clothing",
+                    "quantity": "-4",
+                    "unit_price": "36.79",
+                    "currency": "EUR",
+                    "total": "-147.16",
+                    "region": "EU",
+                    "customer_id": "C0124"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_OR_EMPTY_VALUES",
+            "description": "Missing or empty values in total, quantity, or currency.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-20",
+                    "order_id": "ORD-02912",
+                    "product_id": "P089",
+                    "product_name": "Woven Laundry Basket",
+                    "category": "Home & Garden",
+                    "quantity": "3",
+                    "unit_price": "29.99",
+                    "currency": "USD",
+                    "total": "",
+                    "region": "US",
+                    "customer_id": "C0137"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-20",
+                    "order_id": "ORD-02912",
+                    "product_id": "P089",
+                    "product_name": "Woven Laundry Basket",
+                    "category": "Home & Garden",
+                    "quantity": "3",
+                    "unit_price": "29.99",
+                    "currency": "USD",
+                    "total": "",
+                    "region": "US",
+                    "customer_id": "C0137"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-23",
+                    "order_id": "ORD-02871",
+                    "product_id": "P121",
+                    "product_name": "Mystery Novel Collection",
+                    "category": "Books",
+                    "quantity": "-3",
+                    "unit_price": "34.99",
+                    "currency": "USD",
+                    "total": "-104.97",
+                    "region": "US",
+                    "customer_id": "C0129"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-23",
+                    "order_id": "ORD-02871",
+                    "product_id": "P121",
+                    "product_name": "Mystery Novel Collection",
+                    "category": "Books",
+                    "quantity": "-3",
+                    "unit_price": "34.99",
+                    "currency": "USD",
+                    "total": "-104.97",
+                    "region": "US",
+                    "customer_id": "C0129"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-23",
+                    "order_id": "ORD-02884",
+                    "product_id": "P150",
+                    "product_name": "Children's Stories Bundle",
+                    "category": "Books",
+                    "quantity": "-5",
+                    "unit_price": "18.39",
+                    "currency": "EUR",
+                    "total": "-91.95",
+                    "region": "EU",
+                    "customer_id": "C0173"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-23",
+                    "order_id": "ORD-02884",
+                    "product_id": "P150",
+                    "product_name": "Children's Stories Bundle",
+                    "category": "Books",
+                    "quantity": "-5",
+                    "unit_price": "18.39",
+                    "currency": "EUR",
+                    "total": "-91.95",
+                    "region": "EU",
+                    "customer_id": "C0173"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-24",
+                    "order_id": "ORD-02899",
+                    "product_id": "P148",
+                    "product_name": "Modern Poetry Collection",
+                    "category": "Books",
+                    "quantity": "-3",
+                    "unit_price": "16.55",
+                    "currency": "EUR",
+                    "total": "-49.65",
+                    "region": "EU",
+                    "customer_id": "C0191"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-24",
+                    "order_id": "ORD-02899",
+                    "product_id": "P148",
+                    "product_name": "Modern Poetry Collection",
+                    "category": "Books",
+                    "quantity": "-3",
+                    "unit_price": "16.55",
+                    "currency": "EUR",
+                    "total": "-49.65",
+                    "region": "EU",
+                    "customer_id": "C0191"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_OR_EMPTY_VALUES",
+            "description": "Missing or empty values in total, quantity, or currency.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-24",
+                    "order_id": "ORD-02904",
+                    "product_id": "P046",
+                    "product_name": "Silk Scarf",
+                    "category": "Clothing",
+                    "quantity": "3",
+                    "unit_price": "39.99",
+                    "currency": "USD",
+                    "total": "",
+                    "region": "US",
+                    "customer_id": "C0103"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-24",
+                    "order_id": "ORD-02904",
+                    "product_id": "P046",
+                    "product_name": "Silk Scarf",
+                    "category": "Clothing",
+                    "quantity": "3",
+                    "unit_price": "39.99",
+                    "currency": "USD",
+                    "total": "",
+                    "region": "US",
+                    "customer_id": "C0103"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_OR_EMPTY_VALUES",
+            "description": "Missing or empty values in total, quantity, or currency.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-24",
+                    "order_id": "ORD-02905",
+                    "product_id": "P110",
+                    "product_name": "Compression Shirt",
+                    "category": "Sports",
+                    "quantity": "2",
+                    "unit_price": "34.99",
+                    "currency": "USD",
+                    "total": "",
+                    "region": "US",
+                    "customer_id": "C0054"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-24",
+                    "order_id": "ORD-02905",
+                    "product_id": "P110",
+                    "product_name": "Compression Shirt",
+                    "category": "Sports",
+                    "quantity": "2",
+                    "unit_price": "34.99",
+                    "currency": "USD",
+                    "total": "",
+                    "region": "US",
+                    "customer_id": "C0054"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_OR_EMPTY_VALUES",
+            "description": "Missing or empty values in total, quantity, or currency.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-28",
+                    "order_id": "ORD-02903",
+                    "product_id": "P121",
+                    "product_name": "Mystery Novel Collection",
+                    "category": "Books",
+                    "quantity": "2",
+                    "unit_price": "34.99",
+                    "currency": "USD",
+                    "total": "",
+                    "region": "US",
+                    "customer_id": "C0177"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-28",
+                    "order_id": "ORD-02903",
+                    "product_id": "P121",
+                    "product_name": "Mystery Novel Collection",
+                    "category": "Books",
+                    "quantity": "2",
+                    "unit_price": "34.99",
+                    "currency": "USD",
+                    "total": "",
+                    "region": "US",
+                    "customer_id": "C0177"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_OR_EMPTY_VALUES",
+            "description": "Missing or empty values in total, quantity, or currency.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-29",
+                    "order_id": "ORD-02908",
+                    "product_id": "P001",
+                    "product_name": "Wireless Headphones",
+                    "category": "Electronics",
+                    "quantity": "2",
+                    "unit_price": "79.99",
+                    "currency": "USD",
+                    "total": "",
+                    "region": "US",
+                    "customer_id": "C0157"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-29",
+                    "order_id": "ORD-02908",
+                    "product_id": "P001",
+                    "product_name": "Wireless Headphones",
+                    "category": "Electronics",
+                    "quantity": "2",
+                    "unit_price": "79.99",
+                    "currency": "USD",
+                    "total": "",
+                    "region": "US",
+                    "customer_id": "C0157"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-30",
+                    "order_id": "ORD-02873",
+                    "product_id": "P019",
+                    "product_name": "External SSD 1TB",
+                    "category": "Electronics",
+                    "quantity": "-2",
+                    "unit_price": "89.99",
+                    "currency": "USD",
+                    "total": "-179.98",
+                    "region": "US",
+                    "customer_id": "C0078"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-10-30",
+                    "order_id": "ORD-02873",
+                    "product_id": "P019",
+                    "product_name": "External SSD 1TB",
+                    "category": "Electronics",
+                    "quantity": "-2",
+                    "unit_price": "89.99",
+                    "currency": "USD",
+                    "total": "-179.98",
+                    "region": "US",
+                    "customer_id": "C0078"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-01",
+                    "order_id": "ORD-02893",
+                    "product_id": "P031",
+                    "product_name": "Classic T-Shirt",
+                    "category": "Clothing",
+                    "quantity": "-5",
+                    "unit_price": "24.99",
+                    "currency": "USD",
+                    "total": "-124.95",
+                    "region": "US",
+                    "customer_id": "C0187"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-01",
+                    "order_id": "ORD-02893",
+                    "product_id": "P031",
+                    "product_name": "Classic T-Shirt",
+                    "category": "Clothing",
+                    "quantity": "-5",
+                    "unit_price": "24.99",
+                    "currency": "USD",
+                    "total": "-124.95",
+                    "region": "US",
+                    "customer_id": "C0187"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_OR_EMPTY_VALUES",
+            "description": "Missing or empty values in total, quantity, or currency.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-01",
+                    "order_id": "ORD-02902",
+                    "product_id": "P111",
+                    "product_name": "High-Impact Sports Bra",
+                    "category": "Sports",
+                    "quantity": "1",
+                    "unit_price": "39.99",
+                    "currency": "USD",
+                    "total": "",
+                    "region": "US",
+                    "customer_id": "C0122"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-01",
+                    "order_id": "ORD-02902",
+                    "product_id": "P111",
+                    "product_name": "High-Impact Sports Bra",
+                    "category": "Sports",
+                    "quantity": "1",
+                    "unit_price": "39.99",
+                    "currency": "USD",
+                    "total": "",
+                    "region": "US",
+                    "customer_id": "C0122"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_OR_EMPTY_VALUES",
+            "description": "Missing or empty values in total, quantity, or currency.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-06",
+                    "order_id": "ORD-02909",
+                    "product_id": "P119",
+                    "product_name": "Climbing Chalk Bag",
+                    "category": "Sports",
+                    "quantity": "3",
+                    "unit_price": "14.21",
+                    "currency": "GBP",
+                    "total": "",
+                    "region": "UK",
+                    "customer_id": "C0151"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-06",
+                    "order_id": "ORD-02909",
+                    "product_id": "P119",
+                    "product_name": "Climbing Chalk Bag",
+                    "category": "Sports",
+                    "quantity": "3",
+                    "unit_price": "14.21",
+                    "currency": "GBP",
+                    "total": "",
+                    "region": "UK",
+                    "customer_id": "C0151"
+                }
+            ]
+        },
+        {
+            "issue_type": "UNKNOWN_CURRENCY",
+            "description": "Unexpected currency: CHF",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-06",
+                    "order_id": "ORD-02920",
+                    "product_id": "P093",
+                    "product_name": "Adjustable Dumbbells",
+                    "category": "Sports",
+                    "quantity": "2",
+                    "unit_price": "175.99",
+                    "currency": "CHF",
+                    "total": "351.98",
+                    "region": "EU",
+                    "customer_id": "C0061"
+                }
+            ]
+        },
+        {
+            "issue_type": "UNKNOWN_CURRENCY",
+            "description": "Unexpected currency: CHF",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-07",
+                    "order_id": "ORD-02924",
+                    "product_id": "P032",
+                    "product_name": "Denim Jeans",
+                    "category": "Clothing",
+                    "quantity": "1",
+                    "unit_price": "52.79",
+                    "currency": "CHF",
+                    "total": "52.79",
+                    "region": "EU",
+                    "customer_id": "C0197"
+                }
+            ]
+        },
+        {
+            "issue_type": "UNKNOWN_CURRENCY",
+            "description": "Unexpected currency: CHF",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-08",
+                    "order_id": "ORD-02916",
+                    "product_id": "P055",
+                    "product_name": "Flannel Shirt",
+                    "category": "Clothing",
+                    "quantity": "2",
+                    "unit_price": "35.19",
+                    "currency": "CHF",
+                    "total": "70.38",
+                    "region": "EU",
+                    "customer_id": "C0116"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-14",
+                    "order_id": "ORD-02878",
+                    "product_id": "P110",
+                    "product_name": "Compression Shirt",
+                    "category": "Sports",
+                    "quantity": "-1",
+                    "unit_price": "32.19",
+                    "currency": "EUR",
+                    "total": "-32.19",
+                    "region": "EU",
+                    "customer_id": "C0104"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-14",
+                    "order_id": "ORD-02878",
+                    "product_id": "P110",
+                    "product_name": "Compression Shirt",
+                    "category": "Sports",
+                    "quantity": "-1",
+                    "unit_price": "32.19",
+                    "currency": "EUR",
+                    "total": "-32.19",
+                    "region": "EU",
+                    "customer_id": "C0104"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_OR_EMPTY_VALUES",
+            "description": "Missing or empty values in total, quantity, or currency.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-14",
+                    "order_id": "ORD-02915",
+                    "product_id": "P009",
+                    "product_name": "Smart Watch",
+                    "category": "Electronics",
+                    "quantity": "3",
+                    "unit_price": "29898.51",
+                    "currency": "JPY",
+                    "total": "",
+                    "region": "Asia",
+                    "customer_id": "C0095"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-14",
+                    "order_id": "ORD-02915",
+                    "product_id": "P009",
+                    "product_name": "Smart Watch",
+                    "category": "Electronics",
+                    "quantity": "3",
+                    "unit_price": "29898.51",
+                    "currency": "JPY",
+                    "total": "",
+                    "region": "Asia",
+                    "customer_id": "C0095"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-17",
+                    "order_id": "ORD-02889",
+                    "product_id": "P046",
+                    "product_name": "Silk Scarf",
+                    "category": "Clothing",
+                    "quantity": "-3",
+                    "unit_price": "36.79",
+                    "currency": "EUR",
+                    "total": "-110.37",
+                    "region": "EU",
+                    "customer_id": "C0197"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-17",
+                    "order_id": "ORD-02889",
+                    "product_id": "P046",
+                    "product_name": "Silk Scarf",
+                    "category": "Clothing",
+                    "quantity": "-3",
+                    "unit_price": "36.79",
+                    "currency": "EUR",
+                    "total": "-110.37",
+                    "region": "EU",
+                    "customer_id": "C0197"
+                }
+            ]
+        },
+        {
+            "issue_type": "UNKNOWN_CURRENCY",
+            "description": "Unexpected currency: CHF",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-18",
+                    "order_id": "ORD-02921",
+                    "product_id": "P145",
+                    "product_name": "AI and Machine Learning",
+                    "category": "Books",
+                    "quantity": "1",
+                    "unit_price": "43.99",
+                    "currency": "CHF",
+                    "total": "43.99",
+                    "region": "EU",
+                    "customer_id": "C0097"
+                }
+            ]
+        },
+        {
+            "issue_type": "UNKNOWN_CURRENCY",
+            "description": "Unexpected currency: CHF",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-20",
+                    "order_id": "ORD-02923",
+                    "product_id": "P038",
+                    "product_name": "Cargo Pants",
+                    "category": "Clothing",
+                    "quantity": "1",
+                    "unit_price": "48.39",
+                    "currency": "CHF",
+                    "total": "48.39",
+                    "region": "EU",
+                    "customer_id": "C0147"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-21",
+                    "order_id": "ORD-02881",
+                    "product_id": "P074",
+                    "product_name": "Copper Watering Can",
+                    "category": "Home & Garden",
+                    "quantity": "-1",
+                    "unit_price": "27.99",
+                    "currency": "USD",
+                    "total": "-27.99",
+                    "region": "US",
+                    "customer_id": "C0067"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-21",
+                    "order_id": "ORD-02881",
+                    "product_id": "P074",
+                    "product_name": "Copper Watering Can",
+                    "category": "Home & Garden",
+                    "quantity": "-1",
+                    "unit_price": "27.99",
+                    "currency": "USD",
+                    "total": "-27.99",
+                    "region": "US",
+                    "customer_id": "C0067"
+                }
+            ]
+        },
+        {
+            "issue_type": "UNKNOWN_CURRENCY",
+            "description": "Unexpected currency: CHF",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-21",
+                    "order_id": "ORD-02925",
+                    "product_id": "P092",
+                    "product_name": "Yoga Mat Premium",
+                    "category": "Sports",
+                    "quantity": "2",
+                    "unit_price": "35.19",
+                    "currency": "CHF",
+                    "total": "70.38",
+                    "region": "EU",
+                    "customer_id": "C0193"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_OR_EMPTY_VALUES",
+            "description": "Missing or empty values in total, quantity, or currency.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-23",
+                    "order_id": "ORD-02910",
+                    "product_id": "P103",
+                    "product_name": "High-Density Foam Roller",
+                    "category": "Sports",
+                    "quantity": "2",
+                    "unit_price": "24.99",
+                    "currency": "USD",
+                    "total": "",
+                    "region": "US",
+                    "customer_id": "C0122"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-23",
+                    "order_id": "ORD-02910",
+                    "product_id": "P103",
+                    "product_name": "High-Density Foam Roller",
+                    "category": "Sports",
+                    "quantity": "2",
+                    "unit_price": "24.99",
+                    "currency": "USD",
+                    "total": "",
+                    "region": "US",
+                    "customer_id": "C0122"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-25",
+                    "order_id": "ORD-02874",
+                    "product_id": "P009",
+                    "product_name": "Smart Watch",
+                    "category": "Electronics",
+                    "quantity": "-4",
+                    "unit_price": "183.99",
+                    "currency": "EUR",
+                    "total": "-735.96",
+                    "region": "EU",
+                    "customer_id": "C0109"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-25",
+                    "order_id": "ORD-02874",
+                    "product_id": "P009",
+                    "product_name": "Smart Watch",
+                    "category": "Electronics",
+                    "quantity": "-4",
+                    "unit_price": "183.99",
+                    "currency": "EUR",
+                    "total": "-735.96",
+                    "region": "EU",
+                    "customer_id": "C0109"
+                }
+            ]
+        },
+        {
+            "issue_type": "UNKNOWN_CURRENCY",
+            "description": "Unexpected currency: CHF",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-25",
+                    "order_id": "ORD-02919",
+                    "product_id": "P072",
+                    "product_name": "Expandable Garden Hose",
+                    "category": "Home & Garden",
+                    "quantity": "1",
+                    "unit_price": "26.39",
+                    "currency": "CHF",
+                    "total": "26.39",
+                    "region": "EU",
+                    "customer_id": "C0193"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-28",
+                    "order_id": "ORD-02887",
+                    "product_id": "P080",
+                    "product_name": "Soy Scented Candle",
+                    "category": "Home & Garden",
+                    "quantity": "-4",
+                    "unit_price": "16.99",
+                    "currency": "USD",
+                    "total": "-67.96",
+                    "region": "US",
+                    "customer_id": "C0032"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-28",
+                    "order_id": "ORD-02887",
+                    "product_id": "P080",
+                    "product_name": "Soy Scented Candle",
+                    "category": "Home & Garden",
+                    "quantity": "-4",
+                    "unit_price": "16.99",
+                    "currency": "USD",
+                    "total": "-67.96",
+                    "region": "US",
+                    "customer_id": "C0032"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-28",
+                    "order_id": "ORD-02895",
+                    "product_id": "P110",
+                    "product_name": "Compression Shirt",
+                    "category": "Sports",
+                    "quantity": "-2",
+                    "unit_price": "5231.01",
+                    "currency": "JPY",
+                    "total": "-10462.02",
+                    "region": "Asia",
+                    "customer_id": "C0188"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-28",
+                    "order_id": "ORD-02895",
+                    "product_id": "P110",
+                    "product_name": "Compression Shirt",
+                    "category": "Sports",
+                    "quantity": "-2",
+                    "unit_price": "5231.01",
+                    "currency": "JPY",
+                    "total": "-10462.02",
+                    "region": "Asia",
+                    "customer_id": "C0188"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_OR_EMPTY_VALUES",
+            "description": "Missing or empty values in total, quantity, or currency.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-29",
+                    "order_id": "ORD-02907",
+                    "product_id": "P099",
+                    "product_name": "Indoor Basketball",
+                    "category": "Sports",
+                    "quantity": "3",
+                    "unit_price": "29.99",
+                    "currency": "USD",
+                    "total": "",
+                    "region": "US",
+                    "customer_id": "C0057"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-29",
+                    "order_id": "ORD-02907",
+                    "product_id": "P099",
+                    "product_name": "Indoor Basketball",
+                    "category": "Sports",
+                    "quantity": "3",
+                    "unit_price": "29.99",
+                    "currency": "USD",
+                    "total": "",
+                    "region": "US",
+                    "customer_id": "C0057"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-30",
+                    "order_id": "ORD-02883",
+                    "product_id": "P119",
+                    "product_name": "Climbing Chalk Bag",
+                    "category": "Sports",
+                    "quantity": "-5",
+                    "unit_price": "2689.5",
+                    "currency": "JPY",
+                    "total": "-13447.5",
+                    "region": "Asia",
+                    "customer_id": "C0029"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-11-30",
+                    "order_id": "ORD-02883",
+                    "product_id": "P119",
+                    "product_name": "Climbing Chalk Bag",
+                    "category": "Sports",
+                    "quantity": "-5",
+                    "unit_price": "2689.5",
+                    "currency": "JPY",
+                    "total": "-13447.5",
+                    "region": "Asia",
+                    "customer_id": "C0029"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-12-02",
+                    "order_id": "ORD-02888",
+                    "product_id": "P087",
+                    "product_name": "Adjustable Desk Lamp",
+                    "category": "Home & Garden",
+                    "quantity": "-1",
+                    "unit_price": "27.64",
+                    "currency": "GBP",
+                    "total": "-27.64",
+                    "region": "UK",
+                    "customer_id": "C0176"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-12-02",
+                    "order_id": "ORD-02888",
+                    "product_id": "P087",
+                    "product_name": "Adjustable Desk Lamp",
+                    "category": "Home & Garden",
+                    "quantity": "-1",
+                    "unit_price": "27.64",
+                    "currency": "GBP",
+                    "total": "-27.64",
+                    "region": "UK",
+                    "customer_id": "C0176"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-12-07",
+                    "order_id": "ORD-02896",
+                    "product_id": "P093",
+                    "product_name": "Adjustable Dumbbells",
+                    "category": "Sports",
+                    "quantity": "-1",
+                    "unit_price": "199.99",
+                    "currency": "USD",
+                    "total": "-199.99",
+                    "region": "US",
+                    "customer_id": "C0096"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-12-07",
+                    "order_id": "ORD-02896",
+                    "product_id": "P093",
+                    "product_name": "Adjustable Dumbbells",
+                    "category": "Sports",
+                    "quantity": "-1",
+                    "unit_price": "199.99",
+                    "currency": "USD",
+                    "total": "-199.99",
+                    "region": "US",
+                    "customer_id": "C0096"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_OR_EMPTY_VALUES",
+            "description": "Missing or empty values in total, quantity, or currency.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-12-11",
+                    "order_id": "ORD-02911",
+                    "product_id": "P001",
+                    "product_name": "Wireless Headphones",
+                    "category": "Electronics",
+                    "quantity": "2",
+                    "unit_price": "79.99",
+                    "currency": "USD",
+                    "total": "",
+                    "region": "US",
+                    "customer_id": "C0114"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-12-11",
+                    "order_id": "ORD-02911",
+                    "product_id": "P001",
+                    "product_name": "Wireless Headphones",
+                    "category": "Electronics",
+                    "quantity": "2",
+                    "unit_price": "79.99",
+                    "currency": "USD",
+                    "total": "",
+                    "region": "US",
+                    "customer_id": "C0114"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_OR_EMPTY_VALUES",
+            "description": "Missing or empty values in total, quantity, or currency.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-12-13",
+                    "order_id": "ORD-02901",
+                    "product_id": "P046",
+                    "product_name": "Silk Scarf",
+                    "category": "Clothing",
+                    "quantity": "2",
+                    "unit_price": "36.79",
+                    "currency": "EUR",
+                    "total": "",
+                    "region": "EU",
+                    "customer_id": "C0139"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-12-13",
+                    "order_id": "ORD-02901",
+                    "product_id": "P046",
+                    "product_name": "Silk Scarf",
+                    "category": "Clothing",
+                    "quantity": "2",
+                    "unit_price": "36.79",
+                    "currency": "EUR",
+                    "total": "",
+                    "region": "EU",
+                    "customer_id": "C0139"
+                }
+            ]
+        },
+        {
+            "issue_type": "UNKNOWN_CURRENCY",
+            "description": "Unexpected currency: CHF",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-12-14",
+                    "order_id": "ORD-02918",
+                    "product_id": "P031",
+                    "product_name": "Classic T-Shirt",
+                    "category": "Clothing",
+                    "quantity": "2",
+                    "unit_price": "21.99",
+                    "currency": "CHF",
+                    "total": "43.98",
+                    "region": "EU",
+                    "customer_id": "C0145"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-12-15",
+                    "order_id": "ORD-02886",
+                    "product_id": "P046",
+                    "product_name": "Silk Scarf",
+                    "category": "Clothing",
+                    "quantity": "-5",
+                    "unit_price": "31.59",
+                    "currency": "GBP",
+                    "total": "-157.95",
+                    "region": "UK",
+                    "customer_id": "C0187"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-12-15",
+                    "order_id": "ORD-02886",
+                    "product_id": "P046",
+                    "product_name": "Silk Scarf",
+                    "category": "Clothing",
+                    "quantity": "-5",
+                    "unit_price": "31.59",
+                    "currency": "GBP",
+                    "total": "-157.95",
+                    "region": "UK",
+                    "customer_id": "C0187"
+                }
+            ]
+        },
+        {
+            "issue_type": "UNKNOWN_CURRENCY",
+            "description": "Unexpected currency: CHF",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-12-17",
+                    "order_id": "ORD-02922",
+                    "product_id": "P148",
+                    "product_name": "Modern Poetry Collection",
+                    "category": "Books",
+                    "quantity": "1",
+                    "unit_price": "15.83",
+                    "currency": "CHF",
+                    "total": "15.83",
+                    "region": "EU",
+                    "customer_id": "C0025"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-12-21",
+                    "order_id": "ORD-02882",
+                    "product_id": "P010",
+                    "product_name": "Noise Cancelling Earbuds",
+                    "category": "Electronics",
+                    "quantity": "-4",
+                    "unit_price": "149.99",
+                    "currency": "USD",
+                    "total": "-599.96",
+                    "region": "US",
+                    "customer_id": "C0200"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-12-21",
+                    "order_id": "ORD-02882",
+                    "product_id": "P010",
+                    "product_name": "Noise Cancelling Earbuds",
+                    "category": "Electronics",
+                    "quantity": "-4",
+                    "unit_price": "149.99",
+                    "currency": "USD",
+                    "total": "-599.96",
+                    "region": "US",
+                    "customer_id": "C0200"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_OR_EMPTY_VALUES",
+            "description": "Missing or empty values in total, quantity, or currency.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-12-24",
+                    "order_id": "ORD-02914",
+                    "product_id": "P135",
+                    "product_name": "Creative Writing Workshop",
+                    "category": "Books",
+                    "quantity": "1",
+                    "unit_price": "22.99",
+                    "currency": "EUR",
+                    "total": "",
+                    "region": "EU",
+                    "customer_id": "C0144"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-12-24",
+                    "order_id": "ORD-02914",
+                    "product_id": "P135",
+                    "product_name": "Creative Writing Workshop",
+                    "category": "Books",
+                    "quantity": "1",
+                    "unit_price": "22.99",
+                    "currency": "EUR",
+                    "total": "",
+                    "region": "EU",
+                    "customer_id": "C0144"
+                }
+            ]
+        },
+        {
+            "issue_type": "UNKNOWN_CURRENCY",
+            "description": "Unexpected currency: CHF",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-12-26",
+                    "order_id": "ORD-02917",
+                    "product_id": "P090",
+                    "product_name": "Robot Vacuum",
+                    "category": "Home & Garden",
+                    "quantity": "1",
+                    "unit_price": "158.39",
+                    "currency": "CHF",
+                    "total": "158.39",
+                    "region": "EU",
+                    "customer_id": "C0160"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-12-27",
+                    "order_id": "ORD-02877",
+                    "product_id": "P091",
+                    "product_name": "Running Shoes Pro",
+                    "category": "Sports",
+                    "quantity": "-1",
+                    "unit_price": "129.99",
+                    "currency": "USD",
+                    "total": "-129.99",
+                    "region": "US",
+                    "customer_id": "C0022"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-12-27",
+                    "order_id": "ORD-02877",
+                    "product_id": "P091",
+                    "product_name": "Running Shoes Pro",
+                    "category": "Sports",
+                    "quantity": "-1",
+                    "unit_price": "129.99",
+                    "currency": "USD",
+                    "total": "-129.99",
+                    "region": "US",
+                    "customer_id": "C0022"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Quantity cannot be negative or empty.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-12-27",
+                    "order_id": "ORD-02880",
+                    "product_id": "P080",
+                    "product_name": "Soy Scented Candle",
+                    "category": "Home & Garden",
+                    "quantity": "-4",
+                    "unit_price": "15.63",
+                    "currency": "EUR",
+                    "total": "-62.52",
+                    "region": "EU",
+                    "customer_id": "C0172"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-12-27",
+                    "order_id": "ORD-02880",
+                    "product_id": "P080",
+                    "product_name": "Soy Scented Candle",
+                    "category": "Home & Garden",
+                    "quantity": "-4",
+                    "unit_price": "15.63",
+                    "currency": "EUR",
+                    "total": "-62.52",
+                    "region": "EU",
+                    "customer_id": "C0172"
+                }
+            ]
+        },
+        {
+            "issue_type": "MISSING_OR_EMPTY_VALUES",
+            "description": "Missing or empty values in total, quantity, or currency.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-12-29",
+                    "order_id": "ORD-02913",
+                    "product_id": "P031",
+                    "product_name": "Classic T-Shirt",
+                    "category": "Clothing",
+                    "quantity": "2",
+                    "unit_price": "24.99",
+                    "currency": "USD",
+                    "total": "",
+                    "region": "US",
+                    "customer_id": "C0009"
+                }
+            ]
+        },
+        {
+            "issue_type": "INVALID_NUMERIC_VALUES",
+            "description": "Total must be a valid number.",
+            "affected_count": 1,
+            "examples": [
+                {
+                    "date": "2024-12-29",
+                    "order_id": "ORD-02913",
+                    "product_id": "P031",
+                    "product_name": "Classic T-Shirt",
+                    "category": "Clothing",
+                    "quantity": "2",
+                    "unit_price": "24.99",
+                    "currency": "USD",
+                    "total": "",
+                    "region": "US",
+                    "customer_id": "C0009"
+                }
+            ]
+        }
+    ],
+    "data/logs\\app.log": [
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "java.lang.NullPointerException: null\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "\tat com.app.service.OrderService.processOrder(OrderService.java:156)\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "\tat com.app.controller.OrderController.create(OrderController.java:42)\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "\tat sun.reflect.GeneratedMethodAccessor12.invoke(Unknown Source)\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  \n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/auth.py\", line 31, in verify_token\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "jwt.ExpiredSignatureError: Token has expired\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "SIGTERM received, shutting down gracefully...\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/payment.py\", line 142, in process_payment\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/lib/gateway.py\", line 89, in charge\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "    raise ConnectionError(\"Payment gateway timeout\")\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "ConnectionError: Payment gateway timeout\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/auth.py\", line 31, in verify_token\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "jwt.ExpiredSignatureError: Token has expired\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  \n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/auth.py\", line 31, in verify_token\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "jwt.ExpiredSignatureError: Token has expired\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "[WARN] Disk usage at 87%, consider cleanup\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/upload.py\", line 67, in handle_upload\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "    validate_file(payload)\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/validators.py\", line 23, in validate_file\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "    raise ValueError(\"File exceeds maximum size\")\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "ValueError: File exceeds maximum size\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "SIGTERM received, shutting down gracefully...\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/auth.py\", line 31, in verify_token\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "jwt.ExpiredSignatureError: Token has expired\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/auth.py\", line 31, in verify_token\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "jwt.ExpiredSignatureError: Token has expired\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/reports.py\", line 203, in generate_report\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection timed out\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/payment.py\", line 142, in process_payment\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/lib/gateway.py\", line 89, in charge\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "    raise ConnectionError(\"Payment gateway timeout\")\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "ConnectionError: Payment gateway timeout\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  \n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "--- server restarted ---\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/auth.py\", line 31, in verify_token\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "jwt.ExpiredSignatureError: Token has expired\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/payment.py\", line 142, in process_payment\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/lib/gateway.py\", line 89, in charge\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "    raise ConnectionError(\"Payment gateway timeout\")\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "ConnectionError: Payment gateway timeout\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "[WARN] Disk usage at 87%, consider cleanup\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/payment.py\", line 142, in process_payment\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/lib/gateway.py\", line 89, in charge\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "    raise ConnectionError(\"Payment gateway timeout\")\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "ConnectionError: Payment gateway timeout\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/payment.py\", line 142, in process_payment\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/lib/gateway.py\", line 89, in charge\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "    raise ConnectionError(\"Payment gateway timeout\")\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "ConnectionError: Payment gateway timeout\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "java.lang.NullPointerException: null\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "\tat com.app.service.OrderService.processOrder(OrderService.java:156)\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "\tat com.app.controller.OrderController.create(OrderController.java:42)\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "\tat sun.reflect.GeneratedMethodAccessor12.invoke(Unknown Source)\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/payment.py\", line 142, in process_payment\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/lib/gateway.py\", line 89, in charge\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "    raise ConnectionError(\"Payment gateway timeout\")\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "ConnectionError: Payment gateway timeout\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/auth.py\", line 31, in verify_token\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "jwt.ExpiredSignatureError: Token has expired\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/payment.py\", line 142, in process_payment\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/lib/gateway.py\", line 89, in charge\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "    raise ConnectionError(\"Payment gateway timeout\")\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "ConnectionError: Payment gateway timeout\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/auth.py\", line 31, in verify_token\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "jwt.ExpiredSignatureError: Token has expired\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "java.lang.NullPointerException: null\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "\tat com.app.service.OrderService.processOrder(OrderService.java:156)\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "\tat com.app.controller.OrderController.create(OrderController.java:42)\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "\tat sun.reflect.GeneratedMethodAccessor12.invoke(Unknown Source)\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  \n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/upload.py\", line 67, in handle_upload\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "    validate_file(payload)\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/validators.py\", line 23, in validate_file\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "    raise ValueError(\"File exceeds maximum size\")\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "ValueError: File exceeds maximum size\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/auth.py\", line 31, in verify_token\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "jwt.ExpiredSignatureError: Token has expired\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/reports.py\", line 203, in generate_report\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection timed out\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/upload.py\", line 67, in handle_upload\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "    validate_file(payload)\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/validators.py\", line 23, in validate_file\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "    raise ValueError(\"File exceeds maximum size\")\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "ValueError: File exceeds maximum size\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/auth.py\", line 31, in verify_token\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "jwt.ExpiredSignatureError: Token has expired\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  \n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/reports.py\", line 203, in generate_report\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection timed out\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "gc: 0.034s pause, 12->8 MB, 234 objects freed\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "--- server restarted ---\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "java.lang.NullPointerException: null\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "\tat com.app.service.OrderService.processOrder(OrderService.java:156)\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "\tat com.app.controller.OrderController.create(OrderController.java:42)\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "\tat sun.reflect.GeneratedMethodAccessor12.invoke(Unknown Source)\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/reports.py\", line 203, in generate_report\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection timed out\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "SIGTERM received, shutting down gracefully...\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "--- server restarted ---\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/upload.py\", line 67, in handle_upload\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "    validate_file(payload)\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/validators.py\", line 23, in validate_file\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "    raise ValueError(\"File exceeds maximum size\")\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "ValueError: File exceeds maximum size\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "Traceback (most recent call last):\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "  File \"/app/handlers/auth.py\", line 31, in verify_token\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "jwt.ExpiredSignatureError: Token has expired\n"
+            ]
+        },
+        {
+            "issue_type": "MALFORMED_LINES",
+            "description": "Line does not contain key=value pairs.",
+            "affected_count": 1,
+            "examples": [
+                "SIGTERM received, shutting down gracefully...\n"
+            ]
+        }
+    ]
+}

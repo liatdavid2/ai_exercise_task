@@ -1,0 +1,77 @@
+DATABASE TASK (CRITICAL):
+
+- You MUST use sqlite3 (standard library only)
+- You MUST NOT use pandas
+- You MUST NOT search for CSV files
+
+STEP 1 — CONNECT:
+- Connect using sqlite3.connect(path)
+
+STEP 2 — DISCOVER SCHEMA:
+- Run:
+    SELECT name FROM sqlite_master WHERE type='table'
+- For each table:
+    PRAGMA table_info(table_name)
+
+- Prefer table named 'requests' if exists
+- Otherwise choose table with most rows
+
+STEP 3 — LOAD DATA:
+- You MUST load ALL rows into Python
+- Example:
+    SELECT * FROM table
+
+STEP 4 — DETECT COLUMNS (CRITICAL):
+
+You MUST detect columns using BOTH name and values:
+
+- endpoint column:
+    name contains: endpoint, path, route, uri
+    OR values contain '/'
+
+- status column:
+    name contains: status, status_code, code
+    values are integers between 100–599
+
+- latency column:
+    name contains: latency, response_time, duration, ms
+    values are numeric
+
+- If detection fails:
+    fallback to:
+        endpoint → endpoint
+        status → status_code
+        latency → latency_ms
+
+STEP 5 — GROUPING:
+- When grouping:
+    - You MUST append latency values per endpoint
+    - Skip endpoints with empty latency list
+- You MUST group by endpoint
+
+For EACH endpoint:
+    - total_requests = count
+    - error_rate = count(status >= 400) / total_requests
+
+    - Compute p99:
+        values = sorted(latencies)
+        index = int(0.99 * (len(values) - 1))
+        p99_latency = values[index]
+
+STEP 6 — SORT + FILTER:
+
+- Sort by p99_latency DESC
+- Return TOP 10 endpoints
+
+STEP 7 — OUTPUT FORMAT (CRITICAL):
+
+- Output MUST be a list of dicts
+
+- Each row MUST include:
+    - endpoint
+    - total_requests
+    - error_rate
+    - p99_latency
+
+- Returning [] is INVALID
+
