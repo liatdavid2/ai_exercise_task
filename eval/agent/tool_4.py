@@ -1,80 +1,81 @@
 import glob
 import json
-import os
 import requests
-
-def tool():
-    # Step 1: File discovery
-    files = glob.glob('data/**/*.csv', recursive=True) + glob.glob('**/*.csv', recursive=True)
-    files = list(set(files))  # Remove duplicates
-
-    # Prefer files inside 'data/' if exist
-    if not files:
-        # Fallback: known filenames
-        known_files = ['data/employees.json', 'data/sales.csv', 'data/app.log']
-        for known_file in known_files:
-            if os.path.exists(known_file):
-                files.append(known_file)
-
-        # Fallback: os.walk
-        for root, dirs, filenames in os.walk('data/'):
-            for filename in filenames:
-                if filename.endswith('.csv'):
-                    files.append(os.path.join(root, filename))
-
-    if not files:
-        return "No matching file found"
-
-    # Step 2: Fetch current USD exchange rates
-    response = requests.get("https://open.er-api.com/v6/latest/USD")
-    exchange_rates = response.json().get('rates', {})
-    
-    # Assume rate is 1 if missing
-    exchange_rates = {k: v if v is not None else 1 for k, v in exchange_rates.items()}
-
-    total_revenue_usd = 0.0
-
-    # Step 3: Process each CSV file
-    for file in files:
-        with open(file, 'r') as f:
-            # Read CSV file
-            header = f.readline().strip().split(',')
-            currency_index = find_key(header, ['currency', 'curr', 'curren'])
-            amount_index = find_key(header, ['amount', 'revenue', 'total'])
-
-            if currency_index is None or amount_index is None:
-                continue  # Skip files without necessary fields
-
-            for line in f:
-                values = line.strip().split(',')
-                if len(values) <= max(currency_index, amount_index):
-                    continue  # Skip malformed lines
-
-                currency = values[currency_index].strip()
-                amount_str = values[amount_index].strip()
-
-                if not amount_str or not currency:
-                    continue  # Skip empty values
-
-                try:
-                    amount = float(amount_str)
-                except ValueError:
-                    continue  # Skip invalid amounts
-
-                # Convert to USD
-                rate = exchange_rates.get(currency, 1)
-                total_revenue_usd += amount * rate
-
-    # Step 4: Return result
-    total_revenue_usd = round(total_revenue_usd, 2)
-    return {
-        "total_revenue_usd": total_revenue_usd,
-        "description": "All transactions converted to USD using live exchange rates"
-    }
+import csv
+from datetime import datetime
 
 def find_key(d, options):
     for k in d:
         for opt in options:
             if opt in k.lower():
-                return d.index(k)
+                return k
     return None
+
+def tool():
+    # Fetch current USD exchange rates
+    response = requests.get("https://open.er-api.com/v6/latest/USD")
+    rates = response.json().get("rates", {})
+    
+    # Discover files
+    files = glob.glob('data/**/*.csv', recursive=True) + glob.glob('**/*.csv', recursive=True)
+    files = list(set(files))  # Remove duplicates
+
+    # Fallback if no CSV files found
+    if not files:
+        known_files = ['employees.json', 'sales.csv', 'app.log']
+        for known_file in known_files:
+            if glob.glob(known_file):
+                files.append(known_file)
+    
+    # If still no files found, try os.walk
+    if not files:
+        for root, dirs, filenames in os.walk('data/'):
+            for filename in filenames:
+                if filename.endswith('.csv'):
+                    files.append(os.path.join(root, filename))
+    
+    # If no files found after all attempts
+    if not files:
+        return "No matching file found"
+
+    total_usd = 0.0
+    transactions = []
+
+    # Process each CSV file
+    for file in files:
+        with open(file, mode='r', newline='', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                # Dynamically find keys
+                total_key = find_key(row, ["total"]) or "total"
+                currency_key = find_key(row, ["currency"]) or "currency"
+                date_key = find_key(row, ["date"]) or "date"
+                
+                total = row.get(total_key)
+                currency = row.get(currency_key)
+                date = row.get(date_key)
+
+                # Skip rows with missing total or currency
+                if not total or not currency:
+                    continue
+
+                # Convert total to float
+                try:
+                    total_value = float(total)
+                except ValueError:
+                    continue
+
+                # Get exchange rate, default to 1 if not found
+                rate = rates.get(currency, 1)
+                usd_value = total_value / rate
+                total_usd += usd_value
+                transactions.append(row)
+
+    # Ensure we have processed at least one transaction
+    if total_usd == 0.0 and not transactions:
+        return "No matching file found"
+
+    return {
+        "total_revenue_usd": round(total_usd, 2),
+        "description": "All transactions converted to USD using live exchange rates"
+    }

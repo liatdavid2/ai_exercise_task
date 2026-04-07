@@ -1,37 +1,43 @@
 import glob
-import json
-import os
 import re
+import json
 from collections import defaultdict
+
+def find_key(d, options):
+    for k in d:
+        for opt in options:
+            if opt in k.lower():
+                return k
+    return None
 
 def tool():
     # Step 1: File discovery
     files = glob.glob('data/**/*.log', recursive=True) + glob.glob('**/*.log', recursive=True)
     files = list(set(files))  # Remove duplicates
 
-    # Prefer files inside 'data/' if exist
     if not files:
-        # Fallback: known filenames
+        # Fallback to known filenames
         known_files = ['employees.json', 'sales.csv', 'app.log']
         for known_file in known_files:
-            if os.path.exists(f'data/{known_file}'):
-                files.append(f'data/{known_file}')
-            elif os.path.exists(known_file):
+            if glob.glob(known_file):
                 files.append(known_file)
 
-        # Fallback: os.walk
-        if not files:
-            for root, _, filenames in os.walk('data/'):
-                for filename in filenames:
-                    if filename.endswith('.log'):
-                        files.append(os.path.join(root, filename))
+        # Fallback to os.walk
+        import os
+        for root, dirs, filenames in os.walk('data/'):
+            for filename in filenames:
+                if filename.endswith('.log'):
+                    files.append(os.path.join(root, filename))
+
+        files = list(set(files))  # Remove duplicates
 
     if not files:
         return "No matching file found"
 
-    # Step 2: Log analysis
-    log_data = defaultdict(lambda: {'total_requests': 0, 'latencies': [], 'error_count': 0})
+    # Step 2: Initialize data structures
+    log_data = defaultdict(list)
 
+    # Step 3: Parse log files
     for file in files:
         with open(file, 'r') as f:
             for line in f:
@@ -42,47 +48,44 @@ def tool():
                         k, v = p.split('=', 1)
                         data[k] = v
 
+                # Step 4: Extract fields
                 method = data.get("method", "GET")
                 endpoint = data.get("endpoint")
                 status = int(data.get("status", 200))
 
-                # Handle latency
+                # Extract latency
                 raw = data.get("latency_ms", "0")
                 m = re.search(r'(\d+\.?\d*)', raw)
                 latency = float(m.group(1)) if m else 0
 
-                # Fallback for missing endpoint
-                if not endpoint:
-                    m = re.search(r'/api/\S+', line)
-                    endpoint = m.group(0) if m else None
-
                 if endpoint:
-                    log_data[(method, endpoint)]['total_requests'] += 1
-                    log_data[(method, endpoint)]['latencies'].append(latency)
-                    if status >= 400:
-                        log_data[(method, endpoint)]['error_count'] += 1
+                    log_data[(method, endpoint)].append((status, latency))
 
-    # Step 3: Calculate metrics
+    # Step 5: Grouping and calculations
     results = []
-    for (method, endpoint), metrics in log_data.items():
-        total_requests = metrics['total_requests']
-        latencies = metrics['latencies']
-        error_count = metrics['error_count']
+    for (method, endpoint), entries in log_data.items():
+        total_requests = len(entries)
+        latencies = [latency for _, latency in entries]
+        error_count = sum(1 for status, _ in entries if status >= 400)
+        error_rate = (error_count / total_requests) * 100 if total_requests > 0 else 0
+        avg_latency = sum(latencies) / total_requests if total_requests > 0 else 0
 
-        if total_requests > 0:
-            avg_latency = sum(latencies) / total_requests
-            error_rate = (error_count / total_requests) * 100
-            p95_latency = sorted(latencies)[int(0.95 * (len(latencies) - 1))] if latencies else 0
+        # Calculate P95 latency
+        values = sorted(latencies)
+        index = int(0.95 * (len(values) - 1)) if values else 0
+        p95_latency = values[index] if values else 0
 
-            results.append({
-                "method": method,
-                "endpoint": endpoint,
-                "total_requests": total_requests,
-                "avg_latency": avg_latency,
-                "error_rate": error_rate,
-                "p95_latency": p95_latency
-            })
+        results.append({
+            "method": method,
+            "endpoint": endpoint,
+            "total_requests": total_requests,
+            "avg_latency": avg_latency,
+            "error_rate": error_rate,
+            "p95_latency": p95_latency
+        })
 
-    # Step 4: Sort results by error rate DESC and return top 5
+    # Step 6: Sort by error rate descending
     results.sort(key=lambda x: x['error_rate'], reverse=True)
+
+    # Step 7: Return top 5 groups
     return results[:5]

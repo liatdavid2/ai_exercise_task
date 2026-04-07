@@ -1,72 +1,81 @@
+import csv
 import glob
 import json
 import os
-import csv
 from collections import defaultdict
 from datetime import datetime
 
+def find_key(d, options):
+    for k in d:
+        for opt in options:
+            if opt in k.lower():
+                return k
+    return None
+
 def tool():
-    # Step 1: File discovery
+    # Discover files
     files = glob.glob('data/**/*.csv', recursive=True) + glob.glob('**/*.csv', recursive=True)
     files = list(set(files))  # Remove duplicates
 
-    # Prefer files inside 'data/' if exist
-    data_files = [f for f in files if 'data/' in f]
-    if data_files:
-        files = data_files
-
-    # Step 2: Fallback if no files found
+    # Fallback if no CSV files found
     if not files:
-        known_filenames = ['employees.json', 'sales.csv', 'app.log']
-        for filename in known_filenames:
-            if os.path.exists(filename):
-                files.append(filename)
+        known_files = ['employees.json', 'sales.csv', 'app.log']
+        for known_file in known_files:
+            if os.path.exists(known_file):
+                files.append(known_file)
 
         if not files:
             for root, _, filenames in os.walk('data/'):
                 for filename in filenames:
-                    if filename.endswith('.csv'):
-                        files.append(os.path.join(root, filename))
+                    files.append(os.path.join(root, filename))
 
     if not files:
         return "No matching file found"
 
-    # Step 3: Process sales.csv
-    sales_file = next((f for f in files if 'sales.csv' in f), None)
-    if not sales_file:
-        return "No matching sales file found"
+    # Process the first found CSV file
+    total_revenue = defaultdict(float)
+    highest_revenue = 0
+    highest_category = None
 
-    revenue_per_category = defaultdict(float)
+    for file in files:
+        if not file.endswith('.csv'):
+            continue
 
-    with open(sales_file, mode='r', newline='', encoding='utf-8') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            # Handle missing values safely
-            category = row.get('category', '').strip()
-            revenue = row.get('revenue', '').strip()
-            date = row.get('date', '').strip()
+        with open(file, mode='r', newline='', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            date_key = find_key(reader.fieldnames, ["date"]) or "date"
+            total_key = find_key(reader.fieldnames, ["total"]) or "total"
+            category_key = find_key(reader.fieldnames, ["category"]) or "category"
 
-            if category and revenue and date:
-                try:
-                    revenue = float(revenue)
-                    date_obj = datetime.strptime(date, '%Y-%m-%d')
-                    if date_obj.year == 2024 and date_obj.month == 12:
-                        revenue_per_category[category] += revenue
-                except ValueError:
-                    continue  # Skip rows with invalid revenue
+            for row in reader:
+                if date_key in row and total_key in row and category_key in row:
+                    try:
+                        date_value = row[date_key]
+                        total_value = row[total_key]
+                        category_value = row[category_key]
 
-    # Step 4: Identify the category with the highest revenue in December 2024
-    if not revenue_per_category:
-        return "No revenue data found for December 2024"
+                        # Parse date and filter for December 2024
+                        date_parsed = datetime.strptime(date_value, '%Y-%m-%d')
+                        if date_parsed.year == 2024 and date_parsed.month == 12:
+                            revenue = float(total_value) if total_value else 0
+                            total_revenue[category_value] += revenue
 
-    highest_category = max(revenue_per_category, key=revenue_per_category.get)
-    highest_revenue = revenue_per_category[highest_category]
+                    except (ValueError, TypeError):
+                        continue
 
-    # Step 5: Prepare the result
+    # Calculate the highest revenue category
+    for category, revenue in total_revenue.items():
+        if revenue > highest_revenue:
+            highest_revenue = revenue
+            highest_category = category
+
+    # Prepare the result
     result = {
-        'total_revenue_per_category': {k: round(v, 2) for k, v in revenue_per_category.items()},
-        'highest_category': highest_category,
-        'highest_revenue': round(highest_revenue, 2)
+        "total_revenue_per_category": {k: round(v, 2) for k, v in total_revenue.items()},
+        "highest_revenue_category": {
+            "category": highest_category,
+            "revenue": round(highest_revenue, 2)
+        }
     }
 
     return result

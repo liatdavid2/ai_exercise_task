@@ -2,62 +2,80 @@ import glob
 import json
 import os
 
+def find_key(d, options):
+    for k in d:
+        for opt in options:
+            if opt in k.lower():
+                return k
+    return None
+
 def tool():
-    # Step 1: File discovery
+    # Discover files
     files = glob.glob('data/**/*.json', recursive=True) + glob.glob('**/*.json', recursive=True)
     files = list(set(files))  # Remove duplicates
 
-    # Prefer files inside 'data/' if exist
+    # Fallback if no files found
     if not files:
-        # Fallback: known filenames
-        known_files = ['data/employees.json', 'employees.json']
-        files = [f for f in known_files if os.path.isfile(f)]
-    
-    # Fallback: os.walk
+        fallback_files = ['employees.json', 'sales.csv', 'app.log']
+        for fallback in fallback_files:
+            if os.path.exists(fallback):
+                files.append(fallback)
+
+    # If still no files found, try os.walk
     if not files:
         for root, dirs, filenames in os.walk('data/'):
             for filename in filenames:
-                if filename == 'employees.json':
+                if filename.endswith('.json'):
                     files.append(os.path.join(root, filename))
-    
-    # If still no files found
+
+    # If no files found after all attempts
     if not files:
         return "No matching file found"
 
-    # Step 2: Read employees.json
-    employees_file = files[0]  # Assuming we only need the first found file
-    with open(employees_file, 'r') as f:
-        data = json.load(f)
+    # Read employees.json
+    employees_data = None
+    for file in files:
+        if 'employees.json' in file:
+            with open(file, 'r') as f:
+                employees_data = json.load(f)
+            break
 
-    # Step 3: Inspect structure
-    if isinstance(data, list):
-        rows = data
-    elif isinstance(data, dict):
-        rows = list(data.values())
+    if employees_data is None:
+        return "No matching file found"
+
+    # Process the data
+    if isinstance(employees_data, list):
+        rows = employees_data
+    elif isinstance(employees_data, dict):
+        rows = list(employees_data.values())
     else:
         return "Invalid data structure"
 
-    # Step 4: Process data
-    department_count = {}
+    department_counts = {}
     highest_paid_employee = None
 
-    for employee in rows:
-        # Handle missing values safely
-        department = employee.get('department', 'Unknown')
-        salary = employee.get('salary', 0)  # Default to 0 if missing
+    for row in rows:
+        department_key = find_key(row, ["department"]) or "department"
+        salary_key = find_key(row, ["salary", "income"]) or "salary"
+        
+        department = row.get(department_key)
+        salary = row.get(salary_key)
 
-        # Count employees in each department
-        if department not in department_count:
-            department_count[department] = 0
-        department_count[department] += 1
+        if department and salary:
+            # Count employees in each department
+            department_counts[department] = department_counts.get(department, 0) + 1
+            
+            # Determine the highest-paid employee
+            if highest_paid_employee is None or salary > highest_paid_employee['salary']:
+                highest_paid_employee = {
+                    'name': row.get('name', 'Unknown'),
+                    'salary': salary,
+                    'department': department
+                }
 
-        # Determine highest-paid employee
-        if highest_paid_employee is None or salary > highest_paid_employee.get('salary', 0):
-            highest_paid_employee = employee
-
-    # Step 5: Prepare result
+    # Prepare the result
     result = {
-        'department_count': department_count,
+        'department_counts': department_counts,
         'highest_paid_employee': highest_paid_employee
     }
 

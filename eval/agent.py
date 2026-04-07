@@ -50,206 +50,23 @@ class RulesAgent:
         self.rules_dir = rules_dir
 
     def load_rule(self, name: str) -> str:
+        default_path = os.path.join(self.rules_dir, "default.txt")
         path = os.path.join(self.rules_dir, f"{name}.txt")
+
+        text = ""
 
         if os.path.exists(path):
             with open(path, "r", encoding="utf-8") as f:
-                return f.read()
+                text = f.read().strip()
 
-        return self._default_rule(name)
+        if text:
+            return text
 
-    def _default_rule(self, name: str) -> str:
-        defaults = {
-            "file": """
-FILE DISCOVERY (CRITICAL):
+        if os.path.exists(default_path):
+            with open(default_path, "r", encoding="utf-8") as f:
+                return f.read().strip()
 
-- You MUST import glob when searching files
-- You MUST search using BOTH:
-
-    glob.glob('data/**/*.ext', recursive=True)
-    glob.glob('**/*.ext', recursive=True)
-
-- Combine results
-- Remove duplicates
-- Prefer files inside 'data/' if they exist
-- NEVER assume only one location
-
-NO FILE FOUND HANDLING (CRITICAL):
-
-- If no file found:
-    - DO NOT immediately return
-    - Try fallback known filenames if task strongly implies them
-    - Try os.walk('data/')
-    - ONLY if still nothing:
-        return "No matching file found"
-
-JSON HANDLING (CRITICAL):
-
-- If JSON contains list:
-    iterate over items
-
-- If dict:
-    use values()
-
-- Inspect structure before processing
-""",
-            "multi": """
-MULTI-SOURCE DASHBOARD TASK (CRITICAL):
-
-This task combines MULTIPLE data sources.
-
-FILE TYPE RULES:
-- JSON -> use json.load only
-- LOG -> parse line by line
-- DB -> use sqlite3 only
-
-SINGLE LOAD RULE:
-- Each file MUST be loaded ONCE
-- Store in memory and reuse
-
-DATA INTEGRATION:
-You MUST compute all requested sections from all relevant sources.
-
-OUTPUT FILE:
-- Write EXACTLY ONE JSON object to:
-    output/executive_dashboard.json
-
-RETURN VALUE:
-- Return a SHORT TEXT summary only
-""",
-            "audit": """
-DATA AUDIT TASK (CRITICAL):
-
-You MUST analyze all relevant data sources.
-
-CSV CHECKS:
-- duplicate records
-- missing / empty values
-- invalid numeric values
-- unexpected categorical values
-
-LOG CHECKS:
-- malformed lines
-- missing fields
-- invalid latency
-- inconsistent format
-
-JSON CHECKS:
-- missing fields
-- invalid negative values
-
-DB CHECKS:
-- validate aggregates against raw data when possible
-- verify error counts correctly include all relevant statuses
-
-OUTPUT FORMAT:
-Return structured issues grouped by file.
-""",
-            "db": """
-DATABASE TASK (CRITICAL):
-
-- Use sqlite3 only
-- Do NOT use pandas
-- Do NOT search for CSV files
-
-STEP 1:
-- Connect with sqlite3.connect(path)
-
-STEP 2:
-- Discover tables:
-    SELECT name FROM sqlite_master WHERE type='table'
-
-STEP 3:
-- Inspect schema with:
-    PRAGMA table_info(table_name)
-
-STEP 4:
-- Load all rows into Python
-
-STEP 5:
-- Detect useful columns dynamically using names + values
-
-STEP 6:
-- Return structured non-empty output when data exists
-""",
-            "log": """
-LOG ANALYSIS TASK (CRITICAL):
-
-Primary format is key=value pairs.
-
-PARSING:
-- Split line into parts
-- Parse only parts containing '='
-
-FIELDS:
-- Prefer exact keys:
-    method, endpoint, status, latency_ms
-
-FALLBACK:
-- If endpoint missing, try regex from raw line
-
-GROUPING:
-- Group by (method, endpoint)
-
-METRICS:
-- total_requests
-- avg_latency
-- error_rate
-- percentile if requested
-
-IMPORTANT:
-- Returning empty result when valid lines exist is INVALID
-""",
-            "anomaly": """
-ANOMALY TASK (CRITICAL):
-
-STEP 1:
-- Filter dates if task requires range
-
-STEP 2:
-- Aggregate daily quantities per entity if task requires time anomaly detection
-
-STEP 3:
-- Compute mean and std manually
-- Do NOT use statistics.stdev
-
-STEP 4:
-- z_score = (value - mean) / std
-- Skip groups with std == 0
-
-STEP 5:
-- Write structured anomaly output if task requests file output
-
-IMPORTANT:
-- Use aggregated values, not raw row count
-- Do NOT round before final output
-""",
-            "currency": """
-CURRENCY CONVERSION OUTPUT (CRITICAL):
-
-- Output MUST explicitly mention USD conversion
-
-PREFERRED:
-- "Total revenue in USD: <value>"
-OR
-- {
-    "total_revenue_usd": <value>,
-    "description": "All transactions converted to USD using live exchange rates"
-  }
-
-IMPORTANT:
-- Returning ONLY a number is INVALID
-""",
-            "generic": """
-GENERIC TASK RULES:
-
-- Use only Python standard library
-- Detect fields dynamically
-- Prefer exact field names if they exist
-- Return structured non-empty output when data exists
-"""
-        }
-        return defaults.get(name, "")
+        return ""
 
     def detect_task_type(self, task: str) -> str:
         t = task.lower()
