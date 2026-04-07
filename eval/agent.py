@@ -48,239 +48,145 @@ def build_prompt(task: str) -> str:
     t = task.lower()
 
     BASE_RULES = """
-You are a Python expert.
+DATA TASK (GENERIC ENGINE):
 
-Write a function:
+CRITICAL LIBRARY RULES:
 
-def tool():
+- You are STRICTLY FORBIDDEN from using:
+  pandas, numpy, sklearn, requests
 
-GLOBAL RULES:
-- Use only Python standard library
-- Read files from 'data/' folder
-- Infer schema dynamically (DO NOT assume column names)
-- Handle missing values safely
-- Return Python object
-- Return ONLY code (no explanation)
-- Do NOT use pandas
-- Do NOT crash on missing fields
-- NEVER return empty or zero unless dataset is empty
+- You MUST use only Python standard library
 
-NO HARDCODING:
+- For CSV:
+  use csv.DictReader ONLY
 
-- NEVER use specific column names
-- NEVER rely on known dataset semantics
-- ALWAYS infer from data
-"""
+- If you use any forbidden library → your solution is INVALID
 
-    EXTRA_RULES = ""
 
-    # ---------------- CSV ----------------
-    if task_type == "csv":
-        EXTRA_RULES += """
-CSV RULES:
-- Use csv.DictReader
-- Convert numeric fields using float()
-- Ignore empty values safely
-- If 'total' exists → it is revenue (DO NOT recompute)
-- If 'date' exists → treat as string and filter using startswith
-"""
+FIELD INFERENCE GUIDELINES (CRITICAL):
+When working with tabular data:
+- You MAY use column names IF they exist in the data
+- But DO NOT assume they exist in advance
+- Try to detect relevant fields by BOTH:
+  1. column names (if available)
+  2. value patterns (fallback)
+Examples:
 
-    # ---------------- REVENUE (CRITICAL FIX) ----------------
-    if "revenue" in t:
-        EXTRA_RULES += """
-REVENUE TASK (CRITICAL):
+Revenue:
+- prefer column named 'total' if exists
+- otherwise detect numeric column representing money
 
-YOU MUST:
+Category:
+- prefer column with repeated string values
+- or column named similar to category/type
 
-1. Use column:
-   - total (NOT unit_price * quantity)
+Currency:
+- prefer column named 'currency' if exists
+- otherwise detect short string codes (USD, EUR, etc.)
 
-2. Group by:
-   - category
+Date:
+- prefer column named 'date'
+- otherwise detect YYYY-MM-DD format
 
-3. Compute:
-   - total revenue per category (ALL data)
+IMPORTANT:
+- First check column names
+- If not found → fallback to pattern detection
+- NEVER fail only because a column name is missing
 
-4. Filter:
-   - ONLY December 2024
-   - date.startswith('2024-12')
+STEP 1 — DETECT DATA TYPE:
+- Based on task, determine data source:
+  - CSV → *.csv
+  - JSON → *.json
+  - LOG → *.log
+  - DB → *.db
 
-5. Compute again:
-   - revenue per category in December
+STEP 2 — FILE DISCOVERY (MANDATORY):
+- Use os.walk('data/')
+- Find files matching the detected type
+- Use FIRST matching file
+- FAIL if none found
 
-6. Find:
-   - category with MAX revenue in December
+STEP 3 — SCHEMA DISCOVERY:
+- DO NOT assume column names or structure
+- Inspect sample data:
+  - CSV → use DictReader and fieldnames
+  - JSON → inspect keys dynamically
+  - LOG → read first 20 lines
+  - DB → discover tables and columns
 
-7. RETURN EXACT STRUCTURE:
+STEP 4 — FIELD INFERENCE:
+Infer meaning from patterns (NOT names):
+
+- numeric values → metrics
+- repeated strings → categories
+- strings starting with '/' → possible endpoints
+- integers 100–599 → possible status codes
+- values with 'ms' → latency
+- dates → strings like YYYY-MM-DD
+
+STEP 5 — PARSING:
+- Build parser dynamically
+- Support multiple formats (especially logs)
+- DO NOT rely on fixed indices
+- Skip only truly invalid rows
+
+STEP 6 — COMPUTATION:
+- Perform required aggregations from task:
+  - grouping
+  - averages
+  - counts
+  - ratios
+  - percentiles
+
+PERCENTILES:
+- sort values
+- index = ceil(p * N) - 1
+
+STEP 7 — OUTPUT:
+- Return correct structure based on task
+- If table required → format as string
+
+STEP 8 — OUTPUT REQUIREMENTS (IMPORTANT):
+When computing grouped results:
+- You MUST return ALL group values, not only the maximum
+For this task:
+- Return revenue per category for December 2024
+- AND the highest category
+Example structure:
 
 {
-  "all_categories": {category: revenue},
-  "december_categories": {category: revenue},
+  "december_revenue_per_category": {category: value},
   "highest_category": str,
   "highest_revenue": float
 }
 
-INVALID IF:
-- highest_category is None
-- highest_revenue == 0
-- December filter missing
-"""
+GLOBAL RULES:
+- NO hardcoded filenames
+- NO hardcoded column names
+- NO dataset-specific assumptions
+- MUST infer everything dynamically
 
-    # ---------------- CURRENCY (CRITICAL FIX) ----------------
-    if "exchange" in t or "currency" in t:
-        EXTRA_RULES += """
-CURRENCY TASK (CRITICAL):
 
-YOU MUST:
-
-1. Fetch rates:
-   https://open.er-api.com/v6/latest/USD
-
-2. For EACH row:
-   currency = row.get('currency')
-   total = float(row.get('total', 0))
-
-3. Convert:
-   rate = rates.get(currency, 1)
-   usd_value = total / rate
-
-4. Sum ALL rows:
-   total_usd += usd_value
-
-5. Round to 2 decimals
-
-6. RETURN:
-   {"total_usd": value}
+FALLBACK FIELD INFERENCE:
+If expected columns are not found:
+- Revenue:
+  → use the largest numeric column per row
+- Currency:
+  → detect short uppercase strings (USD, EUR, GBP, etc.)
+- Date:
+  → detect YYYY-MM-DD strings
+- Category:
+  → detect repeated string values
+DO NOT fail immediately — try fallback strategies
 
 INVALID IF:
-- total_usd == 0
-- not all rows processed
-- conversion skipped
-"""
-
-    # ---------------- ANOMALY ----------------
-    if task_type == "anomaly":
-        EXTRA_RULES += """
-ANOMALY RULES:
-- Group by product_id, date
-- daily_quantity = sum(quantity)
-- Compute mean and std per product
-- z_score = (value - mean) / std
-- anomaly if z_score > 3
-- Only products with >= 20 records
-- Return FULL anomaly records
-"""
-
-    # ---------------- DB ----------------
-    if task_type == "db":
-        EXTRA_RULES += """
-DATABASE TASK (CRITICAL):
-
-FILE DISCOVERY:
-
-- You MUST locate the database file dynamically
-- Search for files ending with '.db' inside 'data/'
-
-Example:
-- os.walk('data/')
-- find '.db'
-
-- Prefer file containing 'metrics' in name if exists
-
-CONNECTION:
-
-- sqlite3.connect(found_path)
-
-DISCOVERY:
-
-1. SELECT name FROM sqlite_master
-2. PRAGMA table_info
-
-INVALID IF:
-- no .db file found
-- result is empty
-"""
-
-    # ---------------- LOG ----------------
-    if task_type == "log":
-        EXTRA_RULES += """
-LOG TASK (CRITICAL):
-
-FILE DISCOVERY (MANDATORY):
-- You MUST locate the log file dynamically
-- Search recursively under 'data/' directory
-- Prefer 'data/logs/' but fallback to any '.log' file
-- Use os.walk('data/')
-- Pick the FIRST file that endswith('.log')
-- FAIL if no file found
-
-SCHEMA DISCOVERY (MANDATORY):
-- DO NOT assume fixed structure
-- Read first 20 lines to infer format
-- Detect:
-  - key=value pairs (e.g. endpoint=/api/...)
-  - positional format (e.g. GET /api/... 200 123ms)
-  - mixed formats
-
-FIELD EXTRACTION (ROBUST):
-You must dynamically extract:
-- method → token in [GET, POST, PUT, DELETE, PATCH]
-- endpoint → token starting with '/'
-- status → integer between 100–599
-- latency → integer (may include 'ms' or key=value)
-
-Support BOTH:
-1) positional:
-   GET /api/users 200 123ms
-2) key=value:
-   method=GET endpoint=/api/users status=200 latency_ms=123
-
-RULES:
-- DO NOT skip lines unless parsing truly fails
-- DO NOT rely on fixed indices
-- Prefer pattern detection over positions
-- Strip 'ms' if exists
-- Ignore malformed lines (do not crash)
-
-AGGREGATION:
-For each (method, endpoint):
-- total request count
-- average latency (ms)
-- error rate (%) where status >= 400
-- p95 latency (ms)
-
-P95:
-- sort latencies
-- index = ceil(0.95 * N) - 1
-
-OUTPUT:
-- Sort by error rate DESC
-- Return TOP 5 endpoints
-
-FORMAT:
-- Return a TABLE STRING (aligned columns)
-
-INVALID IF:
-- no .log file found
-- no valid rows parsed
-- result is empty
-    """
-
-    # ---------------- FAILSAFE ----------------
-    FAILSAFE = """
-FAILSAFE (MANDATORY):
-
-- If computed result is 0 → logic is WRONG → recompute
-- If result is empty → logic is WRONG
-- Always verify output before returning
+- no file found
+- no data parsed
+- result empty
 """
 
     return f"""
 {BASE_RULES}
-
-{EXTRA_RULES}
-
-{FAILSAFE}
 
 Task:
 {task}
@@ -290,12 +196,20 @@ Task:
 # CLEAN CODE
 # ---------------------------
 def clean_code(code: str) -> str:
+    code = code.strip()
+
     if "```" in code:
         parts = code.split("```")
-        if len(parts) > 1:
-            code = parts[1]
-    code = code.replace("python", "")
-    return code.strip()
+        for part in parts:
+            part = part.strip()
+            if not part:
+                continue
+            if part.startswith("python"):
+                part = part[len("python"):].strip()
+            if "def tool(" in part or "def tool():" in part:
+                return part.strip()
+
+    return code
 
 # ---------------------------
 # SAFE JSON
@@ -362,7 +276,7 @@ def fix_code(task: str, code: str, error: str) -> str:
     prompt = f"""
 You are a Python expert.
 
-The following code failed.
+The previous generated code failed.
 
 Task:
 {task}
@@ -370,12 +284,24 @@ Task:
 Error:
 {error}
 
-Code:
+Previous code:
 {code}
 
-Fix the code.
+You MUST return valid Python code only.
 
-Return ONLY corrected Python code.
+STRICT RULES:
+- Return ONLY raw Python code
+- No explanation
+- No markdown
+- No ``` fences
+- The code MUST define exactly:
+    def tool():
+- All logic must be inside tool()
+- tool() must return the final result as a Python object
+- Do NOT print the final answer
+- Do NOT write code outside tool() except imports or helper functions
+
+Return corrected code now.
 """
 
     response = client.chat.completions.create(
@@ -406,7 +332,7 @@ def solve_task(task: str) -> str:
     print("[DEBUG] TASK:", task)
     print("==============================")
 
-    max_attempts = 2
+    max_attempts = 3
     code = None
     error = None
 
@@ -439,7 +365,7 @@ def solve_task(task: str) -> str:
 
             tool_name = f"tool_{len(TOOLS)}"
             TOOLS[tool_name] = code
-            return json.dumps(safe_json(result))
+            return json.dumps(result)
 
         print("[DEBUG] Error:", error)
         print("[DEBUG] Retrying...")
