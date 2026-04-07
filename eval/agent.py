@@ -113,7 +113,8 @@ def detect_task_type(task: str):
 # ---------------------------
 def generate_tool_code(task: str) -> str:
     rules_block = ""
-    
+
+    t = task.lower()
 
     FILE_DISCOVERY_RULES = """
 FILE DISCOVERY (CRITICAL):
@@ -138,6 +139,7 @@ FILE DISCOVERY (CRITICAL):
 
 FAILURE → INVALID SOLUTION
 """
+
     CURRENCY_OUTPUT_RULES = """
     CURRENCY CONVERSION OUTPUT (CRITICAL):
 
@@ -160,10 +162,10 @@ FAILURE → INVALID SOLUTION
         }
 
     - Returning ONLY a number is INVALID
-    """
-    ANOMALY_RULES = ""
+"""
 
-    if "anomaly" in task.lower():
+    ANOMALY_RULES = ""
+    if "anomaly" in t:
         ANOMALY_RULES = """
     ANOMALY TASK (CRITICAL):
 
@@ -203,12 +205,79 @@ FAILURE → INVALID SOLUTION
     9. You MUST analyze ALL dates (not partial)
 
     10. If anomalies < expected → logic is WRONG
+"""
+    LOG_RULES = """
+    LOG ANALYSIS TASK (CRITICAL):
+
+    - Log lines are in key=value format
+
+    Example:
+        method=GET endpoint=/api/users status=200 latency_ms=123
+
+    STEP 1 — PARSE:
+
+    - You MUST split each line by spaces
+    - Then split each part by '='
+    - Build dict per line
+
+    Example:
+        parts = line.strip().split()
+        data = {}
+        for p in parts:
+            if '=' in p:
+                k, v = p.split('=', 1)
+                data[k] = v
+
+    STEP 2 — REQUIRED FIELDS:
+
+    - method
+    - endpoint
+    - status
+    - latency (latency_ms or similar)
+
+    STEP 3 — TYPE CONVERSION:
+
+    - status → int
+    - latency → float
+
+    - You MUST strip non-numeric parts:
+        "123ms" → 123
+
+    STEP 4 — GROUPING:
+
+    - Group by (method, endpoint)
+
+    For each group:
+        - total_requests
+        - avg_latency
+        - error_rate = status >= 400
+        - p95 latency:
+            sorted_values
+            index = int(0.95 * (len(values) - 1))
+
+    STEP 5 — OUTPUT:
+
+    Return top 5 by error_rate DESC
+
+    Each row:
+    {
+        "method": "GET",
+        "endpoint": "/api/users",
+        "total_requests": 100,
+        "avg_latency": 120.5,
+        "error_rate": 0.15,
+        "p95_latency": 1977
+    }
+
+    - Returning [] is INVALID
     """
 
     DB_RULES = """
     DATABASE TASK (CRITICAL):
 
     - You MUST use sqlite3 (standard library only)
+    - You MUST NOT use pandas
+    - You MUST NOT search for CSV files
 
     STEP 1 — CONNECT:
     - Find .db file using glob.glob('**/*.db', recursive=True)
@@ -251,7 +320,9 @@ FAILURE → INVALID SOLUTION
             latency → latency_ms
 
     STEP 5 — GROUPING:
-
+    - When grouping:
+        - You MUST append latency values per endpoint
+        - Skip endpoints with empty latency list
     - You MUST group by endpoint
 
     For EACH endpoint:
@@ -278,25 +349,19 @@ FAILURE → INVALID SOLUTION
         - error_rate
         - p99_latency
 
-    Example:
-
-    [
-        {
-            "endpoint": "/api/reports",
-            "total_requests": 1200,
-            "error_rate": 0.12,
-            "p99_latency": 7024.3
-        }
-    ]
-
     - Returning [] is INVALID
-    - Missing fields is INVALID
-    - Returning string/table is INVALID
-    """
-   
-   
-   
-   
+"""
+
+    # Routing
+    if ".db" in t or "sqlite" in t or "database" in t:
+        rules_block = DB_RULES
+    elif ".log" in t or "log" in t:
+        rules_block = FILE_DISCOVERY_RULES + LOG_RULES
+    elif "anomaly" in t:
+        rules_block = FILE_DISCOVERY_RULES + ANOMALY_RULES
+    else:
+        rules_block = FILE_DISCOVERY_RULES
+
     prompt = f"""
 You are a Python expert.
 
@@ -316,7 +381,6 @@ IMPORTANT PRACTICAL RULES:
 
 - NEVER return empty result unless dataset is empty
 
-
 If task involves currency conversion:
 - You MUST:
     usd_value = float(total) / rates[currency]
@@ -325,11 +389,7 @@ If task involves currency conversion:
 - Do NOT skip rows
 - Do NOT return 0 unless file is empty
 
-{FILE_DISCOVERY_RULES}
-
-{DB_RULES}
-
-{ANOMALY_RULES}
+{rules_block}
 {CURRENCY_OUTPUT_RULES}
 
 STRICT RULES:
@@ -340,7 +400,6 @@ STRICT RULES:
 - Return Python object (dict/list/number)
 - No explanations
 - Return ONLY code
-- You MUST import pandas when searching files
 - DO NOT use advanced SQL functions (SQLite limitation)
 
 IMPORTANT OUTPUT REQUIREMENT:
