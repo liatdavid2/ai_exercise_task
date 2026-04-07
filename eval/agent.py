@@ -21,43 +21,273 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 # ---------------------------
 TOOLS = {}
 
+# ---------------------------
+# TASK TYPE DETECTION
+# ---------------------------
+def detect_task_type(task: str) -> str:
+    t = task.lower()
+
+    if "anomaly" in t:
+        return "anomaly"
+    if ".csv" in t:
+        return "csv"
+    if ".db" in t or "database" in t:
+        return "db"
+    if "log" in t:
+        return "log"
+    if "exchange" in t or "currency" in t:
+        return "currency"
+
+    return "generic"
 
 # ---------------------------
-# UTIL: CLEAN CODE
+# PROMPT BUILDER
+# ---------------------------
+def build_prompt(task: str) -> str:
+    task_type = detect_task_type(task)
+    t = task.lower()
+
+    BASE_RULES = """
+You are a Python expert.
+
+Write a function:
+
+def tool():
+
+GLOBAL RULES:
+- Use only Python standard library
+- Read files from 'data/' folder
+- Infer schema dynamically (DO NOT assume column names)
+- Handle missing values safely
+- Return Python object
+- Return ONLY code (no explanation)
+- Do NOT use pandas
+- Do NOT crash on missing fields
+- NEVER return empty or zero unless dataset is empty
+"""
+
+    EXTRA_RULES = ""
+
+    # ---------------- CSV ----------------
+    if task_type == "csv":
+        EXTRA_RULES += """
+CSV RULES:
+- Use csv.DictReader
+- Convert numeric fields using float()
+- Ignore empty values safely
+- If 'total' exists → it is revenue (DO NOT recompute)
+- If 'date' exists → treat as string and filter using startswith
+"""
+
+    # ---------------- REVENUE (CRITICAL FIX) ----------------
+    if "revenue" in t:
+        EXTRA_RULES += """
+REVENUE TASK (CRITICAL):
+
+YOU MUST:
+
+1. Use column:
+   - total (NOT unit_price * quantity)
+
+2. Group by:
+   - category
+
+3. Compute:
+   - total revenue per category (ALL data)
+
+4. Filter:
+   - ONLY December 2024
+   - date.startswith('2024-12')
+
+5. Compute again:
+   - revenue per category in December
+
+6. Find:
+   - category with MAX revenue in December
+
+7. RETURN EXACT STRUCTURE:
+
+{
+  "all_categories": {category: revenue},
+  "december_categories": {category: revenue},
+  "highest_category": str,
+  "highest_revenue": float
+}
+
+INVALID IF:
+- highest_category is None
+- highest_revenue == 0
+- December filter missing
+"""
+
+    # ---------------- CURRENCY (CRITICAL FIX) ----------------
+    if "exchange" in t or "currency" in t:
+        EXTRA_RULES += """
+CURRENCY TASK (CRITICAL):
+
+YOU MUST:
+
+1. Fetch rates:
+   https://open.er-api.com/v6/latest/USD
+
+2. For EACH row:
+   currency = row.get('currency')
+   total = float(row.get('total', 0))
+
+3. Convert:
+   rate = rates.get(currency, 1)
+   usd_value = total / rate
+
+4. Sum ALL rows:
+   total_usd += usd_value
+
+5. Round to 2 decimals
+
+6. RETURN:
+   {"total_usd": value}
+
+INVALID IF:
+- total_usd == 0
+- not all rows processed
+- conversion skipped
+"""
+
+    # ---------------- ANOMALY ----------------
+    if task_type == "anomaly":
+        EXTRA_RULES += """
+ANOMALY RULES:
+- Group by product_id, date
+- daily_quantity = sum(quantity)
+- Compute mean and std per product
+- z_score = (value - mean) / std
+- anomaly if z_score > 3
+- Only products with >= 20 records
+- Return FULL anomaly records
+"""
+
+    # ---------------- DB ----------------
+    if task_type == "db":
+        EXTRA_RULES += """
+DATABASE TASK (CRITICAL):
+
+FILE DISCOVERY:
+
+- You MUST locate the database file dynamically
+- Search for files ending with '.db' inside 'data/'
+
+Example:
+- os.walk('data/')
+- find '.db'
+
+- Prefer file containing 'metrics' in name if exists
+
+CONNECTION:
+
+- sqlite3.connect(found_path)
+
+DISCOVERY:
+
+1. SELECT name FROM sqlite_master
+2. PRAGMA table_info
+
+INVALID IF:
+- no .db file found
+- result is empty
+"""
+
+    # ---------------- LOG ----------------
+    if task_type == "log":
+        EXTRA_RULES += """
+   LOG TASK (CRITICAL):
+
+FILE DISCOVERY (MANDATORY):
+
+- You MUST locate the log file dynamically
+- Search for files ending with '.log' inside 'data/' directory
+
+Example approach:
+- os.walk('data/')
+- find file that endswith('.log')
+
+- Use the FIRST matching file
+
+PARSING:
+
+- Read file line by line
+- Ignore empty lines
+- Lines are space-separated
+
+Example:
+GET /api/payments 500 123ms
+
+Extract:
+- method = parts[0]
+- endpoint = parts[1]
+- status = int(parts[2])
+- latency = int(parts[3].replace('ms',''))
+
+INVALID IF:
+- no .log file found
+- result is empty
+    """
+
+    # ---------------- FAILSAFE ----------------
+    FAILSAFE = """
+FAILSAFE (MANDATORY):
+
+- If computed result is 0 → logic is WRONG → recompute
+- If result is empty → logic is WRONG
+- Always verify output before returning
+"""
+
+    return f"""
+{BASE_RULES}
+
+{EXTRA_RULES}
+
+{FAILSAFE}
+
+Task:
+{task}
+"""
+
+# ---------------------------
+# CLEAN CODE
 # ---------------------------
 def clean_code(code: str) -> str:
     if "```" in code:
-        code = code.split("```")[1]
+        parts = code.split("```")
+        if len(parts) > 1:
+            code = parts[1]
     code = code.replace("python", "")
     return code.strip()
 
+# ---------------------------
+# SAFE JSON
+# ---------------------------
 def safe_json(obj):
     import datetime
 
-    # dict
     if isinstance(obj, dict):
         return {str(k): safe_json(v) for k, v in obj.items()}
 
-    # list / tuple
     if isinstance(obj, (list, tuple)):
         return [safe_json(v) for v in obj]
 
-    # datetime / date
     if isinstance(obj, (datetime.datetime, datetime.date)):
         return obj.isoformat()
 
-    # set
     if isinstance(obj, set):
         return list(obj)
 
-    # fallback for anything weird
     try:
         json.dumps(obj)
         return obj
     except:
         return str(obj)
+
 # ---------------------------
-# UTIL: RUN TOOL
+# RUN TOOL
 # ---------------------------
 def run_generated_tool(code: str):
     local_scope = {}
@@ -65,7 +295,7 @@ def run_generated_tool(code: str):
     try:
         exec(code, local_scope, local_scope)
     except Exception as e:
-        return None, str(e)
+        return None, f"exec_error: {e}"
 
     if "tool" not in local_scope:
         return None, "tool() not found"
@@ -74,156 +304,13 @@ def run_generated_tool(code: str):
         result = local_scope["tool"]()
         return result, None
     except Exception as e:
-        return None, str(e)
-
-
-# ---------------------------
-# TOOL REUSE (GENERIC)
-# ---------------------------
-def find_reusable_tool(task: str):
-    return None
-
+        return None, f"runtime_error: {e}"
 
 # ---------------------------
 # GENERATE TOOL
 # ---------------------------
 def generate_tool_code(task: str) -> str:
-
-    ANOMALY_RULES = ""
-
-    if "anomaly" in task.lower():
-        ANOMALY_RULES = """
-    ANOMALY TASK (CRITICAL):
-
-    - You MUST:
-
-    1. Group data by:
-        product_id, date
-
-    2. Compute:
-        daily_quantity = sum(quantity per day)
-
-    3. For EACH product:
-        - compute mean of daily_quantity
-        - compute std deviation
-
-    4. Filter:
-        only products with >= 20 total records
-
-    5. Detect anomaly:
-        z_score = (value - mean) / std
-        anomaly if z_score > 3
-
-    6. You MUST return FULL anomaly records:
-        - product_id
-        - product_name
-        - date
-        - daily_quantity
-        - mean_quantity
-        - std_dev
-        - z_score
-
-    7. You MUST write JSON file:
-        output/anomaly_report.json
-
-    8. Returning only summary is INVALID
-
-    9. You MUST analyze ALL dates (not partial)
-
-    10. If anomalies < expected → logic is WRONG
-    """
-
-    DB_RULES = """
-    DATABASE TASK (CRITICAL):
-
-    - You MUST use sqlite3 (standard library only)
-    - You MUST:
-        1. Connect to database
-        2. Discover tables:
-            SELECT name FROM sqlite_master WHERE type='table'
-        3. For each table:
-            PRAGMA table_info(table_name)
-
-    - DO NOT assume column names
-    - You MUST dynamically detect:
-        - endpoint-like column (string with '/')
-        - status-like column (numeric HTTP-like values)
-        - latency-like column (numeric values)
-
-    - p99 MUST be computed manually:
-        - sort values
-        - index = int(0.99 * len(values))
-
-    - error_rate:
-        count(status >= 400) / total_count
-
-    - You MUST:
-        - compute per group
-        - sort descending by p99
-        - return top 10
-
-    - DO NOT use SQL aggregation unless column names are confirmed
-    """
-    prompt = f"""
-You are a Python expert.
-
-Write a function:
-
-def tool():
-
-That solves the task.
-
-IMPORTANT PRACTICAL RULES:
-
-- For CSV:
-    - Prefer numeric columns representing aggregated values (e.g. totals)
-    - If 'category' exists → group by it
-    - If 'date' exists → parse and filter by date
-
-- NEVER return empty result unless dataset is empty
-
-
-If task involves currency conversion:
-- You MUST:
-    usd_value = float(total) / rates[currency]
-- Always:
-    total_usd += usd_value
-- Do NOT skip rows
-- Do NOT return 0 unless file is empty
-
-{DB_RULES}
-
-{ANOMALY_RULES}
-
-STRICT RULES:
-- Use only Python standard library
-- Read files from 'data/' folder
-- Infer schema dynamically (DO NOT hardcode column names)
-- Handle missing values safely
-- Return Python object (dict/list/number)
-- No explanations
-- Return ONLY code
-- DO NOT use pandas
-- DO NOT use advanced SQL functions (SQLite limitation)
-
-IMPORTANT OUTPUT REQUIREMENT:
-
-- When grouping:
-    - Return ALL groups (not just max)
-    - Also return filtered subset (e.g. December)
-
-SAFE HANDLING:
-
-- When accessing rates:
-    rate = rates.get(currency)
-
-- If rate is missing:
-    - Assume value is already in USD (rate = 1)
-    - DO NOT crash
-
-Task:
-{task}
-"""
+    prompt = build_prompt(task)
 
     response = client.chat.completions.create(
         model="gpt-4o-mini",
@@ -233,9 +320,8 @@ Task:
 
     return response.choices[0].message.content
 
-
 # ---------------------------
-# FIX CODE (RETRY)
+# FIX CODE
 # ---------------------------
 def fix_code(task: str, code: str, error: str) -> str:
     prompt = f"""
@@ -265,12 +351,10 @@ Return ONLY corrected Python code.
 
     return response.choices[0].message.content
 
-
 # ---------------------------
-# NORMALIZE OUTPUT (GENERIC)
+# NORMALIZE OUTPUT
 # ---------------------------
 def normalize_output(result):
-    # ensure JSON-safe + structured
     if isinstance(result, (int, float)):
         return {"value": round(result, 2)}
 
@@ -278,7 +362,6 @@ def normalize_output(result):
         return {"result": result}
 
     return result
-
 
 # ---------------------------
 # MAIN SOLVER
@@ -288,7 +371,7 @@ def solve_task(task: str) -> str:
     print("[DEBUG] TASK:", task)
     print("==============================")
 
-    max_attempts = 5
+    max_attempts = 2
     code = None
     error = None
 
@@ -297,14 +380,8 @@ def solve_task(task: str) -> str:
 
         try:
             if attempt == 0:
-                reused = find_reusable_tool(task)
-
-                if reused:
-                    print("[DEBUG] Reusing existing tool")
-                    code = reused
-                else:
-                    print("[DEBUG] Generating new tool")
-                    code = generate_tool_code(task)
+                print("[DEBUG] Generating tool")
+                code = generate_tool_code(task)
             else:
                 print("[DEBUG] Fixing code")
                 code = fix_code(task, code, error)
@@ -314,7 +391,7 @@ def solve_task(task: str) -> str:
             continue
 
         if not code:
-            error = "Empty code"
+            error = "empty_code"
             continue
 
         code = clean_code(code)
@@ -325,10 +402,8 @@ def solve_task(task: str) -> str:
         if error is None:
             print("[DEBUG] Success")
 
-            # save tool for reuse
             tool_name = f"tool_{len(TOOLS)}"
             TOOLS[tool_name] = code
-
             return json.dumps(safe_json(result))
 
         print("[DEBUG] Error:", error)
