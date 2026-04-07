@@ -245,8 +245,6 @@ def solve_task(task: str) -> str:
         if error is None:
             print("[DEBUG] Success")
 
-            result = normalize_output(result)
-
             # save tool for reuse
             tool_name = f"tool_{len(TOOLS)}"
             TOOLS[tool_name] = code
