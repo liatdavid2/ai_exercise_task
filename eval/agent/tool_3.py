@@ -19,10 +19,10 @@ def tool():
 
     # Fallback if no CSV files found
     if not files:
-        known_filenames = ['employees.json', 'sales.csv', 'app.log']
-        for filename in known_filenames:
-            if os.path.exists(filename):
-                files.append(filename)
+        known_files = ['employees.json', 'sales.csv', 'app.log']
+        for known_file in known_files:
+            if os.path.exists(known_file):
+                files.append(known_file)
 
         if not files:
             for root, _, filenames in os.walk('data/'):
@@ -48,30 +48,34 @@ def tool():
             category_key = find_key(reader.fieldnames, ["category"]) or "category"
 
             for row in reader:
-                if row[date_key] and row[total_key]:
+                if date_key in row and total_key in row and category_key in row:
                     try:
-                        date = datetime.strptime(row[date_key], '%Y-%m-%d')
-                        total = float(row[total_key])
-                        category = row[category_key]
+                        date_value = row[date_key]
+                        total_value = row[total_key]
+                        category_value = row[category_key]
 
-                        # Aggregate revenue by category
-                        total_revenue[category] += total
+                        # Parse date and filter for December 2024
+                        date_parsed = datetime.strptime(date_value, '%Y-%m-%d')
+                        if date_parsed.year == 2024 and date_parsed.month == 12:
+                            revenue = float(total_value) if total_value else 0
+                            total_revenue[category_value] += revenue
 
-                        # Check for December 2024
-                        if date.year == 2024 and date.month == 12:
-                            if total > highest_revenue:
-                                highest_revenue = total
-                                highest_category = category
-                    except (ValueError, KeyError):
+                    except (ValueError, TypeError):
                         continue
 
-    # Prepare results
-    result = {category: round(revenue, 2) for category, revenue in total_revenue.items()}
+    # Calculate the highest revenue category
+    for category, revenue in total_revenue.items():
+        if revenue > highest_revenue:
+            highest_revenue = revenue
+            highest_category = category
 
-    if highest_category:
-        result['highest_category'] = {
-            'category': highest_category,
-            'revenue': round(highest_revenue, 2)
+    # Prepare the result
+    result = {
+        "total_revenue_per_category": {k: round(v, 2) for k, v in total_revenue.items()},
+        "highest_revenue_category": {
+            "category": highest_category,
+            "revenue": round(highest_revenue, 2)
         }
+    }
 
     return result

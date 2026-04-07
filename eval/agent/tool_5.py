@@ -24,10 +24,12 @@ def tool():
 
         # Fallback to os.walk
         import os
-        for root, _, filenames in os.walk('data/'):
+        for root, dirs, filenames in os.walk('data/'):
             for filename in filenames:
                 if filename.endswith('.log'):
                     files.append(os.path.join(root, filename))
+
+        files = list(set(files))  # Remove duplicates
 
     if not files:
         return "No matching file found"
@@ -51,7 +53,7 @@ def tool():
                 endpoint = data.get("endpoint")
                 status = int(data.get("status", 200))
 
-                # Step 5: Extract latency
+                # Extract latency
                 raw = data.get("latency_ms", "0")
                 m = re.search(r'(\d+\.?\d*)', raw)
                 latency = float(m.group(1)) if m else 0
@@ -59,7 +61,7 @@ def tool():
                 if endpoint:
                     log_data[(method, endpoint)].append((status, latency))
 
-    # Step 6: Grouping and calculations
+    # Step 5: Grouping and calculations
     results = []
     for (method, endpoint), entries in log_data.items():
         total_requests = len(entries)
@@ -67,7 +69,11 @@ def tool():
         error_count = sum(1 for status, _ in entries if status >= 400)
         error_rate = (error_count / total_requests) * 100 if total_requests > 0 else 0
         avg_latency = sum(latencies) / total_requests if total_requests > 0 else 0
-        p95_latency = sorted(latencies)[int(0.95 * (len(latencies) - 1))] if latencies else 0
+
+        # Calculate P95 latency
+        values = sorted(latencies)
+        index = int(0.95 * (len(values) - 1)) if values else 0
+        p95_latency = values[index] if values else 0
 
         results.append({
             "method": method,
@@ -78,6 +84,8 @@ def tool():
             "p95_latency": p95_latency
         })
 
-    # Step 7: Sort by error rate and return top 5
+    # Step 6: Sort by error rate descending
     results.sort(key=lambda x: x['error_rate'], reverse=True)
+
+    # Step 7: Return top 5 groups
     return results[:5]

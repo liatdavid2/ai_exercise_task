@@ -23,7 +23,7 @@ def tool():
                 files.append(filename)
 
         if not files:
-            for root, dirs, filenames in os.walk('data/'):
+            for root, _, filenames in os.walk('data/'):
                 for filename in filenames:
                     files.append(os.path.join(root, filename))
 
@@ -35,25 +35,25 @@ def tool():
         reader = csv.DictReader(f)
         rows = list(reader)
 
-        # Get the first 10 rows
-        first_10_rows = rows[:10]
+        # Get columns
+        columns = reader.fieldnames
 
-        # Detect columns dynamically
-        columns = first_10_rows[0].keys() if first_10_rows else []
-        
         # Determine date range and total rows
         date_key = find_key(rows[0], ["date"]) or "date"
-        dates = []
-        for row in rows:
-            date_value = row.get(date_key)
-            if date_value:
-                dates.append(date_value)
-
-        date_range = (min(dates), max(dates)) if dates else (None, None)
+        date_values = []
         total_rows = len(rows)
 
-        return {
-            "columns": list(columns),
-            "date_range": date_range,
-            "total_rows": total_rows
-        }
+        for row in rows:
+            if date_key in row and row[date_key]:
+                date_values.append(row[date_key])
+
+        if date_values:
+            date_range = (min(date_values), max(date_values))
+        else:
+            date_range = None
+
+    return {
+        "columns": columns,
+        "date_range": date_range,
+        "total_rows": total_rows
+    }

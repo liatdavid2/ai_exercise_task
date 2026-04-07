@@ -21,38 +21,38 @@ def tool():
             if os.path.exists(fallback):
                 files.append(fallback)
 
-        if not files:
-            for root, dirs, filenames in os.walk('data/'):
-                for filename in filenames:
-                    if filename.endswith('.json'):
-                        files.append(os.path.join(root, filename))
-                if files:
-                    break
+    # If still no files found, try os.walk
+    if not files:
+        for root, dirs, filenames in os.walk('data/'):
+            for filename in filenames:
+                if filename.endswith('.json'):
+                    files.append(os.path.join(root, filename))
 
+    # If no files found after all attempts
     if not files:
         return "No matching file found"
 
-    # Process employees.json
-    employee_data = None
+    # Read employees.json
+    employees_data = None
     for file in files:
         if 'employees.json' in file:
             with open(file, 'r') as f:
-                employee_data = json.load(f)
+                employees_data = json.load(f)
             break
 
-    if employee_data is None:
-        return "No employee data found"
+    if employees_data is None:
+        return "No matching file found"
 
-    # Prepare to analyze employee data
+    # Process the data
+    if isinstance(employees_data, list):
+        rows = employees_data
+    elif isinstance(employees_data, dict):
+        rows = list(employees_data.values())
+    else:
+        return "Invalid data structure"
+
     department_counts = {}
     highest_paid_employee = None
-
-    if isinstance(employee_data, list):
-        rows = employee_data
-    elif isinstance(employee_data, dict):
-        rows = list(employee_data.values())
-    else:
-        return "Invalid employee data structure"
 
     for row in rows:
         department_key = find_key(row, ["department"]) or "department"
