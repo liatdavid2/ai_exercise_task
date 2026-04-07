@@ -23,7 +23,7 @@ More generic  → Less accurate
 More specific → Less scalable
 ```
 
-The solution is not choosing one — but combining both.
+**The solution is not choosing one — but combining both.**
 
 ---
 
@@ -163,7 +163,7 @@ glob.glob('**/*.ext', recursive=True)
   * mean / std
 * Detect anomalies using z-score > 3
 
-⚠️ Critical constraint:
+**Critical constraint:**
 
 ```
 Filter products using:
@@ -199,7 +199,7 @@ Example:
 
 * Produce unified JSON
 
-⚠️ Strict output contract:
+**Strict output contract:**
 
 * Must include exact keys:
 
@@ -226,7 +226,7 @@ Example:
   * malformed data
   * inconsistencies
 
-⚠️ Must return findings (not empty)
+**Must return findings (not empty)**
 
 ---
 
@@ -287,4 +287,4 @@ Strict constraints ensure:
 > The goal is not to make the prompt smarter.
 > The goal is to make the behavior predictable.
 
-👉 **Generic reasoning + strict constraints = reliable LLM tools**
+**Generic reasoning + strict constraints = reliable LLM tools**
