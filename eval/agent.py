@@ -51,83 +51,152 @@ Write a function:
 
     def tool():
 
-that solves the task.
+CRITICAL:
+- Return ONLY valid Python code
+- The function MUST return a STRING (not dict)
 
-RULES:
+--------------------------------------------------
+CORE RULES (STRICT)
+--------------------------------------------------
 
 - Use ONLY Python standard library
-- No pandas, numpy, sklearn, requests
-- Return result (do NOT print)
-- Return ONLY Python code
+- FORBIDDEN: pandas, numpy, requests
+- Do NOT print → return string
 
-DATA ACCESS:
+--------------------------------------------------
+FILE HANDLING (MANDATORY)
+--------------------------------------------------
 
-- All files are inside 'data/' directory
-- You MUST search files using os.walk
+- Use os.walk('data/')
+- Find files dynamically
+- NEVER hardcode filenames
+- Use FIRST matching file
 
-FILE TYPES:
+--------------------------------------------------
+TASK TYPE DETECTION (CRITICAL)
+--------------------------------------------------
 
-- CSV → use csv.DictReader
-- JSON → use json.load
-- LOG → read line by line
-- DB → use sqlite3
+You MUST detect the task intent BEFORE coding.
 
-DATA PATTERNS (IMPORTANT):
+1. INSPECTION TASKS:
+   (columns, first rows, schema, date range, row count)
 
-- JSON files contain list of dictionaries
-- CSV contains structured rows with numeric and string fields
-- LOG lines contain key=value pairs separated by spaces
+   → DO:
+     - extract column names
+     - compute date range
+     - count rows
 
-LOG PARSING:
+   → DO NOT:
+     - group data
+     - calculate totals
+     - aggregate
 
-Example line:
-endpoint=/api/payments method=POST status=200 duration_ms=1038
+2. AGGREGATION TASKS:
+   (revenue, totals, averages, error rate, latency)
 
-→ parse by splitting and extracting key=value
+   → DO:
+     - group data
+     - compute sums / averages / metrics
 
-TASK EXECUTION:
+3. TRANSFORMATION TASKS:
+   (currency conversion, normalization)
 
-- Always fully solve the task
-- If task has multiple parts → return all parts
+   → DO:
+     - transform values
+     - compute final result
 
-OUTPUT RULES:
+INVALID:
+- performing aggregation for inspection tasks
+- returning wrong type of result
 
-- ALWAYS return a dictionary or list
-- NEVER return None
+--------------------------------------------------
+DATA TYPES
+--------------------------------------------------
 
-Examples:
+CSV:
+- MUST use csv.DictReader
+- MUST read ALL rows:
+    rows = list(reader)
 
-- counting:
-  {{ "group": count }}
+JSON:
+- use json.load
 
-- aggregation:
-  {{
-    "groups": {{...}},
-    "max": ...
-  }}
+LOG:
+- parse key=value pairs
 
-- mixed task:
-  {{
-    "files": [...],
-    "analysis": ...
-  }}
+DB:
+- use sqlite3
 
-DATA HANDLING:
+--------------------------------------------------
+CSV CLEANING (MANDATORY)
+--------------------------------------------------
 
-- Handle empty values safely
-- Convert numbers carefully
-- Do NOT crash
+- Skip duplicate order_id (keep first)
+- Skip rows where quantity < 0
+- Skip unknown currency values
+- Strip all values
 
-IMPORTANT:
+- If total is empty:
+    total = quantity * unit_price
 
-- Prefer simple and working logic
-- Do NOT over-generalize
-- Make reasonable assumptions based on data
+--------------------------------------------------
+FULL DATA USAGE (CRITICAL)
+--------------------------------------------------
+
+- Use ALL rows
+- DO NOT sample
+- DO NOT stop early
+
+--------------------------------------------------
+DATE HANDLING
+--------------------------------------------------
+
+- Use string operations ONLY
+
+Example:
+if date.startswith("2024-12")
+
+DO NOT use datetime parsing
+
+--------------------------------------------------
+AGGREGATION RULES
+--------------------------------------------------
+
+- Use +=
+- Sum ALL rows
+- Do not overwrite values
+
+--------------------------------------------------
+OUTPUT RULES (CRITICAL)
+--------------------------------------------------
+
+Return a STRING.
+
+INSPECTION TASK OUTPUT MUST INCLUDE:
+- column names
+- date range
+- total rows
+
+AGGREGATION TASK OUTPUT MUST INCLUDE:
+- all groups (not only max)
+- numeric values
+- relevant keywords (e.g. December, USD, error rate)
+
+--------------------------------------------------
+FAIL CONDITIONS
+--------------------------------------------------
+
+INVALID if:
+- empty result
+- missing required values
+- partial data used
+- wrong task type solved
+
+--------------------------------------------------
 
 Task:
 {task}
 """
-
 
 # ---------------------------
 # CLEAN CODE
@@ -203,7 +272,7 @@ def generate_tool_code(task: str) -> str:
 # ---------------------------
 def fix_code(task: str, code: str, error: str) -> str:
     prompt = f"""
-Fix this Python code.
+Fix the code so it produces a COMPLETE textual answer.
 
 Task:
 {task}
@@ -214,28 +283,16 @@ Error:
 Code:
 {code}
 
-Fix issues so the code works correctly.
+REQUIREMENTS:
 
-Common fixes:
-- missing return
-- wrong parsing
-- empty result
-- bad numeric conversion
-- incorrect file selection
+- Must return STRING (not dict)
+- Must include:
+  - names (categories, endpoints, etc.)
+  - numbers (counts, totals, etc.)
+- Must not be empty
+- Must solve ALL parts of the task
 
-RULES:
-
-- Return ONLY Python code
-- Must define: def tool()
-- Must return valid result
-- Do NOT print
-
-IMPORTANT:
-
-- Ensure result is NOT empty
-- Ensure all parts of the task are solved
-
-Return fixed code.
+Return only Python code.
 """
 
     response = client.chat.completions.create(
