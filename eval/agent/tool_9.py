@@ -16,13 +16,13 @@ def tool():
 
     # Fallback file search
     if not files:
-        known_files = ['employees.json', 'sales.csv', 'app.log']
-        for known_file in known_files:
-            if os.path.exists(known_file):
-                files.append(known_file)
+        fallback_files = ['employees.json', 'sales.csv', 'app.log']
+        for filename in fallback_files:
+            if os.path.exists(filename):
+                files.append(filename)
 
         if not files:
-            for root, _, filenames in os.walk('data/'):
+            for root, dirs, filenames in os.walk('data/'):
                 for filename in filenames:
                     files.append(os.path.join(root, filename))
 
@@ -117,13 +117,13 @@ def tool():
                     })
 
                 # Check for invalid values
-                invalid_stock_count = sum(1 for row in rows if row.get(stock_key) and int(row[stock_key]) < 0)
+                invalid_stock_count = sum(1 for row in rows if row.get(stock_key) and row[stock_key] < 0)
                 if invalid_stock_count > 0:
                     file_issues.append({
                         "issue_type": "INVALID VALUES",
                         "description": "Negative stock values found.",
                         "affected_count": invalid_stock_count,
-                        "examples": [row for row in rows if row.get(stock_key) and int(row[stock_key]) < 0]
+                        "examples": [row for row in rows if row.get(stock_key) and row[stock_key] < 0]
                     })
 
         elif file.endswith('.log'):
@@ -135,17 +135,17 @@ def tool():
                         "issue_type": "MALFORMED LINES",
                         "description": "Lines that do NOT contain key=value pairs.",
                         "affected_count": malformed_count,
-                        "examples": [line for line in lines if '=' not in line]
+                        "examples": [line.strip() for line in lines if '=' not in line]
                     })
 
                 # Check for multi-line entries (simple heuristic)
-                multi_line_count = sum(1 for i in range(len(lines) - 1) if lines[i].startswith('Traceback') and not lines[i + 1].startswith('Traceback'))
+                multi_line_count = sum(1 for i in range(len(lines) - 1) if lines[i].strip() and not lines[i + 1].strip())
                 if multi_line_count > 0:
                     file_issues.append({
                         "issue_type": "MULTI-LINE ENTRIES",
-                        "description": "Stack traces spanning multiple lines.",
+                        "description": "Detected potential multi-line entries.",
                         "affected_count": multi_line_count,
-                        "examples": [lines[i] for i in range(len(lines) - 1) if lines[i].startswith('Traceback') and not lines[i + 1].startswith('Traceback')]
+                        "examples": [lines[i].strip() for i in range(len(lines) - 1) if lines[i].strip() and not lines[i + 1].strip()]
                     })
 
                 # Check for inconsistent formats
@@ -155,31 +155,29 @@ def tool():
                         "issue_type": "INCONSISTENT FORMATS",
                         "description": "Lines missing method/endpoint/status.",
                         "affected_count": inconsistent_count,
-                        "examples": [line for line in lines if not any(keyword in line for keyword in ['method', 'endpoint', 'status'])]
+                        "examples": [line.strip() for line in lines if not any(keyword in line for keyword in ['method', 'endpoint', 'status'])]
                     })
 
                 # Check for invalid latency
-                invalid_latency_count = sum(1 for line in lines if 'latency' in line and not line.split('latency=')[1].strip().isdigit())
+                invalid_latency_count = sum(1 for line in lines if 'latency' in line and not line.split('=')[1].strip().isdigit())
                 if invalid_latency_count > 0:
                     file_issues.append({
                         "issue_type": "INVALID LATENCY",
-                        "description": "Latency not numeric.",
+                        "description": "Latency values are not numeric.",
                         "affected_count": invalid_latency_count,
-                        "examples": [line for line in lines if 'latency' in line and not line.split('latency=')[1].strip().isdigit()]
+                        "examples": [line.strip() for line in lines if 'latency' in line and not line.split('=')[1].strip().isdigit()]
                     })
 
         if file_issues:
             issues[file] = file_issues
 
     # Write findings to output file
-    output_file = 'output/data_audit.json'
-    with open(output_file, 'w') as outfile:
+    with open('output/data_audit.json', 'w') as outfile:
         json.dump(issues, outfile)
 
-    # Prepare summary
+    # Summary of findings
     summary = []
     for file, file_issues in issues.items():
-        total_issues = sum(issue['affected_count'] for issue in file_issues)
-        summary.append(f"{file}: {total_issues} issues found.")
-
-    return "\n".join(summary)
+        summary.append(f"{file}: {len(file_issues)} issues found.")
+    
+    return "\n".join(summary) if summary else "No issues found."

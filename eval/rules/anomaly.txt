@@ -1,5 +1,21 @@
 ANOMALY TASK (CRITICAL):
 
+FIELD SELECTION (CRITICAL):
+
+- If these exact fields exist, you MUST use them:
+    - date -> date filtering and grouping
+    - product_id -> product grouping key
+    - product_name -> output only
+    - quantity -> numeric aggregation
+
+- Do NOT use category, product_name, currency, or total as quantity
+- Do NOT cast non-numeric text fields to int or float
+- quantity must come from a numeric quantity-like field only
+
+- If 'quantity' exists, use it directly
+- If 'date' exists, use it directly
+- If 'product_id' exists, use it directly
+- If 'product_name' exists, include it in output only
 --------------------------------------------------
 STEP 1 — DATE FILTER
 --------------------------------------------------
@@ -11,8 +27,9 @@ STEP 1 — DATE FILTER
 STEP 2 — PRODUCT FILTER
 --------------------------------------------------
 
-- Compute total_quantity per product:
-    total_quantity = SUM(quantity across ALL rows)
+- Compute total_quantity per product using SUM of the numeric quantity field across all rows
+- Do NOT use row count
+- Do NOT use category or product_name in numeric calculations
 
 - Keep ONLY products where:
     total_quantity >= 20
@@ -22,8 +39,7 @@ STEP 3 — DAILY AGGREGATION
 --------------------------------------------------
 
 - For each (product_id, date):
-
-    daily_quantity = SUM(quantity)
+    daily_quantity = SUM(numeric quantity field)
 
 --------------------------------------------------
 STEP 4 — STATS PER PRODUCT
@@ -99,3 +115,7 @@ IMPORTANT RULES
 - Do NOT round before calculations
 - Do NOT skip valid data
 - Returning only summary → INVALID
+- Before numeric calculations, verify the chosen quantity field is numeric
+- If a value like "Electronics" appears, that field is NOT a numeric quantity field
+- product_name is for output only, never for aggregation
+- category is never the anomaly metric in this task

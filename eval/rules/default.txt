@@ -24,6 +24,15 @@ If task involves currency conversion:
 - Do NOT skip rows
 - Do NOT return 0 unless file is empty
 
+
+MANDATORY DATA DISCOVERY WORKFLOW:
+
+1. Discover the relevant file dynamically by extension only
+2. Inspect the actual schema before writing processing logic
+3. Infer relevant fields from the schema and task wording
+4. Process the data
+5. Return a non-empty result if data exists
+
 STRICT RULES:
 - Use only Python standard library
 - You MUST import glob when searching files
@@ -37,11 +46,15 @@ GENERICITY (CRITICAL):
 
 - Use this helper:
 
-    def find_key(d, options):
-        for k in d:
-            for opt in options:
-                if opt in k.lower():
-                    return k
+    def find_key(d, semantic_options):
+        keys = list(d.keys())
+        lowered = {k: k.lower() for k in keys}
+        for semantic_group in semantic_options:
+            for k in keys:
+                lk = lowered[k]
+                for opt in semantic_group:
+                    if opt in lk:
+                        return k
         return None
 
 - Example:
@@ -63,18 +76,19 @@ EMPTY RESULT PROTECTION (CRITICAL):
 
 - You MUST process at least one row
 
-COMMON FIELD FALLBACKS:
+COMMON SEMANTIC FIELD TYPES:
 
-JSON:
-- department
-- salary
-- name
+- date / time
+- id / identifier
+- name / title
+- quantity / count
+- amount / total / revenue / price
+- category / type / group
+- status / error
+- latency / duration
 
-CSV:
-- date
-- total
-- category
-- quantity
+If multiple candidate fields exist:
+- choose the field whose meaning best matches the task wording
 
 - If these exist -> USE THEM
 

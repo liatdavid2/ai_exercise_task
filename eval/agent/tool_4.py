@@ -29,6 +29,7 @@ def tool():
     
     # If still no files found, try os.walk
     if not files:
+        import os
         for root, dirs, filenames in os.walk('data/'):
             for filename in filenames:
                 if filename.endswith('.csv'):
@@ -41,7 +42,6 @@ def tool():
     total_usd = 0.0
     transactions = []
 
-    # Process each CSV file
     for file in files:
         with open(file, mode='r', newline='', encoding='utf-8') as f:
             reader = csv.DictReader(f)
@@ -53,25 +53,17 @@ def tool():
                 
                 total = row.get(total_key)
                 currency = row.get(currency_key)
-                date = row.get(date_key)
+                
+                if total and currency:
+                    try:
+                        total = float(total)
+                        rate = rates.get(currency, 1)  # Default to 1 if rate is missing
+                        usd_value = total / rate
+                        total_usd += usd_value
+                        transactions.append(row)
+                    except (ValueError, TypeError):
+                        continue  # Skip rows with invalid total values
 
-                # Skip rows with missing total or currency
-                if not total or not currency:
-                    continue
-
-                # Convert total to float
-                try:
-                    total_value = float(total)
-                except ValueError:
-                    continue
-
-                # Get exchange rate, default to 1 if not found
-                rate = rates.get(currency, 1)
-                usd_value = total_value / rate
-                total_usd += usd_value
-                transactions.append(row)
-
-    # Ensure we have processed at least one transaction
     if total_usd == 0.0 and not transactions:
         return "No matching file found"
 
