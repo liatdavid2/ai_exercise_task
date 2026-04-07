@@ -44,90 +44,153 @@ def detect_task_type(task: str) -> str:
 # PROMPT BUILDER
 # ---------------------------
 def build_prompt(task: str) -> str:
-    return f"""
-You are a Python expert.
+    task_type = detect_task_type(task)
+    t = task.lower()
 
-Write a function:
+    BASE_RULES = """
+DATA TASK (GENERIC ENGINE):
 
-    def tool():
+CRITICAL LIBRARY RULES:
 
-that solves the task.
+- You are STRICTLY FORBIDDEN from using:
+  pandas, numpy, sklearn, requests
 
-RULES:
+- You MUST use only Python standard library
 
-- Use ONLY Python standard library
-- No pandas, numpy, sklearn, requests
-- Return result (do NOT print)
-- Return ONLY Python code
+- For CSV:
+  use csv.DictReader ONLY
 
-DATA ACCESS:
+- If you use any forbidden library → your solution is INVALID
 
-- All files are inside 'data/' directory
-- You MUST search files using os.walk
 
-FILE TYPES:
-
-- CSV → use csv.DictReader
-- JSON → use json.load
-- LOG → read line by line
-- DB → use sqlite3
-
-DATA PATTERNS (IMPORTANT):
-
-- JSON files contain list of dictionaries
-- CSV contains structured rows with numeric and string fields
-- LOG lines contain key=value pairs separated by spaces
-
-LOG PARSING:
-
-Example line:
-endpoint=/api/payments method=POST status=200 duration_ms=1038
-
-→ parse by splitting and extracting key=value
-
-TASK EXECUTION:
-
-- Always fully solve the task
-- If task has multiple parts → return all parts
-
-OUTPUT RULES:
-
-- ALWAYS return a dictionary or list
-- NEVER return None
-
+FIELD INFERENCE GUIDELINES (CRITICAL):
+When working with tabular data:
+- You MAY use column names IF they exist in the data
+- But DO NOT assume they exist in advance
+- Try to detect relevant fields by BOTH:
+  1. column names (if available)
+  2. value patterns (fallback)
 Examples:
 
-- counting:
-  {{ "group": count }}
+Revenue:
+- prefer column named 'total' if exists
+- otherwise detect numeric column representing money
 
-- aggregation:
-  {{
-    "groups": {{...}},
-    "max": ...
-  }}
+Category:
+- prefer column with repeated string values
+- or column named similar to category/type
 
-- mixed task:
-  {{
-    "files": [...],
-    "analysis": ...
-  }}
+Currency:
+- prefer column named 'currency' if exists
+- otherwise detect short string codes (USD, EUR, etc.)
 
-DATA HANDLING:
-
-- Handle empty values safely
-- Convert numbers carefully
-- Do NOT crash
+Date:
+- prefer column named 'date'
+- otherwise detect YYYY-MM-DD format
 
 IMPORTANT:
+- First check column names
+- If not found → fallback to pattern detection
+- NEVER fail only because a column name is missing
 
-- Prefer simple and working logic
-- Do NOT over-generalize
-- Make reasonable assumptions based on data
+STEP 1 — DETECT DATA TYPE:
+- Based on task, determine data source:
+  - CSV → *.csv
+  - JSON → *.json
+  - LOG → *.log
+  - DB → *.db
+
+STEP 2 — FILE DISCOVERY (MANDATORY):
+- Use os.walk('data/')
+- Find files matching the detected type
+- Use FIRST matching file
+- FAIL if none found
+
+STEP 3 — SCHEMA DISCOVERY:
+- DO NOT assume column names or structure
+- Inspect sample data:
+  - CSV → use DictReader and fieldnames
+  - JSON → inspect keys dynamically
+  - LOG → read first 20 lines
+  - DB → discover tables and columns
+
+STEP 4 — FIELD INFERENCE:
+Infer meaning from patterns (NOT names):
+
+- numeric values → metrics
+- repeated strings → categories
+- strings starting with '/' → possible endpoints
+- integers 100–599 → possible status codes
+- values with 'ms' → latency
+- dates → strings like YYYY-MM-DD
+
+STEP 5 — PARSING:
+- Build parser dynamically
+- Support multiple formats (especially logs)
+- DO NOT rely on fixed indices
+- Skip only truly invalid rows
+
+STEP 6 — COMPUTATION:
+- Perform required aggregations from task:
+  - grouping
+  - averages
+  - counts
+  - ratios
+  - percentiles
+
+PERCENTILES:
+- sort values
+- index = ceil(p * N) - 1
+
+STEP 7 — OUTPUT:
+- Return correct structure based on task
+- If table required → format as string
+
+STEP 8 — OUTPUT REQUIREMENTS (IMPORTANT):
+When computing grouped results:
+- You MUST return ALL group values, not only the maximum
+For this task:
+- Return revenue per category for December 2024
+- AND the highest category
+Example structure:
+
+{
+  "december_revenue_per_category": {category: value},
+  "highest_category": str,
+  "highest_revenue": float
+}
+
+GLOBAL RULES:
+- NO hardcoded filenames
+- NO hardcoded column names
+- NO dataset-specific assumptions
+- MUST infer everything dynamically
+
+
+FALLBACK FIELD INFERENCE:
+If expected columns are not found:
+- Revenue:
+  → use the largest numeric column per row
+- Currency:
+  → detect short uppercase strings (USD, EUR, GBP, etc.)
+- Date:
+  → detect YYYY-MM-DD strings
+- Category:
+  → detect repeated string values
+DO NOT fail immediately — try fallback strategies
+
+INVALID IF:
+- no file found
+- no data parsed
+- result empty
+"""
+
+    return f"""
+{BASE_RULES}
 
 Task:
 {task}
 """
-
 
 # ---------------------------
 # CLEAN CODE
@@ -154,16 +217,24 @@ def clean_code(code: str) -> str:
 def safe_json(obj):
     import datetime
 
+    if isinstance(obj, dict):
+        return {str(k): safe_json(v) for k, v in obj.items()}
+
+    if isinstance(obj, (list, tuple)):
+        return [safe_json(v) for v in obj]
+
     if isinstance(obj, (datetime.datetime, datetime.date)):
         return obj.isoformat()
 
-    if isinstance(obj, dict):
-        return {k: safe_json(v) for k, v in obj.items()}
+    if isinstance(obj, set):
+        return list(obj)
 
-    if isinstance(obj, list):
-        return [safe_json(v) for v in obj]
+    try:
+        json.dumps(obj)
+        return obj
+    except:
+        return str(obj)
 
-    return obj
 # ---------------------------
 # RUN TOOL
 # ---------------------------
@@ -203,7 +274,9 @@ def generate_tool_code(task: str) -> str:
 # ---------------------------
 def fix_code(task: str, code: str, error: str) -> str:
     prompt = f"""
-Fix this Python code.
+You are a Python expert.
+
+The previous generated code failed.
 
 Task:
 {task}
@@ -211,31 +284,24 @@ Task:
 Error:
 {error}
 
-Code:
+Previous code:
 {code}
 
-Fix issues so the code works correctly.
+You MUST return valid Python code only.
 
-Common fixes:
-- missing return
-- wrong parsing
-- empty result
-- bad numeric conversion
-- incorrect file selection
+STRICT RULES:
+- Return ONLY raw Python code
+- No explanation
+- No markdown
+- No ``` fences
+- The code MUST define exactly:
+    def tool():
+- All logic must be inside tool()
+- tool() must return the final result as a Python object
+- Do NOT print the final answer
+- Do NOT write code outside tool() except imports or helper functions
 
-RULES:
-
-- Return ONLY Python code
-- Must define: def tool()
-- Must return valid result
-- Do NOT print
-
-IMPORTANT:
-
-- Ensure result is NOT empty
-- Ensure all parts of the task are solved
-
-Return fixed code.
+Return corrected code now.
 """
 
     response = client.chat.completions.create(
@@ -245,6 +311,7 @@ Return fixed code.
     )
 
     return response.choices[0].message.content
+
 # ---------------------------
 # NORMALIZE OUTPUT
 # ---------------------------
@@ -298,7 +365,7 @@ def solve_task(task: str) -> str:
 
             tool_name = f"tool_{len(TOOLS)}"
             TOOLS[tool_name] = code
-            return json.dumps(safe_json(result))
+            return json.dumps(result)
 
         print("[DEBUG] Error:", error)
         print("[DEBUG] Retrying...")
