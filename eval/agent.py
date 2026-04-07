@@ -88,6 +88,38 @@ def find_reusable_tool(task: str):
 # GENERATE TOOL
 # ---------------------------
 def generate_tool_code(task: str) -> str:
+
+    DB_RULES = """
+    DATABASE TASK (CRITICAL):
+
+    - You MUST use sqlite3 (standard library only)
+    - You MUST:
+        1. Connect to database
+        2. Discover tables:
+            SELECT name FROM sqlite_master WHERE type='table'
+        3. For each table:
+            PRAGMA table_info(table_name)
+
+    - DO NOT assume column names
+    - You MUST dynamically detect:
+        - endpoint-like column (string with '/')
+        - status-like column (numeric HTTP-like values)
+        - latency-like column (numeric values)
+
+    - p99 MUST be computed manually:
+        - sort values
+        - index = int(0.99 * len(values))
+
+    - error_rate:
+        count(status >= 400) / total_count
+
+    - You MUST:
+        - compute per group
+        - sort descending by p99
+        - return top 10
+
+    - DO NOT use SQL aggregation unless column names are confirmed
+    """
     prompt = f"""
 You are a Python expert.
 
@@ -115,7 +147,7 @@ If task involves currency conversion:
 - Do NOT skip rows
 - Do NOT return 0 unless file is empty
 
-
+{DB_RULES}
 
 STRICT RULES:
 - Use only Python standard library
@@ -125,6 +157,8 @@ STRICT RULES:
 - Return Python object (dict/list/number)
 - No explanations
 - Return ONLY code
+- DO NOT use pandas
+- DO NOT use advanced SQL functions (SQLite limitation)
 
 IMPORTANT OUTPUT REQUIREMENT:
 
