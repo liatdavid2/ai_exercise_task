@@ -83,11 +83,45 @@ def run_generated_tool(code: str):
 def find_reusable_tool(task: str):
     return None
 
+def save_tool_to_file(code: str, index: int):
+    folder = "agent"
 
+    os.makedirs(folder, exist_ok=True)
+
+    path = os.path.join(folder, f"tool_{index}.py")
+
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(code)
+
+    print(f"[DEBUG] Saved tool to {path}")
 # ---------------------------
 # GENERATE TOOL
 # ---------------------------
 def generate_tool_code(task: str) -> str:
+
+    FILE_DISCOVERY_RULES = """
+FILE DISCOVERY (CRITICAL):
+
+- You MUST search for files recursively using glob:
+
+    glob.glob('**/*.ext', recursive=True)
+
+- Replace .ext with the required extension:
+    .log / .db / .csv / .json
+
+- You MUST:
+    1. Collect all matching files
+    2. If multiple files exist:
+        - Prefer file mentioned in task (e.g. app.log)
+        - Otherwise use first match
+
+- You MUST NOT assume files are directly under 'data/'
+
+- If no file found:
+    return "No matching file found"
+
+FAILURE → INVALID SOLUTION
+"""
 
     ANOMALY_RULES = ""
 
@@ -176,6 +210,7 @@ That solves the task.
 IMPORTANT PRACTICAL RULES:
 
 - For CSV:
+    - Prefer numeric columns representing aggregated values (e.g. totals)
     - If 'total' exists → use it for revenue
     - If 'category' exists → group by it
     - If 'date' exists → parse and filter by date
@@ -191,13 +226,15 @@ If task involves currency conversion:
 - Do NOT skip rows
 - Do NOT return 0 unless file is empty
 
+{FILE_DISCOVERY_RULES}
+
 {DB_RULES}
 
 {ANOMALY_RULES}
 
 STRICT RULES:
 - Use only Python standard library
-- Read files from 'data/' folder
+- You MUST import glob when searching files
 - Infer schema dynamically (DO NOT hardcode column names)
 - Handle missing values safely
 - Return Python object (dict/list/number)
@@ -328,6 +365,7 @@ def solve_task(task: str) -> str:
             # save tool for reuse
             tool_name = f"tool_{len(TOOLS)}"
             TOOLS[tool_name] = code
+            save_tool_to_file(code, len(TOOLS))
 
             return json.dumps(safe_json(result))
 
