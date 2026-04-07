@@ -124,7 +124,7 @@ FILE DISCOVERY (CRITICAL):
     glob.glob('**/*.ext', recursive=True)
 
 - Replace .ext with the required extension:
-    .log / .db / .csv / .json
+    .log / .csv / .json
 
 - You MUST:
     1. Collect all matching files
@@ -280,7 +280,6 @@ FAILURE → INVALID SOLUTION
     - You MUST NOT search for CSV files
 
     STEP 1 — CONNECT:
-    - Find .db file using glob.glob('**/*.db', recursive=True)
     - Connect using sqlite3.connect(path)
 
     STEP 2 — DISCOVER SCHEMA:
@@ -359,6 +358,8 @@ FAILURE → INVALID SOLUTION
         rules_block = FILE_DISCOVERY_RULES + LOG_RULES
     elif "anomaly" in t:
         rules_block = FILE_DISCOVERY_RULES + ANOMALY_RULES
+    elif "exchange" in t or "currency" in t or "usd" in t:
+        rules_block = FILE_DISCOVERY_RULES + CURRENCY_OUTPUT_RULES
     else:
         rules_block = FILE_DISCOVERY_RULES
 
@@ -390,7 +391,6 @@ If task involves currency conversion:
 - Do NOT return 0 unless file is empty
 
 {rules_block}
-{CURRENCY_OUTPUT_RULES}
 
 STRICT RULES:
 - Use only Python standard library
