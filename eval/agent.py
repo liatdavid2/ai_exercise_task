@@ -84,7 +84,7 @@ def find_reusable_tool(task: str):
     return None
 
 def save_tool_to_file(code: str, index: int):
-    folder = "agent"
+    folder = "tools"
 
     os.makedirs(folder, exist_ok=True)
 
