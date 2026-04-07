@@ -487,121 +487,255 @@ JSON HANDLING (CRITICAL):
     - Returning [] is INVALID
 """
     MULTI_SOURCE_RULES = """
-    MULTI-SOURCE TASK (CRITICAL):
+MULTI-SOURCE DASHBOARD TASK (CRITICAL):
 
-    - This task requires combining MULTIPLE data sources:
-        - sales.csv
-        - inventory.json
-        - employees.json
-        - app.log
-        - metrics.db
+This task combines MULTIPLE data sources:
 
-    FILE DISCOVERY (CRITICAL):
+- sales.csv
+- inventory.json
+- employees.json
+- app.log
+- metrics.db
 
-    - You MUST find EACH file separately using glob
+--------------------------------------------------
+FILE DISCOVERY (STRICT)
+--------------------------------------------------
 
-    Example:
+- You MUST find files using glob
+- You MUST EXCLUDE:
 
-        json_files = glob.glob('**/*.json', recursive=True)
-        csv_files = glob.glob('**/*.csv', recursive=True)
-        log_files = glob.glob('**/*.log', recursive=True)
-        db_files = glob.glob('**/*.db', recursive=True)
+    output/
+    agent/
+    __pycache__/
+    .git/
+    venv/
+    .venv/
 
-    - Then match by name:
+- Prefer files under data/
 
-        inventory_path = next(f for f in json_files if "inventory" in f.lower())
-        sales_path = next(f for f in csv_files if "sales" in f.lower())
-        employees_path = next(f for f in json_files if "employees" in f.lower())
-        log_path = next(f for f in log_files if "app" in f.lower())
-        db_path = next(f for f in db_files if "metrics" in f.lower())
+- You MUST match files by name:
 
-    - You MUST NOT use hardcoded filenames
+    "sales" → CSV
+    "inventory" → JSON
+    "employees" → JSON
+    "app" → LOG
+    "metrics" → DB
 
-    CONSISTENCY (CRITICAL):
+--------------------------------------------------
+FILE TYPE RULES (CRITICAL)
+--------------------------------------------------
 
-    - Once a path is selected → reuse it
-    - DO NOT re-search files multiple times
+- JSON:
+    ONLY use json.load for .json files
 
-    DATA INTEGRATION (CRITICAL):
+- LOG:
+    NEVER use json.load
+    Parse line by line
 
-    - You MUST combine data across sources
+- DB:
+    NEVER use json.load
+    Use sqlite3 only
 
-    Examples:
-    - sales + exchange rates
-    - inventory + sales count
-    - logs + database metrics
-    - employees aggregation
+--------------------------------------------------
+SINGLE LOAD RULE (IMPORTANT)
+--------------------------------------------------
 
-    JSON OUTPUT (CRITICAL):
+- Each file MUST be loaded ONCE
+- Store results in memory
+- Reuse data (DO NOT reload multiple times)
 
-    - You MUST write EXACTLY ONE valid JSON object to file:
+--------------------------------------------------
+DATA INTEGRATION (STRICT)
+--------------------------------------------------
 
-        output/executive_dashboard.json
+You MUST compute ALL sections:
 
-    - The file MUST contain ONLY JSON (no text, no print)
+1. top_products_by_revenue
+   - Use sales.csv
+   - Convert to USD using live rates
+   - Use:
+        usd = float(total) / rate
 
-    - DO NOT write multiple JSON objects
+2. understocked_products
+   - inventory.json + sales.csv
+   - condition:
+        stock < reorder_point
+        AND total_sales_count > 15
 
-    - DO NOT append data
+3. endpoint_health
+   - combine:
+        app.log + metrics.db
 
-    - Use:
+   - MUST include BOTH:
+        log_* metrics
+        db_* metrics
 
-        with open(path, 'w') as f:
-            json.dump(data, f)
+4. department_summary
+   - employees.json
+   - compute:
+        headcount
+        avg_salary
+        total_salary
 
-    - INVALID:
-        f.write(str(data))
-        multiple json.dump calls
-    """
+5. daily_revenue_trend
+   - sales.csv grouped by date
+   - converted to USD
+
+--------------------------------------------------
+OUTPUT FILE (CRITICAL)
+--------------------------------------------------
+
+- You MUST write EXACTLY ONE JSON object:
+
+    output/executive_dashboard.json
+
+- Use:
+
+    with open(path, 'w') as f:
+        json.dump(data, f)
+
+- DO NOT:
+    - write multiple JSON objects
+    - append
+    - write strings
+
+--------------------------------------------------
+RETURN VALUE (IMPORTANT)
+--------------------------------------------------
+
+- Return a SHORT TEXT summary only
+- NOT the full JSON
+
+Example:
+"Dashboard created with 5 sections and written to output/executive_dashboard.json"
+
+--------------------------------------------------
+FAIL CONDITIONS
+--------------------------------------------------
+
+INVALID if:
+
+- Any key is missing
+- Any section is empty when data exists
+- JSON file contains multiple objects
+- Wrong parsing method used (json.load on log/db)
+"""
     AUDIT_RULES = """
     DATA AUDIT TASK (CRITICAL):
 
-    - You MUST analyze ALL data files:
-        - CSV
-        - JSON
-        - LOG
-        - DB
+    You MUST analyze ALL data sources:
+    - CSV
+    - JSON
+    - LOG
+    - DB
 
-    CHECKS REQUIRED:
+    --------------------------------------------------
+    CSV CHECKS (STRICT - MUST IMPLEMENT ALL)
+    --------------------------------------------------
 
-    CSV:
-    - duplicate records (e.g. order_id)
-    - missing / empty values
-    - negative values
-    - unexpected values (e.g. unknown currency)
+    You MUST detect:
 
-    LOG:
-    - malformed lines
-    - inconsistent formats
-    - multi-line entries
+    1. DUPLICATE RECORDS:
+    - Detect duplicate order_id
+    - Count duplicates (excluding first occurrence)
 
-    JSON:
-    - missing fields
-    - inconsistent structure
+    2. MISSING / EMPTY VALUES:
+    - Fields with "" or None
+    - Especially:
+        - total
+        - quantity
+        - currency
 
-    DB:
-    - mismatch between raw data and aggregates
-    - missing rows
-    - inconsistent values
+    3. INVALID NUMERIC VALUES:
+    - quantity < 0  (returns / negative sales)
+    - total == "" or not numeric
 
-    OUTPUT (CRITICAL):
+    4. UNKNOWN / UNEXPECTED VALUES:
+    - currencies NOT in:
+        USD, EUR, GBP, JPY
+    - Example: CHF → MUST be flagged
 
-    - You MUST return:
+    --------------------------------------------------
+    LOG CHECKS (STRICT)
+    --------------------------------------------------
+
+    You MUST detect:
+
+    1. MALFORMED LINES:
+    - Lines that do NOT contain key=value pairs
+
+    2. MULTI-LINE ENTRIES:
+    - Stack traces spanning multiple lines
+
+    3. INCONSISTENT FORMATS:
+    - Lines missing method/endpoint/status
+
+    4. INVALID LATENCY:
+    - latency not numeric
+
+    --------------------------------------------------
+    JSON CHECKS (STRICT)
+    --------------------------------------------------
+
+    You MUST detect:
+
+    1. MISSING FIELDS:
+    - e.g. product_id, stock, reorder_point
+
+    2. INVALID VALUES:
+    - negative stock
+    - reorder_point missing or invalid
+
+    --------------------------------------------------
+    DB CHECKS (CRITICAL - MUST IMPLEMENT)
+    --------------------------------------------------
+
+    You MUST verify data integrity:
+
+    1. RAW vs AGGREGATE MISMATCH:
+
+    - If DB contains:
+            raw request table AND aggregated metrics
+
+    - You MUST:
+            compute metrics manually from raw data
+            compare with stored aggregates
+
+    2. ERROR COUNT VALIDATION:
+
+    - Check if 4xx errors include ALL values:
+            400–499
+
+    - Specifically verify:
+            499 errors are NOT missing
+
+    - If mismatch → MUST report
+
+    --------------------------------------------------
+    OUTPUT FORMAT (STRICT)
+    --------------------------------------------------
+
+    Return:
 
     {
         "file_name": [
             {
                 "issue_type": "...",
                 "description": "...",
-                "affected_count": ...,
+                "affected_count": int,
                 "examples": [...]
             }
         ]
     }
 
-    - You MUST include AT LEAST one issue per file if issues exist
+    --------------------------------------------------
+    IMPORTANT RULES
+    --------------------------------------------------
 
+    - You MUST report at least one issue per file IF issues exist
     - Returning empty result is INVALID
+    - Do NOT skip files
+    - Do NOT summarize only → must return structured issues
     """
     # Routing
     if "dashboard" in t or "cross-source" in t or "multiple" in t:
