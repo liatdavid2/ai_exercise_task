@@ -119,25 +119,57 @@ def generate_tool_code(task: str) -> str:
     FILE_DISCOVERY_RULES = """
 FILE DISCOVERY (CRITICAL):
 
-- You MUST search for files recursively using glob:
+- You MUST search using BOTH:
 
+    glob.glob('data/**/*.ext', recursive=True)
     glob.glob('**/*.ext', recursive=True)
 
-- Replace .ext with the required extension:
-    .log / .csv / .json
+- Combine results:
 
-- You MUST:
-    1. Collect all matching files
-    2. If multiple files exist:
-        - Prefer file mentioned in task (e.g. app.log)
-        - Otherwise use first match
+    files = glob.glob('data/**/*.ext', recursive=True) + glob.glob('**/*.ext', recursive=True)
 
-- You MUST NOT assume files are directly under 'data/'
+- Remove duplicates
+
+- Prefer files inside 'data/' if exist
+
+- NEVER assume only one location
+
+
+
+NO FILE FOUND HANDLING (CRITICAL):
 
 - If no file found:
-    return "No matching file found"
+    - DO NOT immediately return
 
-FAILURE → INVALID SOLUTION
+    - Try fallback:
+
+        1. Try searching for known filenames:
+            employees.json
+            sales.csv
+            app.log
+
+        2. Try os.walk('data/')
+
+    - ONLY if still nothing:
+        return "No matching file found"
+
+
+JSON HANDLING (CRITICAL):
+
+- If JSON file contains list:
+    iterate over items
+
+- If dict:
+    use values()
+
+- You MUST inspect structure:
+
+    data = json.load(f)
+
+    if isinstance(data, list):
+        rows = data
+    elif isinstance(data, dict):
+        rows = list(data.values())
 """
 
     CURRENCY_OUTPUT_RULES = """
@@ -661,12 +693,59 @@ If task involves currency conversion:
 STRICT RULES:
 - Use only Python standard library
 - You MUST import glob when searching files
-- Infer schema dynamically (DO NOT hardcode column names)
-- Handle missing values safely
-- Return Python object (dict/list/number)
-- No explanations
-- Return ONLY code
-- DO NOT use advanced SQL functions (SQLite limitation)
+
+GENERICITY (CRITICAL):
+
+- You MUST detect fields dynamically
+
+- BUT:
+    If exact fields exist → USE THEM
+
+- Use this helper:
+
+    def find_key(d, options):
+        for k in d:
+            for opt in options:
+                if opt in k.lower():
+                    return k
+        return None
+
+- Example:
+    department_key = find_key(row, ["department"]) or "department"
+    salary_key = find_key(row, ["salary", "income"]) or "salary"
+
+- DO NOT ignore valid fields that already exist
+
+- If dynamic detection fails → fallback to common names
+
+- Returning empty result when data exists → INVALID
+
+
+EMPTY RESULT PROTECTION (CRITICAL):
+
+- If dataset is NOT empty:
+    - You MUST return non-empty result
+
+- If all rows skipped → your logic is WRONG
+
+- You MUST process at least one row
+
+
+COMMON FIELD FALLBACKS:
+
+JSON:
+- department
+- salary
+- name
+
+CSV:
+- date
+- total
+- category
+- quantity
+
+- If these exist → USE THEM
+
 
 IMPORTANT OUTPUT REQUIREMENT:
 
