@@ -51,3 +51,26 @@ JSON HANDLING (CRITICAL):
         rows = data
     elif isinstance(data, dict):
         rows = list(data.values())
+
+
+ CURRENCY CONVERSION OUTPUT (CRITICAL):
+
+    - You MUST return a result that EXPLICITLY mentions USD conversion
+
+    - The output MUST include at least one of:
+        - "USD"
+        - "converted"
+        - "exchange rate"
+
+    - Preferred formats:
+
+    STRING:
+        "Total revenue in USD: <value>"
+
+    OR DICT:
+        {
+            "total_revenue_usd": <value>,
+            "description": "All transactions converted to USD using live exchange rates"
+        }
+
+    - Returning ONLY a number is INVALID

@@ -1,90 +1,8 @@
-def tool():
-    import sqlite3
-    import json
-
-    # Step 1: Connect to the database
-    path = 'data/database.db'  # Adjust the path as necessary
-    conn = sqlite3.connect(path)
-    cursor = conn.cursor()
-
-    # Step 2: Discover schema
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
-    tables = cursor.fetchall()
-
-    target_table = None
-    max_rows = 0
-
-    for (table_name,) in tables:
-        cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
-        row_count = cursor.fetchone()[0]
-        if table_name == 'requests':
-            target_table = table_name
-            break
-        elif row_count > max_rows:
-            max_rows = row_count
-            target_table = table_name
-
-    if target_table is None:
-        return []
-
-    # Step 3: Load data
-    cursor.execute(f"SELECT * FROM {target_table}")
-    rows = cursor.fetchall()
-
-    # Step 4: Detect columns
-    column_names = [description[0] for description in cursor.description]
-    endpoint_col = find_key(column_names, ['endpoint', 'path', 'route', 'uri'])
-    status_col = find_key(column_names, ['status', 'status_code', 'code'])
-    latency_col = find_key(column_names, ['latency', 'response_time', 'duration', 'ms'])
-
-    # Fallback if detection fails
-    if endpoint_col is None:
-        endpoint_col = 'endpoint'
-    if status_col is None:
-        status_col = 'status_code'
-    if latency_col is None:
-        latency_col = 'latency_ms'
-
-    # Step 5: Grouping
-    endpoint_data = {}
-    
-    for row in rows:
-        endpoint = row[column_names.index(endpoint_col)]
-        status = row[column_names.index(status_col)]
-        latency = row[column_names.index(latency_col)]
-
-        if endpoint not in endpoint_data:
-            endpoint_data[endpoint] = {
-                'total_requests': 0,
-                'error_count': 0,
-                'latencies': []
-            }
-
-        endpoint_data[endpoint]['total_requests'] += 1
-        if status >= 400:
-            endpoint_data[endpoint]['error_count'] += 1
-        if isinstance(latency, (int, float)) and latency is not None:
-            endpoint_data[endpoint]['latencies'].append(latency)
-
-    # Step 6: Sort + Filter
-    results = []
-    for endpoint, data in endpoint_data.items():
-        if data['latencies']:
-            total_requests = data['total_requests']
-            error_rate = data['error_count'] / total_requests
-            p99_latency = sorted(data['latencies'])[int(0.99 * (len(data['latencies']) - 1))]
-            results.append({
-                'endpoint': endpoint,
-                'total_requests': total_requests,
-                'error_rate': error_rate,
-                'p99_latency': p99_latency
-            })
-
-    results.sort(key=lambda x: x['p99_latency'], reverse=True)
-    top_results = results[:10]
-
-    # Step 7: Output format
-    return top_results
+import glob
+import json
+import os
+import csv
+from collections import defaultdict
 
 def find_key(d, options):
     for k in d:
@@ -92,3 +10,175 @@ def find_key(d, options):
             if opt in k.lower():
                 return k
     return None
+
+def audit_csv(file_path):
+    issues = []
+    seen = set()
+    duplicates = 0
+    missing_values = 0
+    negative_values = 0
+    unexpected_values = defaultdict(list)
+
+    with open(file_path, mode='r', newline='', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            # Check for duplicates
+            order_id = row.get('order_id') or row.get('id')
+            if order_id in seen:
+                duplicates += 1
+            else:
+                seen.add(order_id)
+
+            # Check for missing values
+            for key, value in row.items():
+                if value == '':
+                    missing_values += 1
+                    issues.append({
+                        "issue_type": "Missing Value",
+                        "description": f"Missing value in column '{key}'",
+                        "affected_count": 1,
+                        "examples": [row]
+                    })
+
+            # Check for negative values
+            total = row.get('total')
+            if total and float(total) < 0:
+                negative_values += 1
+                issues.append({
+                    "issue_type": "Negative Value",
+                    "description": "Negative total value found",
+                    "affected_count": 1,
+                    "examples": [row]
+                })
+
+            # Check for unexpected values (e.g., unknown currency)
+            currency = row.get('currency')
+            if currency and currency not in ['USD', 'EUR', 'GBP']:
+                unexpected_values[currency].append(row)
+
+    if duplicates > 0:
+        issues.append({
+            "issue_type": "Duplicate Records",
+            "description": "Duplicate records found",
+            "affected_count": duplicates,
+            "examples": list(seen)
+        })
+
+    for currency, rows in unexpected_values.items():
+        issues.append({
+            "issue_type": "Unexpected Currency",
+            "description": f"Unexpected currency '{currency}' found",
+            "affected_count": len(rows),
+            "examples": rows
+        })
+
+    return issues
+
+def audit_json(file_path):
+    issues = []
+    with open(file_path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+
+        if isinstance(data, list):
+            rows = data
+        elif isinstance(data, dict):
+            rows = list(data.values())
+        else:
+            return issues
+
+        for row in rows:
+            # Check for missing fields
+            if 'name' not in row or 'salary' not in row:
+                issues.append({
+                    "issue_type": "Missing Field",
+                    "description": "Missing required fields",
+                    "affected_count": 1,
+                    "examples": [row]
+                })
+
+            # Check for inconsistent structure
+            if not isinstance(row.get('salary'), (int, float)):
+                issues.append({
+                    "issue_type": "Inconsistent Structure",
+                    "description": "Salary is not a number",
+                    "affected_count": 1,
+                    "examples": [row]
+                })
+
+    return issues
+
+def audit_log(file_path):
+    issues = []
+    malformed_lines = 0
+    inconsistent_formats = 0
+
+    with open(file_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            if not line.strip():  # Skip empty lines
+                continue
+            # Example check for malformed lines
+            if len(line.split(',')) < 2:  # Assuming a simple CSV-like log
+                malformed_lines += 1
+                issues.append({
+                    "issue_type": "Malformed Line",
+                    "description": "Line does not conform to expected format",
+                    "affected_count": 1,
+                    "examples": [line]
+                })
+
+    if malformed_lines > 0:
+        issues.append({
+            "issue_type": "Malformed Lines",
+            "description": "Malformed lines found in log",
+            "affected_count": malformed_lines,
+            "examples": []
+        })
+
+    return issues
+
+def tool():
+    files = glob.glob('data/**/*.ext', recursive=True) + glob.glob('**/*.ext', recursive=True)
+    files = list(set(files))  # Remove duplicates
+
+    if not files:
+        # Fallback to known filenames
+        known_files = ['employees.json', 'sales.csv', 'app.log']
+        for known_file in known_files:
+            if os.path.exists(known_file):
+                files.append(known_file)
+
+        # Try os.walk
+        for root, dirs, filenames in os.walk('data/'):
+            for filename in filenames:
+                files.append(os.path.join(root, filename))
+
+    if not files:
+        return "No matching file found"
+
+    audit_results = {}
+    for file_path in files:
+        if file_path.endswith('.csv'):
+            issues = audit_csv(file_path)
+        elif file_path.endswith('.json'):
+            issues = audit_json(file_path)
+        elif file_path.endswith('.log'):
+            issues = audit_log(file_path)
+        else:
+            continue
+
+        if issues:
+            audit_results[file_path] = issues
+
+    if not audit_results:
+        return "No issues found"
+
+    # Write results to output file
+    with open('output/data_audit.json', 'w', encoding='utf-8') as f:
+        json.dump(audit_results, f, indent=4)
+
+    return audit_results
+
+# Call the tool function to execute the audit
+if __name__ == "__main__":
+    result = tool()
+    print(result)

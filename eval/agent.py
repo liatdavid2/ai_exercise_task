@@ -50,7 +50,7 @@ class RulesAgent:
         self.rules_dir = rules_dir
 
     def load_rule(self, name: str) -> str:
-        default_path = os.path.join(self.rules_dir, "default.txt")
+        default_path = os.path.join(self.rules_dir, "default77.txt")
         path = os.path.join(self.rules_dir, f"{name}.txt")
 
         text = ""
@@ -90,7 +90,7 @@ class RulesAgent:
     def detect_rule_names(self, task: str):
         t = task.lower()
 
-        names = ["default"]
+        names = []
         if "exchange" in t or "currency" in t or "usd" in t:
             names += ["file", "currency"]
         elif "dashboard" in t or "cross-source" in t or "multiple" in t:
@@ -184,38 +184,97 @@ def tool():
 
 That solves the task.
 
+IMPORTANT PRACTICAL RULES:
+
+- For CSV:
+    - Prefer numeric columns representing aggregated values (e.g. totals)
+    - If 'total' exists → use it for revenue
+    - If 'category' exists → group by it
+    - If 'date' exists → parse and filter by date
+
+- NEVER return empty result unless dataset is empty
+
+If task involves currency conversion:
+- You MUST:
+    usd_value = float(total) / rates[currency]
+- Always:
+    total_usd += usd_value
+- Do NOT skip rows
+- Do NOT return 0 unless file is empty
+
 {rules}
 
 STRICT RULES:
 - Use only Python standard library
-- Return ONLY raw Python code
-- Do NOT wrap code with markdown fences
-- Do NOT print -> return result
-- NEVER return empty result unless dataset is truly empty
+- You MUST import glob when searching files
 
 GENERICITY (CRITICAL):
-- Detect fields dynamically
-- BUT if exact fields exist -> USE THEM
 
-Use this helper pattern when needed:
+- You MUST detect fields dynamically
 
-def find_key(d, options):
-    for k in d:
-        for opt in options:
-            if opt in k.lower():
-                return k
-    return None
+- BUT:
+    If exact fields exist → USE THEM
+
+- Use this helper:
+
+    def find_key(d, options):
+        for k in d:
+            for opt in options:
+                if opt in k.lower():
+                    return k
+        return None
+
+- Example:
+    department_key = find_key(row, ["department"]) or "department"
+    salary_key = find_key(row, ["salary", "income"]) or "salary"
+
+- DO NOT ignore valid fields that already exist
+
+- If dynamic detection fails → fallback to common names
+
+- Returning empty result when data exists → INVALID
+
+
+EMPTY RESULT PROTECTION (CRITICAL):
+
+- If dataset is NOT empty:
+    - You MUST return non-empty result
+
+- If all rows skipped → your logic is WRONG
+
+- You MUST process at least one row
+
+
+COMMON FIELD FALLBACKS:
+
+JSON:
+- department
+- salary
+- name
+
+CSV:
+- date
+- total
+- category
+- quantity
+
+- If these exist → USE THEM
+
+
+IMPORTANT OUTPUT REQUIREMENT:
+
+- When grouping:
+    - Return ALL groups (not just max)
+    - Also return filtered subset (e.g. December)
 
 SAFE HANDLING:
-- Handle missing values
-- Handle empty strings
-- Handle missing keys safely
-- If rate is missing in currency conversion:
-    assume 1
 
-OUTPUT RULES:
-- Return structured result
-- If task requests a file output, write it exactly as requested and also return a short summary
+- When accessing rates:
+    rate = rates.get(currency)
+
+- If rate is missing:
+    - Assume value is already in USD (rate = 1)
+    - DO NOT crash
 
 Task:
 {task}
