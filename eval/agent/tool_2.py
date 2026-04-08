@@ -11,70 +11,84 @@ def find_key(d, options):
     return None
 
 def tool():
-    # File discovery
+    # Search for the sales.csv file
     files = glob.glob('data/**/*.csv', recursive=True) + glob.glob('**/*.csv', recursive=True)
     files = list(set(files))  # Remove duplicates
 
     # Prefer files inside 'data/' if exist
-    files = sorted(files, key=lambda x: (not x.startswith('data/'), x))
+    sales_file = None
+    for file in files:
+        if 'sales.csv' in file:
+            sales_file = file
+            if file.startswith('data/'):
+                break
 
-    if not files:
+    if not sales_file:
         # Fallback search
-        known_files = ['sales.csv']
-        for filename in known_files:
-            if os.path.exists(filename):
-                files.append(filename)
-        
-        if not files:
-            for root, dirs, filenames in os.walk('data/'):
-                for filename in filenames:
-                    if filename.endswith('.csv'):
-                        files.append(os.path.join(root, filename))
-        
-        if not files:
-            return "No matching file found"
+        known_files = ['employees.json', 'sales.csv', 'app.log']
+        for known_file in known_files:
+            if os.path.exists(known_file):
+                sales_file = known_file
+                break
 
-    # Process the first found CSV file
-    file_path = files[0]
-    date_format = "%Y-%m-%d"  # Assuming date format, adjust if necessary
-    date_key = None
-    total_rows = 0
-    date_min = None
-    date_max = None
-    columns = []
+        if not sales_file:
+            for root, dirs, files in os.walk('data/'):
+                for file in files:
+                    if file == 'sales.csv':
+                        sales_file = os.path.join(root, file)
+                        break
+                if sales_file:
+                    break
 
-    with open(file_path, newline='') as csvfile:
+    if not sales_file:
+        return "No matching file found"
+
+    # Read the CSV file
+    with open(sales_file, newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
+        rows = list(reader)
+
+        if not rows:
+            return "No data in file"
+
+        # Get the first 10 rows
+        first_10_rows = rows[:10]
+
+        # Identify columns
         columns = reader.fieldnames
-        date_key = find_key(columns, ["date"]) or "date"
 
-        # Read the first 10 rows
-        first_10_rows = []
-        for i, row in enumerate(reader):
-            if i < 10:
-                first_10_rows.append(row)
-            # Process date range and total rows
+        # Determine the date range and total number of rows
+        date_key = find_key(rows[0], ["date"]) or "date"
+        date_format = "%Y-%m-%d"  # Assuming a common date format, adjust if necessary
+
+        min_date = None
+        max_date = None
+        total_rows = 0
+
+        for row in rows:
             total_rows += 1
-            if date_key in row:
-                try:
-                    date = datetime.strptime(row[date_key], date_format)
-                    if date_min is None or date < date_min:
-                        date_min = date
-                    if date_max is None or date > date_max:
-                        date_max = date
-                except ValueError:
-                    pass  # Skip invalid date formats
+            raw_date = str(row.get(date_key, '')).strip()
+            if not raw_date:
+                continue
+            try:
+                date = datetime.strptime(raw_date, date_format)
+                if min_date is None or date < min_date:
+                    min_date = date
+                if max_date is None or date > max_date:
+                    max_date = date
+            except ValueError:
+                continue
 
-    # Prepare the result
-    result = {
-        "columns": columns,
-        "first_10_rows": first_10_rows,
-        "date_range": (date_min.strftime(date_format) if date_min else None,
-                       date_max.strftime(date_format) if date_max else None),
-        "total_rows": total_rows
-    }
+        # Format the date range
+        date_range = (min_date.strftime(date_format) if min_date else "N/A",
+                      max_date.strftime(date_format) if max_date else "N/A")
 
-    return result
+        return {
+            "columns": columns,
+            "date_range": date_range,
+            "total_rows": total_rows
+        }
 
 # Example usage
-print(tool())
+result = tool()
+print(result)

@@ -1,8 +1,7 @@
 import csv
 import glob
-import json
 import os
-import requests
+from datetime import datetime
 
 def find_key(d, options):
     for k in d:
@@ -10,17 +9,6 @@ def find_key(d, options):
             if opt in k.lower():
                 return k
     return None
-
-def fetch_exchange_rates():
-    try:
-        response = requests.get("https://open.er-api.com/v6/latest/USD")
-        response.raise_for_status()
-        data = response.json()
-        if data.get("result") == "success":
-            return data.get("rates", {})
-    except requests.RequestException as e:
-        print(f"Error fetching exchange rates: {e}")
-    return {}
 
 def tool():
     # Search for CSV files
@@ -33,46 +21,75 @@ def tool():
     if not files:
         # Fallback search
         known_files = ['sales.csv']
-        for root, dirs, filenames in os.walk('data/'):
-            for filename in filenames:
-                if filename in known_files:
-                    files.append(os.path.join(root, filename))
+        for filename in known_files:
+            if os.path.exists(filename):
+                files.append(filename)
+        
+        if not files:
+            for root, dirs, filenames in os.walk('data/'):
+                for filename in filenames:
+                    if filename.endswith('.csv'):
+                        files.append(os.path.join(root, filename))
+        
         if not files:
             return "No matching file found"
 
-    # Fetch exchange rates
-    rates = fetch_exchange_rates()
-    if not rates:
-        return "Failed to fetch exchange rates"
-
-    total_usd = 0.0
+    # Process the first found CSV file
+    total_revenue_by_category = {}
+    december_revenue_by_category = {}
 
     for file in files:
-        try:
-            with open(file, newline='', encoding='utf-8') as csvfile:
-                reader = csv.DictReader(csvfile)
-                for row in reader:
-                    # Detect relevant fields
-                    total_key = find_key(row, ["total", "amount", "value"])
-                    currency_key = find_key(row, ["currency", "curr"])
-                    
-                    if not total_key or not currency_key:
-                        continue  # Skip rows without necessary fields
+        with open(file, newline='', encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                # Detect fields dynamically
+                date_key = find_key(row, ["date"]) or "date"
+                total_key = find_key(row, ["total"]) or "total"
+                category_key = find_key(row, ["category"]) or "category"
 
-                    try:
-                        total = float(row[total_key].strip())
-                        currency = row[currency_key].strip().upper()
-                        rate = rates.get(currency, 1)  # Default to 1 if currency is USD or rate is missing
-                        usd_value = total / rate
-                        total_usd += usd_value
-                    except (ValueError, KeyError):
-                        continue  # Skip malformed rows
+                # Parse and validate values
+                raw_date = str(row.get(date_key, '')).strip()
+                raw_total = str(row.get(total_key, '')).strip()
+                category = str(row.get(category_key, '')).strip()
 
-        except Exception as e:
-            print(f"Error processing file {file}: {e}")
-            continue
+                if not raw_total or not category:
+                    continue
 
-    if total_usd > 0:
-        return f"Total revenue in USD: {round(total_usd, 2)}"
+                try:
+                    total = float(raw_total)
+                except ValueError:
+                    continue
+
+                # Parse date and filter by December 2024
+                try:
+                    date = datetime.strptime(raw_date, '%Y-%m-%d')
+                except ValueError:
+                    continue
+
+                # Aggregate total revenue by category
+                if category not in total_revenue_by_category:
+                    total_revenue_by_category[category] = 0.0
+                total_revenue_by_category[category] += total
+
+                # Check for December 2024
+                if date.year == 2024 and date.month == 12:
+                    if category not in december_revenue_by_category:
+                        december_revenue_by_category[category] = 0.0
+                    december_revenue_by_category[category] += total
+
+    # Find the category with the highest revenue in December 2024
+    if december_revenue_by_category:
+        highest_december_category = max(december_revenue_by_category, key=december_revenue_by_category.get)
+        highest_december_revenue = december_revenue_by_category[highest_december_category]
     else:
-        return "No valid transactions found"
+        highest_december_category = None
+        highest_december_revenue = 0.0
+
+    # Prepare the result
+    result = {
+        "total_revenue_by_category": {k: round(v, 2) for k, v in total_revenue_by_category.items()},
+        "highest_december_category": highest_december_category,
+        "highest_december_revenue": round(highest_december_revenue, 2)
+    }
+
+    return result

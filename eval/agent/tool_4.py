@@ -1,98 +1,83 @@
+import csv
 import glob
+import json
 import os
-import re
-from collections import defaultdict
+import requests
+
+def find_key(d, options):
+    for k in d:
+        for opt in options:
+            if opt in k.lower():
+                return k
+    return None
 
 def tool():
-    # Step 1: File Discovery
-    log_files = glob.glob('data/**/*.log', recursive=True) + glob.glob('**/*.log', recursive=True)
-    log_files = list(set(log_files))  # Remove duplicates
+    # Step 1: Discover the sales.csv file
+    files = glob.glob('data/**/*.csv', recursive=True) + glob.glob('**/*.csv', recursive=True)
+    files = list(set(files))  # Remove duplicates
 
     # Prefer files inside 'data/' if exist
-    log_files = sorted(log_files, key=lambda x: ('data/' not in x, x))
+    sales_file = None
+    for file in files:
+        if 'sales.csv' in file:
+            sales_file = file
+            break
 
-    if not log_files:
-        # Fallback search
-        known_files = ['app.log']
-        for filename in known_files:
-            if os.path.exists(filename):
-                log_files.append(filename)
+    if not sales_file:
+        # Fallback to known filenames
+        known_files = ['sales.csv']
+        for file in known_files:
+            if os.path.exists(file):
+                sales_file = file
                 break
 
-        if not log_files:
-            for root, dirs, files in os.walk('data/'):
-                for file in files:
-                    if file.endswith('.log'):
-                        log_files.append(os.path.join(root, file))
-                        break
+    if not sales_file:
+        # Try os.walk as a last resort
+        for root, dirs, files in os.walk('data/'):
+            for file in files:
+                if file == 'sales.csv':
+                    sales_file = os.path.join(root, file)
+                    break
+            if sales_file:
+                break
 
-    if not log_files:
+    if not sales_file:
         return "No matching file found"
 
-    # Step 2: Log Analysis
-    log_data = defaultdict(lambda: {'count': 0, 'latencies': [], 'errors': 0})
+    # Step 2: Fetch current USD exchange rates
+    try:
+        response = requests.get('https://open.er-api.com/v6/latest/USD')
+        response.raise_for_status()
+        rates_data = response.json()
+        rates = rates_data.get('rates', {})
+    except Exception as e:
+        return f"Failed to fetch exchange rates: {e}"
 
-    for log_file in log_files:
-        with open(log_file, 'r') as f:
-            for line in f:
-                # Parse the log line
-                parts = line.strip().split()
-                data = {}
-                for p in parts:
-                    if '=' in p:
-                        k, v = p.split('=', 1)
-                        data[k] = v
+    # Step 3: Process the CSV file
+    total_usd = 0.0
+    with open(sales_file, newline='', encoding='utf-8') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            # Detect relevant fields
+            total_key = find_key(row, ["total", "amount", "value"]) or "total"
+            currency_key = find_key(row, ["currency"]) or "currency"
 
-                # Extract fields
-                method = data.get("method", "GET")
-                endpoint = data.get("endpoint")
-                status = int(data.get("status", 200))
+            # Read and parse values safely
+            raw_total = str(row.get(total_key, '')).strip()
+            raw_currency = str(row.get(currency_key, '')).strip().upper()
 
-                # Fallback for endpoint
-                if not endpoint:
-                    m = re.search(r'/api/\S+', line)
-                    endpoint = m.group(0) if m else None
+            if not raw_total or not raw_currency:
+                continue
 
-                if not endpoint:
-                    continue  # Skip line if endpoint is still missing
+            try:
+                total = float(raw_total)
+            except ValueError:
+                continue
 
-                # Extract latency
-                raw = data.get("latency_ms", "0")
-                m = re.search(r'(\d+\.?\d*)', raw)
-                latency = float(m.group(1)) if m else 0
+            # Convert to USD
+            rate = rates.get(raw_currency, 1)
+            usd_value = total / rate
+            total_usd += usd_value
 
-                # Group by (method, endpoint)
-                key = (method, endpoint)
-                log_data[key]['count'] += 1
-                log_data[key]['latencies'].append(latency)
-                if status >= 400:
-                    log_data[key]['errors'] += 1
-
-    # Step 3: Calculate statistics
-    results = []
-    for (method, endpoint), stats in log_data.items():
-        total_requests = stats['count']
-        avg_latency = sum(stats['latencies']) / total_requests
-        error_rate = stats['errors'] / total_requests
-        values = sorted(stats['latencies'])
-        index = int(0.95 * (len(values) - 1))
-        p95_latency = values[index]
-
-        results.append({
-            "method": method,
-            "endpoint": endpoint,
-            "total_requests": total_requests,
-            "avg_latency": avg_latency,
-            "error_rate": error_rate,
-            "p95_latency": p95_latency
-        })
-
-    # Step 4: Sort by error_rate DESC and return top 5
-    results.sort(key=lambda x: x['error_rate'], reverse=True)
-    return results[:5]
-
-# Example usage
-if __name__ == "__main__":
-    top_endpoints = tool()
-    for entry in top_endpoints:
-        print(entry)
+    # Step 4: Return the total revenue in USD
+    return f"Total revenue in USD: {round(total_usd, 2)}"

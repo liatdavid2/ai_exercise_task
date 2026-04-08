@@ -53,4 +53,22 @@ JSON HANDLING (CRITICAL):
         rows = list(data.values())
 
 
- 
+ SAFE VALUE PARSING (CRITICAL):
+
+- Never convert raw values directly without validation
+- Before numeric conversion:
+    - read the raw value safely
+    - convert to string
+    - strip whitespace
+    - skip empty values
+
+Recommended pattern:
+    raw_value = str(value).strip()
+    if not raw_value:
+        continue
+    try:
+        numeric_value = float(raw_value)
+    except:
+        continue
+
+- A single malformed value must not fail the whole task

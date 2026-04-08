@@ -1,9 +1,4 @@
-import csv
-import json
-import glob
-import os
-from datetime import datetime
-from math import sqrt
+import sqlite3
 
 def find_key(d, options):
     for k in d:
@@ -13,115 +8,91 @@ def find_key(d, options):
     return None
 
 def tool():
-    # Step 1: File Discovery
-    files = glob.glob('data/**/*.csv', recursive=True) + glob.glob('**/*.csv', recursive=True)
-    files = list(set(files))  # Remove duplicates
-    files = [f for f in files if 'data/' in f] or files  # Prefer files inside 'data/'
+    # Connect to the SQLite database
+    path = 'data/metrics.db'
+    conn = sqlite3.connect(path)
+    cursor = conn.cursor()
 
-    if not files:
-        # Fallback search
-        known_files = ['sales.csv']
-        for filename in known_files:
-            if os.path.exists(filename):
-                files.append(filename)
-        if not files:
-            for root, dirs, filenames in os.walk('data/'):
-                for filename in filenames:
-                    if filename.endswith('.csv'):
-                        files.append(os.path.join(root, filename))
-        if not files:
-            return "No matching file found"
+    # Discover schema
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    tables = cursor.fetchall()
+    table_name = None
 
-    # Step 2: Read and Process CSV
-    anomalies = []
-    product_stats = {}
-    product_names = {}
-    total_anomalies = 0
-    affected_products = set()
+    # Prefer table named 'requests' if exists
+    for table in tables:
+        if table[0] == 'requests':
+            table_name = 'requests'
+            break
 
-    for file in files:
-        with open(file, mode='r', newline='', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            rows = list(reader)
+    # If 'requests' table doesn't exist, choose the table with the most rows
+    if not table_name:
+        max_rows = 0
+        for table in tables:
+            cursor.execute(f"SELECT COUNT(*) FROM {table[0]}")
+            row_count = cursor.fetchone()[0]
+            if row_count > max_rows:
+                max_rows = row_count
+                table_name = table[0]
 
-            # Detect fields dynamically
-            date_key = find_key(rows[0], ["date"]) or "date"
-            quantity_key = find_key(rows[0], ["quantity"]) or "quantity"
-            product_id_key = find_key(rows[0], ["product_id"]) or "product_id"
-            product_name_key = find_key(rows[0], ["product_name"]) or "product_name"
+    # Load data from the chosen table
+    cursor.execute(f"SELECT * FROM {table_name}")
+    rows = cursor.fetchall()
 
-            # Step 1: Date Filter
-            filtered_rows = [
-                row for row in rows
-                if '2024-10-01' <= row[date_key] <= '2024-12-31'
-            ]
+    # Get column names
+    cursor.execute(f"PRAGMA table_info({table_name})")
+    columns = cursor.fetchall()
+    column_names = [col[1] for col in columns]
 
-            # Step 2: Product Filter
-            total_quantity_per_product = {}
-            for row in filtered_rows:
-                product_id = row[product_id_key]
-                quantity = int(row[quantity_key])
-                total_quantity_per_product[product_id] = total_quantity_per_product.get(product_id, 0) + quantity
+    # Detect columns
+    endpoint_key = find_key(column_names, ["endpoint", "path", "route", "uri"]) or "endpoint"
+    status_key = find_key(column_names, ["status", "status_code", "code"]) or "status_code"
+    latency_key = find_key(column_names, ["latency", "response_time", "duration", "ms"]) or "latency_ms"
 
-            filtered_products = {pid for pid, total in total_quantity_per_product.items() if total >= 20}
+    # Grouping and calculations
+    endpoint_data = {}
+    for row in rows:
+        row_dict = dict(zip(column_names, row))
+        endpoint = row_dict.get(endpoint_key)
+        status = row_dict.get(status_key)
+        latency = row_dict.get(latency_key)
 
-            # Step 3: Daily Aggregation
-            daily_aggregation = {}
-            for row in filtered_rows:
-                product_id = row[product_id_key]
-                if product_id not in filtered_products:
-                    continue
-                date = row[date_key]
-                quantity = int(row[quantity_key])
-                product_name = row[product_name_key]
-                product_names[product_id] = product_name
-                key = (product_id, date)
-                daily_aggregation[key] = daily_aggregation.get(key, 0) + quantity
+        if endpoint and latency is not None:
+            if endpoint not in endpoint_data:
+                endpoint_data[endpoint] = {'latencies': [], 'total_requests': 0, 'error_count': 0}
 
-            # Step 4: Stats Per Product
-            for (product_id, date), daily_quantity in daily_aggregation.items():
-                if product_id not in product_stats:
-                    product_stats[product_id] = {'quantities': []}
-                product_stats[product_id]['quantities'].append(daily_quantity)
+            endpoint_data[endpoint]['latencies'].append(latency)
+            endpoint_data[endpoint]['total_requests'] += 1
+            if status >= 400:
+                endpoint_data[endpoint]['error_count'] += 1
 
-            for product_id, stats in product_stats.items():
-                quantities = stats['quantities']
-                mean = sum(quantities) / len(quantities)
-                std = sqrt(sum((x - mean) ** 2 for x in quantities) / len(quantities))
-                product_stats[product_id]['mean'] = mean
-                product_stats[product_id]['std'] = std
+    # Prepare results
+    results = []
+    for endpoint, data in endpoint_data.items():
+        if data['latencies']:
+            total_requests = data['total_requests']
+            error_rate = data['error_count'] / total_requests
+            sorted_latencies = sorted(data['latencies'])
+            index = int(0.99 * (len(sorted_latencies) - 1))
+            p99_latency = sorted_latencies[index]
 
-            # Step 5: Anomaly Detection
-            for (product_id, date), daily_quantity in daily_aggregation.items():
-                mean = product_stats[product_id]['mean']
-                std = product_stats[product_id]['std']
-                if std == 0:
-                    continue
-                z_score = (daily_quantity - mean) / std
-                if z_score > 3:
-                    anomaly = {
-                        "product_id": product_id,
-                        "product_name": product_names[product_id],
-                        "date": date,
-                        "daily_quantity": round(daily_quantity, 2),
-                        "mean_quantity": round(mean, 2),
-                        "std_dev": round(std, 2),
-                        "z_score": round(z_score, 2)
-                    }
-                    anomalies.append(anomaly)
-                    total_anomalies += 1
-                    affected_products.add(product_id)
+            results.append({
+                'endpoint': endpoint,
+                'total_requests': total_requests,
+                'error_rate': error_rate,
+                'p99_latency': p99_latency
+            })
 
-    # Step 6: Output
-    if not os.path.exists('output'):
-        os.makedirs('output')
+    # Sort by p99_latency DESC and return top 10
+    results.sort(key=lambda x: x['p99_latency'], reverse=True)
+    top_10_results = results[:10]
 
-    with open('output/anomaly_report.json', 'w', encoding='utf-8') as f:
-        json.dump(anomalies, f, indent=4)
+    # Close the connection
+    conn.close()
 
-    summary = {
-        "total_anomalies": total_anomalies,
-        "affected_products": list(affected_products)
-    }
+    return top_10_results
 
-    return summary
+# Example usage
+if __name__ == "__main__":
+    result = tool()
+    for entry in result:
+        print(entry)
