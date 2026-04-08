@@ -11,34 +11,16 @@ def find_key(d, options):
     return None
 
 def tool():
-    # Step 1: Search for files
+    # Step 1: List all data files in the data/ directory
     files = glob.glob('data/**/*.json', recursive=True) + glob.glob('**/*.json', recursive=True)
     files = list(set(files))  # Remove duplicates
 
-    # Prefer files inside 'data/' if exist
+    # Prefer files inside 'data/' if they exist
     files_in_data = [f for f in files if f.startswith('data/')]
     if files_in_data:
         files = files_in_data
 
-    # Step 2: Check for specific file if not found
-    if not files:
-        known_files = ['employees.json']
-        for filename in known_files:
-            if os.path.exists(filename):
-                files.append(filename)
-
-    # Step 3: If still no files, try os.walk
-    if not files:
-        for root, dirs, filenames in os.walk('data/'):
-            for filename in filenames:
-                if filename.endswith('.json'):
-                    files.append(os.path.join(root, filename))
-
-    # Step 4: If still no files, return message
-    if not files:
-        return "No matching file found"
-
-    # Step 5: Process employees.json
+    # Step 2: Check if employees.json exists
     employees_file = None
     for file in files:
         if 'employees.json' in file:
@@ -46,9 +28,19 @@ def tool():
             break
 
     if not employees_file:
+        # Fallback to os.walk if no file found
+        for root, dirs, filenames in os.walk('data/'):
+            for filename in filenames:
+                if filename == 'employees.json':
+                    employees_file = os.path.join(root, filename)
+                    break
+            if employees_file:
+                break
+
+    if not employees_file:
         return "No matching file found"
 
-    # Step 6: Read and process the JSON file
+    # Step 3: Read employees.json and process data
     with open(employees_file, 'r') as f:
         data = json.load(f)
 
@@ -59,45 +51,40 @@ def tool():
     else:
         return "Invalid data format"
 
-    # Step 7: Analyze the data
-    department_counts = defaultdict(int)
+    department_key = find_key(rows[0], ["department"]) or "department"
+    salary_key = find_key(rows[0], ["salary", "income"]) or "salary"
+    name_key = find_key(rows[0], ["name"]) or "name"
+
+    department_count = defaultdict(int)
     highest_paid_employee = None
     highest_salary = float('-inf')
 
     for row in rows:
-        department_key = find_key(row, ["department"]) or "department"
-        salary_key = find_key(row, ["salary", "income"]) or "salary"
-        name_key = find_key(row, ["name"]) or "name"
-
-        # Safe value parsing
+        # Count employees in each department
         department = row.get(department_key, "").strip()
-        raw_salary = str(row.get(salary_key, "")).strip()
-        name = row.get(name_key, "").strip()
-
-        if not raw_salary:
-            continue
-
-        try:
-            salary = float(raw_salary)
-        except ValueError:
-            continue
-
-        # Count employees per department
         if department:
-            department_counts[department] += 1
+            department_count[department] += 1
 
-        # Determine the highest-paid employee
-        if salary > highest_salary:
-            highest_salary = salary
-            highest_paid_employee = name
+        # Find the highest-paid employee
+        raw_salary = str(row.get(salary_key, "")).strip()
+        if raw_salary:
+            try:
+                salary = float(raw_salary)
+                if salary > highest_salary:
+                    highest_salary = salary
+                    highest_paid_employee = row.get(name_key, "Unknown")
+            except ValueError:
+                continue
 
-    # Step 8: Return results
+    # Prepare the result
     result = {
-        "department_counts": dict(department_counts),
+        "department_count": dict(department_count),
         "highest_paid_employee": highest_paid_employee
     }
 
     return result
 
 # Example usage
-print(tool())
+if __name__ == "__main__":
+    result = tool()
+    print(result)

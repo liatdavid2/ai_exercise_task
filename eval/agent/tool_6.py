@@ -24,7 +24,7 @@ def tool():
             table_name = 'requests'
             break
 
-    # If 'requests' table doesn't exist, choose the table with the most rows
+    # If 'requests' table doesn't exist, choose the table with most rows
     if not table_name:
         max_rows = 0
         for table in tables:
@@ -40,8 +40,8 @@ def tool():
 
     # Get column names
     cursor.execute(f"PRAGMA table_info({table_name})")
-    columns = cursor.fetchall()
-    column_names = [col[1] for col in columns]
+    columns_info = cursor.fetchall()
+    column_names = [info[1] for info in columns_info]
 
     # Detect columns
     endpoint_key = find_key(column_names, ["endpoint", "path", "route", "uri"]) or "endpoint"
@@ -72,8 +72,8 @@ def tool():
             total_requests = data['total_requests']
             error_rate = data['error_count'] / total_requests
             sorted_latencies = sorted(data['latencies'])
-            index = int(0.99 * (len(sorted_latencies) - 1))
-            p99_latency = sorted_latencies[index]
+            p99_index = int(0.99 * (len(sorted_latencies) - 1))
+            p99_latency = sorted_latencies[p99_index]
 
             results.append({
                 'endpoint': endpoint,

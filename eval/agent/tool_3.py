@@ -16,31 +16,25 @@ def tool():
     files = list(set(files))  # Remove duplicates
 
     # Prefer files inside 'data/' if exist
-    files = sorted(files, key=lambda x: 0 if x.startswith('data/') else 1)
+    files_in_data = [f for f in files if f.startswith('data/')]
+    if files_in_data:
+        files = files_in_data
 
     if not files:
-        # Fallback search
-        known_files = ['sales.csv']
-        for filename in known_files:
-            if os.path.exists(filename):
-                files.append(filename)
-        
-        if not files:
-            for root, dirs, filenames in os.walk('data/'):
-                for filename in filenames:
-                    if filename.endswith('.csv'):
-                        files.append(os.path.join(root, filename))
-        
+        # Fallback to os.walk if no files found
+        for root, dirs, filenames in os.walk('data/'):
+            for filename in filenames:
+                if filename.endswith('.csv'):
+                    files.append(os.path.join(root, filename))
         if not files:
             return "No matching file found"
 
-    # Process the first found CSV file
     total_revenue_by_category = {}
     december_revenue_by_category = {}
 
     for file in files:
-        with open(file, newline='', encoding='utf-8') as csvfile:
-            reader = csv.DictReader(csvfile)
+        with open(file, mode='r', newline='', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
             for row in reader:
                 # Detect fields dynamically
                 date_key = find_key(row, ["date"]) or "date"
@@ -48,11 +42,11 @@ def tool():
                 category_key = find_key(row, ["category"]) or "category"
 
                 # Parse and validate values
-                raw_date = str(row.get(date_key, '')).strip()
                 raw_total = str(row.get(total_key, '')).strip()
-                category = str(row.get(category_key, '')).strip()
+                raw_date = str(row.get(date_key, '')).strip()
+                category = row.get(category_key, '').strip()
 
-                if not raw_total or not category:
+                if not raw_total or not raw_date or not category:
                     continue
 
                 try:
@@ -60,7 +54,6 @@ def tool():
                 except ValueError:
                     continue
 
-                # Parse date and filter by December 2024
                 try:
                     date = datetime.strptime(raw_date, '%Y-%m-%d')
                 except ValueError:
@@ -71,7 +64,7 @@ def tool():
                     total_revenue_by_category[category] = 0.0
                 total_revenue_by_category[category] += total
 
-                # Check for December 2024
+                # Filter for December 2024
                 if date.year == 2024 and date.month == 12:
                     if category not in december_revenue_by_category:
                         december_revenue_by_category[category] = 0.0

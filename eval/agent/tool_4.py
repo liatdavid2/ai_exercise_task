@@ -12,39 +12,25 @@ def find_key(d, options):
     return None
 
 def tool():
-    # Step 1: Discover the sales.csv file
-    files = glob.glob('data/**/*.csv', recursive=True) + glob.glob('**/*.csv', recursive=True)
-    files = list(set(files))  # Remove duplicates
+    # Discover files
+    csv_files = glob.glob('data/**/*.csv', recursive=True) + glob.glob('**/*.csv', recursive=True)
+    csv_files = list(set(csv_files))  # Remove duplicates
 
     # Prefer files inside 'data/' if exist
-    sales_file = None
-    for file in files:
-        if 'sales.csv' in file:
-            sales_file = file
-            break
+    csv_files = sorted(csv_files, key=lambda x: 0 if x.startswith('data/') else 1)
 
-    if not sales_file:
-        # Fallback to known filenames
-        known_files = ['sales.csv']
-        for file in known_files:
-            if os.path.exists(file):
-                sales_file = file
-                break
-
-    if not sales_file:
-        # Try os.walk as a last resort
+    if not csv_files:
+        # Fallback to os.walk if no files found
         for root, dirs, files in os.walk('data/'):
             for file in files:
-                if file == 'sales.csv':
-                    sales_file = os.path.join(root, file)
-                    break
-            if sales_file:
-                break
+                if file.endswith('.csv'):
+                    csv_files.append(os.path.join(root, file))
+        csv_files = list(set(csv_files))  # Remove duplicates
 
-    if not sales_file:
+    if not csv_files:
         return "No matching file found"
 
-    # Step 2: Fetch current USD exchange rates
+    # Fetch exchange rates
     try:
         response = requests.get('https://open.er-api.com/v6/latest/USD')
         response.raise_for_status()
@@ -53,31 +39,35 @@ def tool():
     except Exception as e:
         return f"Failed to fetch exchange rates: {e}"
 
-    # Step 3: Process the CSV file
     total_usd = 0.0
-    with open(sales_file, newline='', encoding='utf-8') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            # Detect relevant fields
-            total_key = find_key(row, ["total", "amount", "value"]) or "total"
-            currency_key = find_key(row, ["currency"]) or "currency"
 
-            # Read and parse values safely
-            raw_total = str(row.get(total_key, '')).strip()
-            raw_currency = str(row.get(currency_key, '')).strip().upper()
+    # Process each CSV file
+    for file in csv_files:
+        with open(file, newline='', encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                # Detect fields dynamically
+                total_key = find_key(row, ["total"]) or "total"
+                currency_key = find_key(row, ["currency"]) or "currency"
 
-            if not raw_total or not raw_currency:
-                continue
+                # Read and parse values safely
+                raw_total = str(row.get(total_key, '')).strip()
+                raw_currency = str(row.get(currency_key, '')).strip().upper()
 
-            try:
-                total = float(raw_total)
-            except ValueError:
-                continue
+                if not raw_total or not raw_currency:
+                    continue
 
-            # Convert to USD
-            rate = rates.get(raw_currency, 1)
-            usd_value = total / rate
-            total_usd += usd_value
+                try:
+                    total = float(raw_total)
+                except ValueError:
+                    continue
 
-    # Step 4: Return the total revenue in USD
-    return f"Total revenue in USD: {round(total_usd, 2)}"
+                # Get the exchange rate
+                rate = rates.get(raw_currency, 1)  # Assume USD if rate is missing
+
+                # Convert to USD
+                usd_value = total / rate
+                total_usd += usd_value
+
+    # Return the grand total revenue in USD
+    return f"Grand Total Revenue in USD: {round(total_usd, 2)}"

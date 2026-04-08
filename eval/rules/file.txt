@@ -23,13 +23,7 @@ NO FILE FOUND HANDLING (CRITICAL):
     - DO NOT immediately return
 
     - Try fallback:
-
-        1. Try searching for known filenames:
-            employees.json
-            sales.csv
-            app.log
-
-        2. Try os.walk('data/')
+        Try os.walk('data/')
 
     - ONLY if still nothing:
         return "No matching file found"
@@ -72,3 +66,14 @@ Recommended pattern:
         continue
 
 - A single malformed value must not fail the whole task
+
+
+TIME FILTERING (CRITICAL):
+
+- If the task mentions a month, year, specific period, or date range:
+    - infer the date field from the schema
+    - parse date values safely
+    - filter rows to the requested period before computing period-specific metrics
+
+- Keep full-data calculations separate from period-specific calculations when the task asks for both
+
