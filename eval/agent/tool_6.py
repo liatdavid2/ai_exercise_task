@@ -21,19 +21,24 @@ def tool():
 
     # Prefer table named 'requests' if exists
     if 'requests' in table_names:
-        table_name = 'requests'
+        target_table = 'requests'
     else:
         # Otherwise choose table with most rows
         max_rows = 0
-        for name in table_names:
-            cursor.execute(f"SELECT COUNT(*) FROM {name}")
+        target_table = None
+        for table in table_names:
+            cursor.execute(f"SELECT COUNT(*) FROM {table}")
             row_count = cursor.fetchone()[0]
             if row_count > max_rows:
                 max_rows = row_count
-                table_name = name
+                target_table = table
 
-    # Get table info
-    cursor.execute(f"PRAGMA table_info({table_name})")
+    # Load data from the target table
+    cursor.execute(f"SELECT * FROM {target_table}")
+    rows = cursor.fetchall()
+
+    # Get column names
+    cursor.execute(f"PRAGMA table_info({target_table})")
     columns_info = cursor.fetchall()
     column_names = [info[1] for info in columns_info]
 
@@ -42,17 +47,13 @@ def tool():
     status_col = find_key(column_names, ['status', 'status_code', 'code'])
     latency_col = find_key(column_names, ['latency', 'response_time', 'duration', 'ms'])
 
-    # Fallback if detection fails
+    # Fallback to common names if detection fails
     if not endpoint_col:
         endpoint_col = 'endpoint'
     if not status_col:
         status_col = 'status_code'
     if not latency_col:
         latency_col = 'latency_ms'
-
-    # Load data
-    cursor.execute(f"SELECT * FROM {table_name}")
-    rows = cursor.fetchall()
 
     # Grouping by endpoint
     endpoint_data = defaultdict(lambda: {'latencies': [], 'total_requests': 0, 'errors': 0})
@@ -69,15 +70,15 @@ def tool():
             if status >= 400:
                 endpoint_data[endpoint]['errors'] += 1
 
-    # Calculate metrics
+    # Calculate metrics for each endpoint
     results = []
     for endpoint, data in endpoint_data.items():
         if data['latencies']:
             total_requests = data['total_requests']
             error_rate = data['errors'] / total_requests
-            sorted_latencies = sorted(data['latencies'])
-            index = int(0.99 * (len(sorted_latencies) - 1))
-            p99_latency = sorted_latencies[index]
+            latencies = sorted(data['latencies'])
+            index = int(0.99 * (len(latencies) - 1))
+            p99_latency = latencies[index]
 
             results.append({
                 'endpoint': endpoint,
@@ -86,11 +87,11 @@ def tool():
                 'p99_latency': p99_latency
             })
 
-    # Sort and filter results
+    # Sort by p99_latency DESC and return top 10
     results.sort(key=lambda x: x['p99_latency'], reverse=True)
     top_10_results = results[:10]
 
-    # Close the connection
+    # Close the database connection
     conn.close()
 
     return top_10_results

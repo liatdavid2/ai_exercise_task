@@ -1,88 +1,45 @@
 {
-    "tasks.json": [
-        {
-            "issue_type": "Invalid row type",
-            "description": "Row is not a dictionary",
-            "affected_count": 1,
-            "examples": [
-                "[{'id': 1, 'phase': 1, 'title': 'Employee Directory', 'description': 'List all data files in the dat"
-            ]
-        }
-    ],
-    "eval_results.json": [
-        {
-            "issue_type": "File read error",
-            "description": "unhashable type: 'dict'",
-            "affected_count": 1,
-            "examples": []
-        }
-    ],
-    "output\\data_audit.json": [
-        {
-            "issue_type": "Invalid row type",
-            "description": "Row is not a dictionary",
-            "affected_count": 1,
-            "examples": [
-                "[{'issue_type': 'Missing Field', 'description': 'Missing required fields', 'affected_count': 1, 'exa"
-            ]
-        },
-        {
-            "issue_type": "Invalid row type",
-            "description": "Row is not a dictionary",
-            "affected_count": 1,
-            "examples": [
-                "[{'issue_type': 'Negative Value', 'description': 'Negative total value found', 'affected_count': 1, "
-            ]
-        },
-        {
-            "issue_type": "Invalid row type",
-            "description": "Row is not a dictionary",
-            "affected_count": 1,
-            "examples": [
-                "[{'issue_type': 'Malformed Line', 'description': 'Line does not conform to expected format', 'affect"
-            ]
-        }
-    ],
-    "output\\executive_dashboard.json": [
-        {
-            "issue_type": "Invalid row type",
-            "description": "Row is not a dictionary",
-            "affected_count": 1,
-            "examples": [
-                "[{'product_id': 'P091', 'product_name': 'Running Shoes Pro', 'revenue_usd': 99455.17}, {'product_id'"
-            ]
-        },
-        {
-            "issue_type": "Invalid row type",
-            "description": "Row is not a dictionary",
-            "affected_count": 1,
-            "examples": [
-                "[{'product_id': 'P001', 'product_name': None, 'current_stock': 0, 'reorder_point': 11, 'total_sales_"
-            ]
-        },
-        {
-            "issue_type": "Invalid row type",
-            "description": "Row is not a dictionary",
-            "affected_count": 1,
-            "examples": [
-                "[{'endpoint': '/api/users', 'method': 'POST', 'log_request_count': 249, 'log_error_rate_pct': 2.81, "
-            ]
-        },
-        {
-            "issue_type": "Invalid row type",
-            "description": "Row is not a dictionary",
-            "affected_count": 1,
-            "examples": [
-                "[{'department': 'Engineering', 'headcount': 8, 'avg_salary': 149000.0, 'total_salary': 1192000}, {'d"
-            ]
-        },
-        {
-            "issue_type": "Invalid row type",
-            "description": "Row is not a dictionary",
-            "affected_count": 1,
-            "examples": [
-                "[{'date': '2024-10-01', 'revenue_usd': 5280.08}, {'date': '2024-10-02', 'revenue_usd': 7856.17}, {'d"
-            ]
-        }
-    ]
+  "data\\employees.json": [],
+  "data\\inventory.json": [],
+  "data\\metrics.db": [],
+  "data\\sales.csv": [
+    {
+      "issue_type": "Missing or empty values",
+      "description": "Column 'total' has missing or empty values.",
+      "affected_count": 15,
+      "examples": [
+        92,
+        623,
+        745,
+        746,
+        872
+      ]
+    },
+    {
+      "issue_type": "Duplicate records",
+      "description": "Duplicate rows found.",
+      "affected_count": 10,
+      "examples": [
+        446,
+        920,
+        1178,
+        1347,
+        1447
+      ]
+    }
+  ],
+  "data\\logs\\app.log": [
+    {
+      "issue_type": "Malformed lines",
+      "description": "Lines that do not match the expected log format.",
+      "affected_count": 6,
+      "examples": [
+        16,
+        671,
+        1866,
+        3081,
+        3128
+      ]
+    }
+  ]
 }

@@ -92,10 +92,4 @@ Instead:
 - infer relevant fields semantically from the actual data
 - write code that works even if names differ
 
-INVALID hardcoding examples:
-- exact file names
-- exact column names
-- exact table names
-- exact log field names
-
-Use dynamic semantic matching instead.
+Use dynamic matching helpers instead.

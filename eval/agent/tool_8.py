@@ -1,261 +1,175 @@
 import glob
 import os
 import json
+import csv
 import sqlite3
 import requests
-from collections import defaultdict
 from datetime import datetime
+from collections import defaultdict
 import re
 
 def tool():
     # Step 1: File Discovery
-    files = glob.glob('data/**/*.json', recursive=True) + glob.glob('**/*.json', recursive=True)
-    files += glob.glob('data/**/*.csv', recursive=True) + glob.glob('**/*.csv', recursive=True)
-    files += glob.glob('data/**/*.log', recursive=True) + glob.glob('**/*.log', recursive=True)
-    files += glob.glob('data/**/*.db', recursive=True) + glob.glob('**/*.db', recursive=True)
-    files = list(set(files))  # Remove duplicates
+    json_files = glob.glob('data/**/*.json', recursive=True) + glob.glob('**/*.json', recursive=True)
+    csv_files = glob.glob('data/**/*.csv', recursive=True) + glob.glob('**/*.csv', recursive=True)
+    log_files = glob.glob('data/**/*.log', recursive=True) + glob.glob('**/*.log', recursive=True)
+    db_files = glob.glob('data/**/*.db', recursive=True) + glob.glob('**/*.db', recursive=True)
+
+    # Remove duplicates and prefer files inside 'data/'
+    json_files = list(set(json_files))
+    csv_files = list(set(csv_files))
+    log_files = list(set(log_files))
+    db_files = list(set(db_files))
 
     # Step 2: Fetch Currency Rates
-    try:
-        response = requests.get('https://open.er-api.com/v6/latest/USD')
-        rates = response.json().get('rates', {})
-    except:
-        rates = {}
+    response = requests.get('https://open.er-api.com/v6/latest/USD')
+    rates = response.json().get('rates', {})
 
     # Step 3: Process Data
-    top_products_by_revenue = []
-    understocked_products = []
-    endpoint_health = []
-    department_summary = []
-    daily_revenue_trend = []
+    # 3.1 Top Products by Revenue
+    sales_data = []
+    for file in csv_files:
+        if 'sales' in file:
+            with open(file, newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    sales_data.append(row)
 
-    # Helper function to find key dynamically
-    def find_key(d, options):
-        for k in d:
-            for opt in options:
-                if opt in k.lower():
-                    return k
-        return None
+    product_revenue = defaultdict(float)
+    for sale in sales_data:
+        product_id = sale.get('product_id')
+        product_name = sale.get('product_name')
+        currency = sale.get('currency', 'USD').upper()
+        raw_value = str(sale.get('total')).strip()
+        if not raw_value:
+            continue
+        try:
+            total = float(raw_value)
+        except:
+            continue
+        usd_value = total / rates.get(currency, 1)
+        product_revenue[(product_id, product_name)] += usd_value
 
-    # Process JSON files
-    for file in files:
-        if file.endswith('.json'):
-            with open(file, 'r') as f:
+    top_products_by_revenue = sorted(
+        [{'product_id': pid, 'product_name': pname, 'revenue_usd': round(revenue, 2)}
+         for (pid, pname), revenue in product_revenue.items()],
+        key=lambda x: x['revenue_usd'], reverse=True)[:10]
+
+    # 3.2 Understocked Products
+    inventory_data = []
+    for file in json_files:
+        if 'inventory' in file:
+            with open(file) as f:
                 data = json.load(f)
                 if isinstance(data, list):
-                    rows = data
+                    inventory_data.extend(data)
                 elif isinstance(data, dict):
-                    rows = list(data.values())
-                else:
-                    continue
+                    inventory_data.extend(data.values())
 
-                # Process inventory.json for understocked products
-                if 'inventory' in file:
-                    inventory_data = rows
-                    for item in inventory_data:
-                        product_id = item.get('product_id')
-                        product_name = item.get('product_name')
-                        current_stock = item.get('current_stock', 0)
-                        reorder_point = item.get('reorder_point', 0)
-                        if current_stock < reorder_point:
-                            understocked_products.append({
-                                'product_id': product_id,
-                                'product_name': product_name,
-                                'current_stock': current_stock,
-                                'reorder_point': reorder_point,
-                                'total_sales_count': 0  # Placeholder, will update later
-                            })
+    product_sales_count = defaultdict(int)
+    for sale in sales_data:
+        product_id = sale.get('product_id')
+        product_sales_count[product_id] += 1
 
-                # Process employees.json for department summary
-                if 'employees' in file:
-                    department_data = defaultdict(lambda: {'headcount': 0, 'total_salary': 0})
-                    for employee in rows:
-                        department = employee.get('department')
-                        salary = employee.get('salary', 0)
-                        department_data[department]['headcount'] += 1
-                        department_data[department]['total_salary'] += salary
+    understocked_products = []
+    for product in inventory_data:
+        product_id = product.get('product_id')
+        product_name = product.get('product_name')
+        current_stock = product.get('current_stock', 0)
+        reorder_point = product.get('reorder_point', 0)
+        total_sales_count = product_sales_count.get(product_id, 0)
+        if current_stock < reorder_point and total_sales_count > 15:
+            understocked_products.append({
+                'product_id': product_id,
+                'product_name': product_name,
+                'current_stock': current_stock,
+                'reorder_point': reorder_point,
+                'total_sales_count': total_sales_count
+            })
 
-                    for dept, summary in department_data.items():
-                        headcount = summary['headcount']
-                        total_salary = summary['total_salary']
-                        avg_salary = total_salary / headcount if headcount else 0
-                        department_summary.append({
-                            'department': dept,
-                            'headcount': headcount,
-                            'avg_salary': round(avg_salary, 2),
-                            'total_salary': round(total_salary, 2)
-                        })
+    # 3.3 Endpoint Health
+    log_data = []
+    for file in log_files:
+        with open(file) as f:
+            for line in f:
+                parts = line.strip().split()
+                data = {}
+                for p in parts:
+                    if '=' in p:
+                        k, v = p.split('=', 1)
+                        data[k] = v
+                log_data.append(data)
 
-    # Process CSV files
-    for file in files:
-        if file.endswith('.csv'):
-            with open(file, 'r') as f:
-                header = f.readline().strip().split(',')
-                rows = [line.strip().split(',') for line in f]
-
-                # Process sales.csv for top products by revenue and daily revenue trend
-                if 'sales' in file:
-                    product_revenue = defaultdict(float)
-                    daily_revenue = defaultdict(float)
-                    for row in rows:
-                        row_data = dict(zip(header, row))
-                        product_id = row_data.get('product_id')
-                        product_name = row_data.get('product_name')
-                        currency = row_data.get('currency', 'USD').upper()
-                        date = row_data.get('date')
-                        raw_value = str(row_data.get('total', '')).strip()
-                        if not raw_value:
-                            continue
-                        try:
-                            total = float(raw_value)
-                        except:
-                            continue
-
-                        usd_value = total / rates.get(currency, 1)
-                        product_revenue[(product_id, product_name)] += usd_value
-                        daily_revenue[date] += usd_value
-
-                    # Update understocked products with sales count
-                    for product in understocked_products:
-                        product_id = product['product_id']
-                        product['total_sales_count'] = sum(1 for row in rows if row[header.index('product_id')] == product_id)
-
-                    # Top products by revenue
-                    top_products_by_revenue = sorted(
-                        [{'product_id': pid, 'product_name': pname, 'revenue_usd': round(revenue, 2)}
-                         for (pid, pname), revenue in product_revenue.items()],
-                        key=lambda x: x['revenue_usd'], reverse=True)[:10]
-
-                    # Daily revenue trend
-                    daily_revenue_trend = [{'date': date, 'revenue_usd': round(revenue, 2)}
-                                           for date, revenue in sorted(daily_revenue.items())]
-
-    # Process log files
-    for file in files:
-        if file.endswith('.log'):
-            with open(file, 'r') as f:
-                log_data = defaultdict(lambda: {'count': 0, 'errors': 0, 'latencies': []})
-                for line in f:
-                    parts = line.strip().split()
-                    data = {}
-                    for p in parts:
-                        if '=' in p:
-                            k, v = p.split('=', 1)
-                            data[k] = v
-
-                    method = data.get('method') or data.get('http_method') or data.get('verb')
-                    endpoint = data.get('endpoint') or data.get('path') or data.get('route') or data.get('url') or data.get('uri')
-                    status = data.get('status') or data.get('status_code') or data.get('code') or data.get('response_code')
-                    raw_latency = data.get('latency_ms') or data.get('latency') or data.get('response_time_ms') or data.get('response_time') or data.get('duration_ms') or data.get('duration')
-
-                    if not endpoint:
-                        m = re.search(r'/api/[^ ]+', line)
-                        if m:
-                            endpoint = m.group(0)
-
-                    if not endpoint:
-                        continue
-
-                    log_data[(method, endpoint)]['count'] += 1
-                    if status and int(status) >= 400:
-                        log_data[(method, endpoint)]['errors'] += 1
-
-                    if raw_latency:
-                        raw_latency = str(raw_latency).strip()
-                        m = re.search(r'(\d+(?:\.\d+)?)', raw_latency)
-                        if m:
-                            latency = float(m.group(1))
-                            log_data[(method, endpoint)]['latencies'].append(latency)
-
-                for (method, endpoint), data in log_data.items():
-                    count = data['count']
-                    errors = data['errors']
-                    latencies = data['latencies']
-                    error_rate = (errors / count) * 100 if count else 0
-                    avg_latency = sum(latencies) / len(latencies) if latencies else 0
-                    latencies.sort()
-                    p95_latency = latencies[int(0.95 * (len(latencies) - 1))] if latencies else 0
-                    endpoint_health.append({
-                        'endpoint': endpoint,
-                        'method': method,
-                        'log_request_count': count,
-                        'log_error_rate_pct': round(error_rate, 2),
-                        'log_p95_ms': round(p95_latency, 2),
-                        'db_request_count': 0,  # Placeholder, will update later
-                        'db_error_rate_pct': 0,  # Placeholder, will update later
-                        'db_p99_ms': 0  # Placeholder, will update later
-                    })
-
-    # Process database files
-    for file in files:
-        if file.endswith('.db'):
-            conn = sqlite3.connect(file)
-            cursor = conn.cursor()
-
-            # Discover tables
-            cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
-            tables = cursor.fetchall()
-            table_name = None
-            max_rows = 0
-
-            for (table,) in tables:
-                cursor.execute(f"SELECT COUNT(*) FROM {table}")
-                row_count = cursor.fetchone()[0]
-                if row_count > max_rows:
-                    max_rows = row_count
-                    table_name = table
-
-            if not table_name:
-                continue
-
-            # Load data
+    db_data = []
+    for file in db_files:
+        conn = sqlite3.connect(file)
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        tables = cursor.fetchall()
+        for table in tables:
+            table_name = table[0]
+            cursor.execute(f"PRAGMA table_info({table_name})")
+            columns = cursor.fetchall()
             cursor.execute(f"SELECT * FROM {table_name}")
             rows = cursor.fetchall()
-            columns = [col[0] for col in cursor.description]
+            db_data.extend(rows)
+        conn.close()
 
-            # Detect columns
-            endpoint_col = find_key(columns, ['endpoint', 'path', 'route', 'uri'])
-            status_col = find_key(columns, ['status', 'status_code', 'code'])
-            latency_col = find_key(columns, ['latency', 'response_time', 'duration', 'ms'])
+    # Process log and db data for endpoint health
+    endpoint_health = []
 
-            if not endpoint_col or not status_col or not latency_col:
-                continue
+    # 3.4 Department Summary
+    employees_data = []
+    for file in json_files:
+        if 'employees' in file:
+            with open(file) as f:
+                data = json.load(f)
+                if isinstance(data, list):
+                    employees_data.extend(data)
+                elif isinstance(data, dict):
+                    employees_data.extend(data.values())
 
-            db_data = defaultdict(lambda: {'count': 0, 'errors': 0, 'latencies': []})
-            for row in rows:
-                endpoint = row[columns.index(endpoint_col)]
-                status = row[columns.index(status_col)]
-                latency = row[columns.index(latency_col)]
+    department_summary = defaultdict(lambda: {'headcount': 0, 'total_salary': 0.0})
+    for employee in employees_data:
+        department = employee.get('department')
+        salary = employee.get('salary', 0.0)
+        department_summary[department]['headcount'] += 1
+        department_summary[department]['total_salary'] += salary
 
-                db_data[endpoint]['count'] += 1
-                if status >= 400:
-                    db_data[endpoint]['errors'] += 1
-                db_data[endpoint]['latencies'].append(latency)
+    department_summary = [
+        {
+            'department': dept,
+            'headcount': summary['headcount'],
+            'avg_salary': round(summary['total_salary'] / summary['headcount'], 2) if summary['headcount'] > 0 else 0,
+            'total_salary': round(summary['total_salary'], 2)
+        }
+        for dept, summary in department_summary.items()
+    ]
 
-            for endpoint, data in db_data.items():
-                count = data['count']
-                errors = data['errors']
-                latencies = data['latencies']
-                error_rate = (errors / count) * 100 if count else 0
-                latencies.sort()
-                p99_latency = latencies[int(0.99 * (len(latencies) - 1))] if latencies else 0
+    # 3.5 Daily Revenue Trend
+    daily_revenue = defaultdict(float)
+    for sale in sales_data:
+        date = sale.get('date')
+        currency = sale.get('currency', 'USD').upper()
+        raw_value = str(sale.get('total')).strip()
+        if not raw_value:
+            continue
+        try:
+            total = float(raw_value)
+        except:
+            continue
+        usd_value = total / rates.get(currency, 1)
+        daily_revenue[date] += usd_value
 
-                # Update endpoint health with DB data
-                for entry in endpoint_health:
-                    if entry['endpoint'] == endpoint:
-                        entry['db_request_count'] = count
-                        entry['db_error_rate_pct'] = round(error_rate, 2)
-                        entry['db_p99_ms'] = round(p99_latency, 2)
-
-            conn.close()
-
-    # Sort endpoint health by db_p99_ms descending
-    endpoint_health.sort(key=lambda x: x['db_p99_ms'], reverse=True)
+    daily_revenue_trend = [
+        {'date': date, 'revenue_usd': round(revenue, 2)}
+        for date, revenue in sorted(daily_revenue.items())
+    ]
 
     # Step 4: Compile Results
     dashboard = {
         'top_products_by_revenue': top_products_by_revenue,
-        'understocked_products': [p for p in understocked_products if p['total_sales_count'] > 15],
+        'understocked_products': understocked_products,
         'endpoint_health': endpoint_health,
         'department_summary': department_summary,
         'daily_revenue_trend': daily_revenue_trend

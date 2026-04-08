@@ -16,9 +16,7 @@ def tool():
     files = list(set(files))  # Remove duplicates
 
     # Prefer files inside 'data/' if exist
-    files_in_data = [f for f in files if f.startswith('data/')]
-    if files_in_data:
-        files = files_in_data
+    files = sorted(files, key=lambda x: 0 if x.startswith('data/') else 1)
 
     if not files:
         # Fallback to os.walk if no files found
@@ -29,8 +27,8 @@ def tool():
         if not files:
             return "No matching file found"
 
-    total_revenue_per_category = {}
-    december_revenue_per_category = {}
+    total_revenue = {}
+    december_revenue = {}
 
     for file in files:
         with open(file, mode='r', newline='', encoding='utf-8') as f:
@@ -38,55 +36,55 @@ def tool():
             headers = reader.fieldnames
 
             # Dynamically find relevant fields
-            date_key = find_key(headers, ['date'])
-            category_key = find_key(headers, ['category'])
+            date_key = find_key(headers, ['date', 'time', 'timestamp'])
+            category_key = find_key(headers, ['category', 'product category'])
             revenue_key = find_key(headers, ['revenue', 'amount', 'total'])
 
             if not date_key or not category_key or not revenue_key:
                 continue  # Skip if essential keys are not found
 
             for row in reader:
-                # Safe value parsing
-                raw_date = str(row.get(date_key, '')).strip()
-                raw_category = str(row.get(category_key, '')).strip()
-                raw_revenue = str(row.get(revenue_key, '')).strip()
-
-                if not raw_date or not raw_category or not raw_revenue:
-                    continue
-
-                try:
-                    revenue = float(raw_revenue)
-                except ValueError:
-                    continue
-
-                # Parse date and filter for December 2024
+                # Parse and validate date
+                raw_date = str(row[date_key]).strip()
                 try:
                     date = datetime.strptime(raw_date, '%Y-%m-%d')
                 except ValueError:
                     continue
 
-                # Calculate total revenue per category
-                if raw_category not in total_revenue_per_category:
-                    total_revenue_per_category[raw_category] = 0.0
-                total_revenue_per_category[raw_category] += revenue
+                # Parse and validate revenue
+                raw_revenue = str(row[revenue_key]).strip()
+                if not raw_revenue:
+                    continue
+                try:
+                    revenue = float(raw_revenue)
+                except ValueError:
+                    continue
 
-                # Calculate December 2024 revenue per category
+                # Get category
+                category = str(row[category_key]).strip()
+
+                # Update total revenue
+                if category not in total_revenue:
+                    total_revenue[category] = 0.0
+                total_revenue[category] += revenue
+
+                # Update December 2024 revenue
                 if date.year == 2024 and date.month == 12:
-                    if raw_category not in december_revenue_per_category:
-                        december_revenue_per_category[raw_category] = 0.0
-                    december_revenue_per_category[raw_category] += revenue
+                    if category not in december_revenue:
+                        december_revenue[category] = 0.0
+                    december_revenue[category] += revenue
 
     # Find the category with the highest revenue in December 2024
-    if december_revenue_per_category:
-        highest_december_category = max(december_revenue_per_category, key=december_revenue_per_category.get)
-        highest_december_revenue = december_revenue_per_category[highest_december_category]
+    if december_revenue:
+        highest_december_category = max(december_revenue, key=december_revenue.get)
+        highest_december_revenue = december_revenue[highest_december_category]
     else:
         highest_december_category = None
         highest_december_revenue = 0.0
 
     # Prepare the result
     result = {
-        'total_revenue_per_category': {k: round(v, 2) for k, v in total_revenue_per_category.items()},
+        'total_revenue': {k: round(v, 2) for k, v in total_revenue.items()},
         'highest_december_category': highest_december_category,
         'highest_december_revenue': round(highest_december_revenue, 2)
     }

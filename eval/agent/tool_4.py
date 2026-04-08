@@ -1,5 +1,6 @@
 import glob
 import os
+import json
 import csv
 import requests
 
@@ -11,7 +12,7 @@ def find_key(d, options):
     return None
 
 def tool():
-    # Discover files
+    # Step 1: Discover files
     files = glob.glob('data/**/*.csv', recursive=True) + glob.glob('**/*.csv', recursive=True)
     files = list(set(files))  # Remove duplicates
 
@@ -29,26 +30,25 @@ def tool():
     if not files:
         return "No matching file found"
 
-    # Fetch exchange rates
+    # Step 2: Fetch current USD exchange rates
     try:
         response = requests.get('https://open.er-api.com/v6/latest/USD')
-        response.raise_for_status()
         rates_data = response.json()
         rates = rates_data.get('rates', {})
     except Exception as e:
-        return f"Failed to fetch exchange rates: {e}"
+        return f"Failed to fetch exchange rates: {str(e)}"
 
     total_usd = 0.0
 
-    # Process each file
+    # Step 3: Process each file
     for file in files:
-        with open(file, newline='', encoding='utf-8') as csvfile:
-            reader = csv.DictReader(csvfile)
+        with open(file, mode='r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
             currency_key = find_key(reader.fieldnames, ['currency'])
-            amount_key = find_key(reader.fieldnames, ['amount', 'value', 'total'])
+            amount_key = find_key(reader.fieldnames, ['amount', 'total', 'value'])
 
             if not currency_key or not amount_key:
-                continue  # Skip files without necessary columns
+                continue
 
             for row in reader:
                 raw_currency = str(row.get(currency_key, '')).strip().upper()
@@ -62,8 +62,9 @@ def tool():
                 except ValueError:
                     continue
 
-                rate = rates.get(raw_currency, 1)  # Assume USD if rate not found
+                rate = rates.get(raw_currency, 1)  # Assume USD if rate is missing
                 usd_value = amount / rate
                 total_usd += usd_value
 
+    # Step 4: Return the total revenue in USD
     return f"Total revenue in USD: {round(total_usd, 2)}"

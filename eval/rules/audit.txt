@@ -1,62 +1,84 @@
-DATA AUDIT TASK (CRITICAL):
+AUDIT TASK (CRITICAL):
 
-You MUST audit ALL supported data files under data/ recursively.
+You MUST audit ALL files under data/ recursively.
 
-FILES TO CHECK:
+GOAL:
+Return a JSON object written to output/data_audit.json.
+Each key is a file name or relative path.
+Each value is an array of issue objects:
+{
+  "issue_type": <string>,
+  "description": <string>,
+  "affected_count": <int>,
+  "examples": <list>
+}
+
+Also return a short text summary.
+
+STRICT FILE DISCOVERY:
+- Use glob recursively
+- Include files under data/
+- Exclude output/, agent/, __pycache__/, .git/, venv/, .venv/
+
+SUPPORTED FILE TYPES:
 - CSV
 - JSON
-- LOG
-- DB / SQLITE
+- LOG / TXT log-like files
+- SQLite DB (.db, .sqlite)
 
-OUTPUT FORMAT (MANDATORY):
-- Write output/data_audit.json
-- Return a text summary
-- JSON shape:
-  {
-    "<file_name>": [
-      {
-        "issue_type": "...",
-        "description": "...",
-        "affected_count": <int>,
-        "examples": [...]
-      }
-    ]
-  }
+REQUIRED AUDIT CATEGORIES FOR EVERY FILE:
+1. Missing or empty values
+2. Duplicate records
+3. Invalid or inconsistent values
+4. Unexpected values / malformed rows
+5. Cross-source integrity discrepancies when possible
 
-AUDIT CHECKS (MANDATORY):
+IMPORTANT:
+- NEVER assume fixed column names
+- Inspect schema first
+- Infer likely identifiers, numeric fields, date/time fields, categorical fields
+- Handle mixed types safely
+- Before iterating, always check the value type
+- Examples must always be a LIST, never a scalar
 
-For CSV / tabular files:
-- Detect missing or empty values
-- Detect duplicate rows or duplicate business keys when obvious
-- Detect invalid numeric values
-- Detect negative quantities / returns if present
-- Detect missing totals
-- Detect inconsistent totals vs quantity * unit_price when possible
-- Detect unexpected categorical values such as unknown currencies
+TYPE-SAFE RULES:
+- Only iterate a value if it is list / tuple / dict / str
+- If value is int / float / bool / None, do not iterate it
+- When collecting examples, wrap single values in a list
+- When scanning nested JSON, branch by type:
+  - dict -> iterate items
+  - list -> iterate elements
+  - scalar -> validate directly
 
-For JSON files:
-- Detect missing required-like fields based on dominant schema
-- Detect empty/null values
-- Detect duplicate IDs / keys when possible
-- Detect inconsistent field types across records
+CSV AUDIT RULES:
+- Read header first
+- Detect duplicate rows
+- Detect duplicate likely ID columns (e.g. order_id / id / transaction_id / record_id) if present
+- Detect empty strings, null-like values, missing totals, missing quantities, missing dates
+- Detect negative numeric values where most rows are non-negative
+- Detect invalid categorical values and out-of-domain values
+- For currency-like columns, flag unexpected currency codes
+- If totals can be recomputed from quantity * price, compare and report mismatches
 
-For LOG files:
-- Detect malformed lines
-- Detect multi-line stack traces
-- Detect inconsistent timestamp formats
-- Detect unexpected or partial log entries
+LOG AUDIT RULES:
+- Read all lines preserving order
+- Detect malformed lines that do not match the dominant log structure
+- Detect multi-line stack traces / continuation lines
+- Detect alternate timestamp formats if multiple timestamp patterns appear
+- Detect missing level / endpoint / method / status if such structure exists
+- Group consecutive traceback/error continuation lines as one issue example when useful
 
-For DB files:
-- Inspect tables and schema first
-- Detect nulls / duplicates / invalid values where possible
-- If aggregate/summary tables exist, recompute metrics from raw tables and compare
-- Report any mismatch between stored aggregates and recomputed values
+DB AUDIT RULES:
+- Discover all tables dynamically
+- Inspect schema for each table
+- Find likely raw event/request tables and likely aggregate/summary tables
+- Check duplicates, missing values, invalid numeric values
+- If aggregate tables exist, recompute aggregates from raw tables and compare
+- Especially compare status-code family summaries (2xx / 4xx / 5xx) if raw request data exists
+- Report mismatches between stored aggregates and recomputed values
 
-IMPLEMENTATION RULES:
-- Discover files dynamically with glob
-- Exclude output/, agent/, __pycache__/, .git/, venv/, .venv/
-- Never hardcode exact filenames unless found dynamically
-- Always inspect actual schema/content first
-- Examples must be JSON-serializable
-- Do not use sets on dict objects directly
-- Convert complex examples to strings or normalized dicts before deduplication
+OUTPUT RULES:
+- Always write output/data_audit.json
+- Return non-empty findings when issues exist
+- If a file has no issues, include an empty list for that file
+- Do not crash on one bad file; continue auditing the rest

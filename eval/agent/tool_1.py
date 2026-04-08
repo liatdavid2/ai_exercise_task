@@ -11,7 +11,7 @@ def find_key(d, options):
     return None
 
 def tool():
-    # Discover files
+    # Search for JSON files
     files = glob.glob('data/**/*.json', recursive=True) + glob.glob('**/*.json', recursive=True)
     files = list(set(files))  # Remove duplicates
 
@@ -52,20 +52,18 @@ def tool():
     else:
         return "Invalid data format"
 
+    department_counts = defaultdict(int)
+    highest_paid_employee = None
+    highest_salary = -1
+
     # Detect relevant fields
-    department_key = find_key(rows[0], ['department'])
-    salary_key = find_key(rows[0], ['salary', 'wage', 'pay'])
+    department_key = find_key(rows[0], ['department', 'dept'])
+    salary_key = find_key(rows[0], ['salary', 'pay'])
     name_key = find_key(rows[0], ['name', 'employee'])
 
     if not department_key or not salary_key or not name_key:
         return "Required fields not found"
 
-    # Initialize structures for results
-    department_counts = defaultdict(int)
-    highest_paid_employee = None
-    highest_salary = float('-inf')
-
-    # Process each row
     for row in rows:
         # Count employees per department
         department = row.get(department_key)
@@ -83,7 +81,6 @@ def tool():
             except ValueError:
                 continue
 
-    # Prepare the result
     result = {
         "department_counts": dict(department_counts),
         "highest_paid_employee": highest_paid_employee
