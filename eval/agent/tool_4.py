@@ -1,7 +1,6 @@
-import csv
 import glob
-import json
 import os
+import csv
 import requests
 
 def find_key(d, options):
@@ -13,21 +12,21 @@ def find_key(d, options):
 
 def tool():
     # Discover files
-    csv_files = glob.glob('data/**/*.csv', recursive=True) + glob.glob('**/*.csv', recursive=True)
-    csv_files = list(set(csv_files))  # Remove duplicates
+    files = glob.glob('data/**/*.csv', recursive=True) + glob.glob('**/*.csv', recursive=True)
+    files = list(set(files))  # Remove duplicates
 
     # Prefer files inside 'data/' if exist
-    csv_files = sorted(csv_files, key=lambda x: 0 if x.startswith('data/') else 1)
+    files = sorted(files, key=lambda x: 0 if x.startswith('data/') else 1)
 
-    if not csv_files:
+    if not files:
         # Fallback to os.walk if no files found
-        for root, dirs, files in os.walk('data/'):
-            for file in files:
-                if file.endswith('.csv'):
-                    csv_files.append(os.path.join(root, file))
-        csv_files = list(set(csv_files))  # Remove duplicates again
+        for root, dirs, filenames in os.walk('data/'):
+            for filename in filenames:
+                if filename.endswith('.csv'):
+                    files.append(os.path.join(root, filename))
+        files = list(set(files))  # Remove duplicates again
 
-    if not csv_files:
+    if not files:
         return "No matching file found"
 
     # Fetch exchange rates
@@ -41,34 +40,30 @@ def tool():
 
     total_usd = 0.0
 
-    # Process each CSV file
-    for csv_file in csv_files:
-        with open(csv_file, newline='', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
+    # Process each file
+    for file in files:
+        with open(file, newline='', encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile)
+            currency_key = find_key(reader.fieldnames, ['currency'])
+            amount_key = find_key(reader.fieldnames, ['amount', 'value', 'total'])
+
+            if not currency_key or not amount_key:
+                continue  # Skip files without necessary columns
+
             for row in reader:
-                # Detect relevant fields
-                total_key = find_key(row, ["total"])
-                currency_key = find_key(row, ["currency"])
+                raw_currency = str(row.get(currency_key, '')).strip().upper()
+                raw_amount = str(row.get(amount_key, '')).strip()
 
-                if not total_key or not currency_key:
-                    continue
-
-                # Safe value parsing
-                raw_total = str(row[total_key]).strip()
-                raw_currency = str(row[currency_key]).strip().upper()
-
-                if not raw_total or not raw_currency:
+                if not raw_currency or not raw_amount:
                     continue
 
                 try:
-                    total = float(raw_total)
+                    amount = float(raw_amount)
                 except ValueError:
                     continue
 
-                # Convert to USD
-                rate = rates.get(raw_currency, 1)
-                usd_value = total / rate
+                rate = rates.get(raw_currency, 1)  # Assume USD if rate not found
+                usd_value = amount / rate
                 total_usd += usd_value
 
-    # Return the grand total revenue in USD
-    return f"Grand Total Revenue in USD: {round(total_usd, 2)}"
+    return f"Total revenue in USD: {round(total_usd, 2)}"

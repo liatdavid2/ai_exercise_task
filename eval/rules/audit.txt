@@ -1,115 +1,62 @@
 DATA AUDIT TASK (CRITICAL):
 
-You MUST analyze ALL data sources:
+You MUST audit ALL supported data files under data/ recursively.
+
+FILES TO CHECK:
 - CSV
 - JSON
 - LOG
-- DB
+- DB / SQLITE
 
---------------------------------------------------
-CSV CHECKS (STRICT - MUST IMPLEMENT ALL)
---------------------------------------------------
-
-You MUST detect:
-
-1. DUPLICATE RECORDS:
-- Detect duplicate order_id
-- Count duplicates (excluding first occurrence)
-
-2. MISSING / EMPTY VALUES:
-- Fields with "" or None
-- Especially:
-    - total
-    - quantity
-    - currency
-
-3. INVALID NUMERIC VALUES:
-- quantity < 0  (returns / negative sales)
-- total == "" or not numeric
-
-4. UNKNOWN / UNEXPECTED VALUES:
-- currencies NOT in:
-    USD, EUR, GBP, JPY
-- Example: CHF → MUST be flagged
-
---------------------------------------------------
-LOG CHECKS (STRICT)
---------------------------------------------------
-
-You MUST detect:
-
-1. MALFORMED LINES:
-- Lines that do NOT contain key=value pairs
-
-2. MULTI-LINE ENTRIES:
-- Stack traces spanning multiple lines
-
-3. INCONSISTENT FORMATS:
-- Lines missing method/endpoint/status
-
-4. INVALID LATENCY:
-- latency not numeric
-
---------------------------------------------------
-JSON CHECKS (STRICT)
---------------------------------------------------
-
-You MUST detect:
-
-1. MISSING FIELDS:
-- e.g. product_id, stock, reorder_point
-
-2. INVALID VALUES:
-- negative stock
-- reorder_point missing or invalid
-
---------------------------------------------------
-DB CHECKS (CRITICAL - MUST IMPLEMENT)
---------------------------------------------------
-
-You MUST verify data integrity:
-
-1. RAW vs AGGREGATE MISMATCH:
-
-- If DB contains:
-        raw request table AND aggregated metrics
-
-- You MUST:
-        compute metrics manually from raw data
-        compare with stored aggregates
-
-2. ERROR COUNT VALIDATION:
-
-- Check if 4xx errors include ALL values:
-        400–499
-
-- Specifically verify:
-        499 errors are NOT missing
-
-- If mismatch → MUST report
-
---------------------------------------------------
-OUTPUT FORMAT (STRICT)
---------------------------------------------------
-
-Return:
-
-{
-    "file_name": [
-        {
-            "issue_type": "...",
-            "description": "...",
-            "affected_count": int,
-            "examples": [...]
-        }
+OUTPUT FORMAT (MANDATORY):
+- Write output/data_audit.json
+- Return a text summary
+- JSON shape:
+  {
+    "<file_name>": [
+      {
+        "issue_type": "...",
+        "description": "...",
+        "affected_count": <int>,
+        "examples": [...]
+      }
     ]
-}
+  }
 
---------------------------------------------------
-IMPORTANT RULES
---------------------------------------------------
+AUDIT CHECKS (MANDATORY):
 
-- You MUST report at least one issue per file IF issues exist
-- Returning empty result is INVALID
-- Do NOT skip files
-- Do NOT summarize only → must return structured issues
+For CSV / tabular files:
+- Detect missing or empty values
+- Detect duplicate rows or duplicate business keys when obvious
+- Detect invalid numeric values
+- Detect negative quantities / returns if present
+- Detect missing totals
+- Detect inconsistent totals vs quantity * unit_price when possible
+- Detect unexpected categorical values such as unknown currencies
+
+For JSON files:
+- Detect missing required-like fields based on dominant schema
+- Detect empty/null values
+- Detect duplicate IDs / keys when possible
+- Detect inconsistent field types across records
+
+For LOG files:
+- Detect malformed lines
+- Detect multi-line stack traces
+- Detect inconsistent timestamp formats
+- Detect unexpected or partial log entries
+
+For DB files:
+- Inspect tables and schema first
+- Detect nulls / duplicates / invalid values where possible
+- If aggregate/summary tables exist, recompute metrics from raw tables and compare
+- Report any mismatch between stored aggregates and recomputed values
+
+IMPLEMENTATION RULES:
+- Discover files dynamically with glob
+- Exclude output/, agent/, __pycache__/, .git/, venv/, .venv/
+- Never hardcode exact filenames unless found dynamically
+- Always inspect actual schema/content first
+- Examples must be JSON-serializable
+- Do not use sets on dict objects directly
+- Convert complex examples to strings or normalized dicts before deduplication

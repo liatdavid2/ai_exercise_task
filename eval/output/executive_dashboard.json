@@ -265,154 +265,154 @@
     ],
     "endpoint_health": [
         {
-            "endpoint": "/api/users",
-            "method": "POST",
-            "log_request_count": 249,
-            "log_error_rate_pct": 2.81,
-            "log_p95_ms": 0,
-            "db_request_count": 461,
-            "db_error_rate_pct": 0.0,
-            "db_p99_ms": 0
-        },
-        {
             "endpoint": "/api/reports",
             "method": "GET",
             "log_request_count": 144,
             "log_error_rate_pct": 9.72,
-            "log_p95_ms": 0,
-            "db_request_count": 262,
-            "db_error_rate_pct": 0.0,
-            "db_p99_ms": 0
-        },
-        {
-            "endpoint": "/api/auth/login",
-            "method": "POST",
-            "log_request_count": 383,
-            "log_error_rate_pct": 3.92,
-            "log_p95_ms": 0,
-            "db_request_count": 763,
-            "db_error_rate_pct": 0.0,
-            "db_p99_ms": 0
+            "log_p95_ms": 2481.0,
+            "db_request_count": 216,
+            "db_error_rate_pct": 11.11,
+            "db_p99_ms": 6875.77
         },
         {
             "endpoint": "/api/payments",
             "method": "POST",
             "log_request_count": 186,
             "log_error_rate_pct": 15.59,
-            "log_p95_ms": 0,
-            "db_request_count": 352,
-            "db_error_rate_pct": 0.0,
-            "db_p99_ms": 0
-        },
-        {
-            "endpoint": "/api/users",
-            "method": "GET",
-            "log_request_count": 576,
-            "log_error_rate_pct": 2.43,
-            "log_p95_ms": 0,
-            "db_request_count": 1215,
-            "db_error_rate_pct": 0.0,
-            "db_p99_ms": 0
-        },
-        {
-            "endpoint": "/api/orders",
-            "method": "GET",
-            "log_request_count": 432,
-            "log_error_rate_pct": 2.55,
-            "log_p95_ms": 0,
-            "db_request_count": 1015,
-            "db_error_rate_pct": 0.0,
-            "db_p99_ms": 0
-        },
-        {
-            "endpoint": "/api/inventory",
-            "method": "GET",
-            "log_request_count": 315,
-            "log_error_rate_pct": 2.86,
-            "log_p95_ms": 0,
-            "db_request_count": 816,
-            "db_error_rate_pct": 0.0,
-            "db_p99_ms": 0
+            "log_p95_ms": 1929.0,
+            "db_request_count": 305,
+            "db_error_rate_pct": 18.03,
+            "db_p99_ms": 2804.64
         },
         {
             "endpoint": "/api/uploads",
             "method": "POST",
             "log_request_count": 143,
             "log_error_rate_pct": 6.99,
-            "log_p95_ms": 0,
-            "db_request_count": 343,
-            "db_error_rate_pct": 0.0,
-            "db_p99_ms": 0
-        },
-        {
-            "endpoint": "/api/health",
-            "method": "GET",
-            "log_request_count": 634,
-            "log_error_rate_pct": 0.79,
-            "log_p95_ms": 0,
-            "db_request_count": 1112,
-            "db_error_rate_pct": 0.0,
-            "db_p99_ms": 0
-        },
-        {
-            "endpoint": "/api/orders",
-            "method": "POST",
-            "log_request_count": 262,
-            "log_error_rate_pct": 6.49,
-            "log_p95_ms": 0,
-            "db_request_count": 538,
-            "db_error_rate_pct": 0.0,
-            "db_p99_ms": 0
-        },
-        {
-            "endpoint": "/api/products",
-            "method": "GET",
-            "log_request_count": 659,
-            "log_error_rate_pct": 1.21,
-            "log_p95_ms": 0,
-            "db_request_count": 1347,
-            "db_error_rate_pct": 0.0,
-            "db_p99_ms": 0
-        },
-        {
-            "endpoint": "/api/search",
-            "method": "GET",
-            "log_request_count": 441,
-            "log_error_rate_pct": 2.04,
-            "log_p95_ms": 0,
-            "db_request_count": 952,
-            "db_error_rate_pct": 0.0,
-            "db_p99_ms": 0
+            "log_p95_ms": 1024.0,
+            "db_request_count": 296,
+            "db_error_rate_pct": 10.81,
+            "db_p99_ms": 1522.44
         },
         {
             "endpoint": "/api/webhooks",
             "method": "POST",
             "log_request_count": 139,
             "log_error_rate_pct": 7.19,
-            "log_p95_ms": 0,
-            "db_request_count": 315,
-            "db_error_rate_pct": 0.0,
-            "db_p99_ms": 0
+            "log_p95_ms": 413.0,
+            "db_request_count": 268,
+            "db_error_rate_pct": 9.33,
+            "db_p99_ms": 820.07
         },
         {
-            "endpoint": "/api/auth/refresh",
+            "endpoint": "/api/orders",
+            "method": "GET",
+            "log_request_count": 432,
+            "log_error_rate_pct": 2.55,
+            "log_p95_ms": 133.0,
+            "db_request_count": 1459,
+            "db_error_rate_pct": 4.52,
+            "db_p99_ms": 766.04
+        },
+        {
+            "endpoint": "/api/orders",
             "method": "POST",
-            "log_request_count": 277,
-            "log_error_rate_pct": 1.08,
-            "log_p95_ms": 0,
-            "db_request_count": 516,
-            "db_error_rate_pct": 0.0,
-            "db_p99_ms": 0
+            "log_request_count": 262,
+            "log_error_rate_pct": 6.49,
+            "log_p95_ms": 323.0,
+            "db_request_count": 1459,
+            "db_error_rate_pct": 4.52,
+            "db_p99_ms": 766.04
+        },
+        {
+            "endpoint": "/api/search",
+            "method": "GET",
+            "log_request_count": 441,
+            "log_error_rate_pct": 2.04,
+            "log_p95_ms": 146.0,
+            "db_request_count": 905,
+            "db_error_rate_pct": 2.65,
+            "db_p99_ms": 559.76
+        },
+        {
+            "endpoint": "/api/auth/login",
+            "method": "POST",
+            "log_request_count": 383,
+            "log_error_rate_pct": 3.92,
+            "log_p95_ms": 257.0,
+            "db_request_count": 716,
+            "db_error_rate_pct": 4.75,
+            "db_p99_ms": 394.32
         },
         {
             "endpoint": "/api/notifications",
             "method": "POST",
             "log_request_count": 177,
             "log_error_rate_pct": 8.47,
-            "log_p95_ms": 0,
-            "db_request_count": 423,
+            "log_p95_ms": 196.0,
+            "db_request_count": 376,
+            "db_error_rate_pct": 4.52,
+            "db_p99_ms": 258.95
+        },
+        {
+            "endpoint": "/api/users",
+            "method": "POST",
+            "log_request_count": 249,
+            "log_error_rate_pct": 2.81,
+            "log_p95_ms": 185.0,
+            "db_request_count": 1582,
+            "db_error_rate_pct": 2.59,
+            "db_p99_ms": 218.83
+        },
+        {
+            "endpoint": "/api/users",
+            "method": "GET",
+            "log_request_count": 576,
+            "log_error_rate_pct": 2.43,
+            "log_p95_ms": 82.0,
+            "db_request_count": 1582,
+            "db_error_rate_pct": 2.59,
+            "db_p99_ms": 218.83
+        },
+        {
+            "endpoint": "/api/inventory",
+            "method": "GET",
+            "log_request_count": 315,
+            "log_error_rate_pct": 2.86,
+            "log_p95_ms": 90.0,
+            "db_request_count": 769,
+            "db_error_rate_pct": 2.08,
+            "db_p99_ms": 145.92
+        },
+        {
+            "endpoint": "/api/auth/refresh",
+            "method": "POST",
+            "log_request_count": 277,
+            "log_error_rate_pct": 1.08,
+            "log_p95_ms": 100.0,
+            "db_request_count": 469,
+            "db_error_rate_pct": 0.64,
+            "db_p99_ms": 141.69
+        },
+        {
+            "endpoint": "/api/products",
+            "method": "GET",
+            "log_request_count": 659,
+            "log_error_rate_pct": 1.21,
+            "log_p95_ms": 59.0,
+            "db_request_count": 1300,
+            "db_error_rate_pct": 0.62,
+            "db_p99_ms": 83.73
+        },
+        {
+            "endpoint": "/api/health",
+            "method": "GET",
+            "log_request_count": 634,
+            "log_error_rate_pct": 0.79,
+            "log_p95_ms": 8.0,
+            "db_request_count": 1065,
             "db_error_rate_pct": 0.0,
-            "db_p99_ms": 0
+            "db_p99_ms": 9.75
         }
     ],
     "department_summary": [
@@ -450,7 +450,7 @@
     "daily_revenue_trend": [
         {
             "date": "2024-10-01",
-            "revenue_usd": 5280.08
+            "revenue_usd": 4991.51
         },
         {
             "date": "2024-10-02",
@@ -470,7 +470,7 @@
         },
         {
             "date": "2024-10-06",
-            "revenue_usd": 6234.81
+            "revenue_usd": 6137.4
         },
         {
             "date": "2024-10-07",
@@ -494,7 +494,7 @@
         },
         {
             "date": "2024-10-12",
-            "revenue_usd": 4232.05
+            "revenue_usd": 4220.14
         },
         {
             "date": "2024-10-13",
@@ -510,7 +510,7 @@
         },
         {
             "date": "2024-10-16",
-            "revenue_usd": 7566.88
+            "revenue_usd": 14899.59
         },
         {
             "date": "2024-10-17",
@@ -538,7 +538,7 @@
         },
         {
             "date": "2024-10-23",
-            "revenue_usd": 5385.07
+            "revenue_usd": 5265.08
         },
         {
             "date": "2024-10-24",
@@ -570,7 +570,7 @@
         },
         {
             "date": "2024-10-31",
-            "revenue_usd": 5358.72
+            "revenue_usd": 5313.73
         },
         {
             "date": "2024-11-01",
@@ -646,7 +646,7 @@
         },
         {
             "date": "2024-11-19",
-            "revenue_usd": 6116.12
+            "revenue_usd": 5947.15
         },
         {
             "date": "2024-11-20",
@@ -654,7 +654,7 @@
         },
         {
             "date": "2024-11-21",
-            "revenue_usd": 7193.11
+            "revenue_usd": 7073.12
         },
         {
             "date": "2024-11-22",
@@ -674,7 +674,7 @@
         },
         {
             "date": "2024-11-26",
-            "revenue_usd": 2240.76
+            "revenue_usd": 2000.78
         },
         {
             "date": "2024-11-27",
@@ -686,7 +686,7 @@
         },
         {
             "date": "2024-11-29",
-            "revenue_usd": 4600.58
+            "revenue_usd": 11199.87
         },
         {
             "date": "2024-11-30",
@@ -730,7 +730,7 @@
         },
         {
             "date": "2024-12-10",
-            "revenue_usd": 4671.46
+            "revenue_usd": 4658.44
         },
         {
             "date": "2024-12-11",
@@ -742,7 +742,7 @@
         },
         {
             "date": "2024-12-13",
-            "revenue_usd": 7695.51
+            "revenue_usd": 7575.52
         },
         {
             "date": "2024-12-14",
@@ -754,7 +754,7 @@
         },
         {
             "date": "2024-12-16",
-            "revenue_usd": 10610.2
+            "revenue_usd": 10510.22
         },
         {
             "date": "2024-12-17",
@@ -762,11 +762,11 @@
         },
         {
             "date": "2024-12-18",
-            "revenue_usd": 7018.15
+            "revenue_usd": 7011.45
         },
         {
             "date": "2024-12-19",
-            "revenue_usd": 5817.9
+            "revenue_usd": 5811.2
         },
         {
             "date": "2024-12-20",
@@ -774,7 +774,7 @@
         },
         {
             "date": "2024-12-21",
-            "revenue_usd": 6810.37
+            "revenue_usd": 6650.39
         },
         {
             "date": "2024-12-22",
@@ -782,7 +782,7 @@
         },
         {
             "date": "2024-12-23",
-            "revenue_usd": 7809.27
+            "revenue_usd": 7689.28
         },
         {
             "date": "2024-12-24",

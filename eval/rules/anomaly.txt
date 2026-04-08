@@ -1,101 +1,154 @@
 ANOMALY TASK (CRITICAL):
 
+This task requires anomaly detection on transaction-style tabular data.
+
+--------------------------------------------------
+FILE DISCOVERY
+--------------------------------------------------
+
+- Discover the target CSV file dynamically
+- Prefer files under data/
+- Do NOT hardcode filenames
+
+--------------------------------------------------
+COLUMN DISCOVERY (MANDATORY)
+--------------------------------------------------
+
+Detect columns dynamically from the CSV header.
+
+Preferred semantic matches:
+
+- product identifier:
+    product_id, item_id, sku, product
+
+- product name / label:
+    product_name, item_name, name, title
+
+- date:
+    date, order_date, transaction_date, created_at
+
+- quantity:
+    quantity, qty, units, amount
+
+Use the best semantic match from the actual schema.
+
 --------------------------------------------------
 STEP 1 — DATE FILTER
 --------------------------------------------------
 
-- Keep rows where:
-    2024-10-01 <= date <= 2024-12-31
+- Detect the date column dynamically
+- Parse and normalize date values before comparison
+- If the task specifies a date range, apply that exact range
+- Treat the range as inclusive unless the task says otherwise
+- Extract start/end dates from the task text when provided
+- Do not hardcode a fixed date range
 
 --------------------------------------------------
-STEP 2 — PRODUCT FILTER
+STEP 2 — PRODUCT ELIGIBILITY FILTER
 --------------------------------------------------
 
-- Compute total_quantity per product:
-    total_quantity = SUM(quantity across ALL rows)
+- Compute total_orders per product:
+    total_orders = COUNT(rows for that product after date filtering
 
-- Keep ONLY products where:
-    total_quantity >= 20
+- Keep only entities that meet the minimum activity threshold required by the task
+- If the task specifies "at least N orders", use that N exactly
+
+IMPORTANT:
+- This is row count / order count
+- Do NOT use SUM(quantity) for eligibility
 
 --------------------------------------------------
 STEP 3 — DAILY AGGREGATION
 --------------------------------------------------
 
 - For each (product_id, date):
-
     daily_quantity = SUM(quantity)
+
+IMPORTANT:
+- Use SUM(quantity), not row count
+- Aggregate all rows of the same product on the same day
 
 --------------------------------------------------
 STEP 4 — STATS PER PRODUCT
 --------------------------------------------------
 
-- For EACH product:
+For each eligible product:
 
-    values = list of daily_quantity
+- values = list of daily_quantity values across all days where the product appears
+- mean = sum(values) / len(values)
+- std = sqrt(sum((x - mean)^2) / len(values))
 
-    mean = sum(values) / len(values)
-
-    std = sqrt(sum((x - mean)^2) / len(values))
-
-- DO NOT use statistics.stdev
+IMPORTANT:
+- Use population standard deviation
+- Do NOT use statistics.stdev
+- If std == 0, skip that product
 
 --------------------------------------------------
 STEP 5 — ANOMALY DETECTION
 --------------------------------------------------
 
-- For each (product, date):
+For each (product, date):
 
-    z_score = (daily_quantity - mean) / std
+- z_score = (daily_quantity - mean) / std
 
-- anomaly if:
-    z_score > 3
+Flag anomaly if:
+- z_score > 3
 
-- If std == 0 → skip that product
+IMPORTANT:
+- Do NOT round before calculations
+- Round ONLY in final output
 
 --------------------------------------------------
-STEP 6 — OUTPUT
+STEP 6 — OUTPUT RECORDS
 --------------------------------------------------
 
-Each anomaly MUST include:
+Each anomaly record MUST contain:
 
 - product_id
 - product_name
-- date (YYYY-MM-DD)
+- date
 - daily_quantity
 - mean_quantity
 - std_dev
 - z_score
 
-- Round ONLY at final output (2 decimal places)
+Formatting rules:
+- date must be YYYY-MM-DD
+- numeric values must be rounded to 2 decimal places only at final output
 
 --------------------------------------------------
-FILE OUTPUT
+FILE OUTPUT (MANDATORY)
 --------------------------------------------------
 
-- Write ALL anomalies to:
-
+- Write ALL anomaly records to:
     output/anomaly_report.json
 
-- Format:
+- File format:
     [{...}, {...}]
 
+- Returning only a summary is INVALID
+
 --------------------------------------------------
-SUMMARY (REQUIRED)
+RETURN VALUE (MANDATORY)
 --------------------------------------------------
 
-Return ALSO:
+- tool() MUST also return a short text summary
+- The summary MUST mention:
+    - total number of anomalies
+    - number of affected products
+    - affected product IDs
+    - output/anomaly_report.json
 
-{
-"total_anomalies": int,
-"affected_products": [product_id list]
-}
+Example:
+"Found 39 anomalies across 24 products. Report saved to output/anomaly_report.json. Affected products: P001, P005, P010"
 
 --------------------------------------------------
 IMPORTANT RULES
 --------------------------------------------------
 
-- Use SUM(quantity), NOT row count
-- Use daily aggregated values (NOT raw rows)
-- Do NOT round before calculations
-- Do NOT skip valid data
-- Returning only summary → INVALID
+- Use daily aggregated quantity values
+- Product eligibility is based on order count, not quantity sum
+- Do NOT skip valid rows
+- Do NOT round intermediate calculations
+- Write the full anomaly list to file
+- Returning only summary metadata is INVALID

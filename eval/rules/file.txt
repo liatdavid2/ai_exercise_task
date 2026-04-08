@@ -77,3 +77,25 @@ TIME FILTERING (CRITICAL):
 
 - Keep full-data calculations separate from period-specific calculations when the task asks for both
 
+GENERICITY (STRICT):
+
+- Do NOT hardcode filenames
+- Do NOT hardcode column names
+- Do NOT hardcode table names
+- Do NOT hardcode log field names
+- Do NOT hardcode API field names from the task text
+
+Instead:
+
+- discover files dynamically
+- inspect schema/header/keys first
+- infer relevant fields semantically from the actual data
+- write code that works even if names differ
+
+INVALID hardcoding examples:
+- exact file names
+- exact column names
+- exact table names
+- exact log field names
+
+Use dynamic semantic matching instead.

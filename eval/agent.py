@@ -95,7 +95,7 @@ class RulesAgent:
         elif "dashboard" in t or "cross-source" in t or "multiple" in t:
             names += ["file", "currency","log","db"]
         elif "audit" in t or "integrity" in t or "quality" in t:
-            names += ["file", "audit"]
+            names += ["file","audit","log","db"]
         elif ".db" in t or "sqlite" in t or "database" in t:
             names += ["db"]
         elif ".log" in t or "log" in t:
@@ -185,12 +185,6 @@ That solves the task.
 
 IMPORTANT PRACTICAL RULES:
 
-- For CSV:
-    - Prefer numeric columns representing aggregated values (e.g. totals)
-    - If 'total' exists → use it for revenue
-    - If 'category' exists → group by it
-    - If 'date' exists → parse and filter by date
-
 - NEVER return empty result unless dataset is empty
 
 If task involves currency conversion:
@@ -223,10 +217,6 @@ GENERICITY (CRITICAL):
                     return k
         return None
 
-- Example:
-    department_key = find_key(row, ["department"]) or "department"
-    salary_key = find_key(row, ["salary", "income"]) or "salary"
-
 - DO NOT ignore valid fields that already exist
 
 - If dynamic detection fails → fallback to common names
@@ -242,22 +232,6 @@ EMPTY RESULT PROTECTION (CRITICAL):
 - If all rows skipped → your logic is WRONG
 
 - You MUST process at least one row
-
-
-COMMON FIELD FALLBACKS:
-
-JSON:
-- department
-- salary
-- name
-
-CSV:
-- date
-- total
-- category
-- quantity
-
-- If these exist → USE THEM
 
 
 IMPORTANT OUTPUT REQUIREMENT:

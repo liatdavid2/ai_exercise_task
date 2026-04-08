@@ -1,7 +1,8 @@
-import csv
-import json
 import glob
 import os
+import csv
+import json
+from datetime import datetime
 from math import sqrt
 
 def find_key(d, options):
@@ -15,7 +16,7 @@ def tool():
     # Step 1: File Discovery
     files = glob.glob('data/**/*.csv', recursive=True) + glob.glob('**/*.csv', recursive=True)
     files = list(set(files))  # Remove duplicates
-    files = [f for f in files if 'data/' in f] or files  # Prefer files inside 'data/' if exist
+    files = [f for f in files if f.startswith('data/')] or files  # Prefer files in 'data/'
 
     if not files:
         # Fallback to os.walk if no files found
@@ -29,90 +30,118 @@ def tool():
     # Step 2: Read and Process CSV
     anomalies = []
     product_stats = {}
-    product_names = {}
-    total_quantity_per_product = {}
+    eligible_products = set()
+    start_date = datetime(2024, 10, 1)
+    end_date = datetime(2024, 12, 31)
 
     for file in files:
         with open(file, newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
-            date_key = find_key(reader.fieldnames, ["date"]) or "date"
-            quantity_key = find_key(reader.fieldnames, ["quantity"]) or "quantity"
-            product_id_key = find_key(reader.fieldnames, ["product_id"]) or "product_id"
-            product_name_key = find_key(reader.fieldnames, ["product_name"]) or "product_name"
+            headers = reader.fieldnames
 
+            # Detect columns dynamically
+            product_id_key = find_key(headers, ['product_id', 'item_id', 'sku', 'product'])
+            product_name_key = find_key(headers, ['product_name', 'item_name', 'name', 'title'])
+            date_key = find_key(headers, ['date', 'order_date', 'transaction_date', 'created_at'])
+            quantity_key = find_key(headers, ['quantity', 'qty', 'units', 'amount'])
+
+            if not all([product_id_key, product_name_key, date_key, quantity_key]):
+                continue  # Skip if essential columns are missing
+
+            # Step 3: Filter and Aggregate Data
+            daily_data = {}
             for row in reader:
-                # Date filtering
-                raw_date = str(row.get(date_key, '')).strip()
-                if not raw_date:
-                    continue
+                # Parse and filter by date
+                raw_date = str(row[date_key]).strip()
                 try:
-                    date = raw_date
-                    if not ("2024-10-01" <= date <= "2024-12-31"):
-                        continue
-                except:
+                    date = datetime.strptime(raw_date, '%Y-%m-%d')
+                except ValueError:
+                    continue
+                if not (start_date <= date <= end_date):
                     continue
 
-                # Safe value parsing
-                raw_quantity = str(row.get(quantity_key, '')).strip()
+                # Parse product ID and quantity
+                product_id = str(row[product_id_key]).strip()
+                product_name = str(row[product_name_key]).strip()
+                raw_quantity = str(row[quantity_key]).strip()
                 if not raw_quantity:
                     continue
                 try:
                     quantity = float(raw_quantity)
-                except:
+                except ValueError:
                     continue
 
-                product_id = row.get(product_id_key, '').strip()
-                product_name = row.get(product_name_key, '').strip()
+                # Aggregate daily quantities
+                key = (product_id, date)
+                if key not in daily_data:
+                    daily_data[key] = {'product_name': product_name, 'quantity': 0}
+                daily_data[key]['quantity'] += quantity
 
-                # Aggregate total quantity per product
-                if product_id not in total_quantity_per_product:
-                    total_quantity_per_product[product_id] = 0
-                    product_names[product_id] = product_name
-                total_quantity_per_product[product_id] += quantity
+            # Step 4: Compute Total Orders per Product
+            order_counts = {}
+            for (product_id, date), data in daily_data.items():
+                if product_id not in order_counts:
+                    order_counts[product_id] = 0
+                order_counts[product_id] += 1
 
-                # Daily aggregation
+            # Determine eligible products
+            for product_id, count in order_counts.items():
+                if count >= 20:
+                    eligible_products.add(product_id)
+
+            # Step 5: Calculate Stats for Eligible Products
+            for (product_id, date), data in daily_data.items():
+                if product_id not in eligible_products:
+                    continue
+
                 if product_id not in product_stats:
-                    product_stats[product_id] = {}
-                if date not in product_stats[product_id]:
-                    product_stats[product_id][date] = 0
-                product_stats[product_id][date] += quantity
+                    product_stats[product_id] = {'name': data['product_name'], 'quantities': []}
+                product_stats[product_id]['quantities'].append(data['quantity'])
 
-    # Step 3: Filter products with total_quantity >= 20
-    filtered_product_stats = {pid: stats for pid, stats in product_stats.items() if total_quantity_per_product[pid] >= 20}
+            # Calculate mean and std deviation
+            for product_id, stats in product_stats.items():
+                quantities = stats['quantities']
+                mean = sum(quantities) / len(quantities)
+                std_dev = sqrt(sum((x - mean) ** 2 for x in quantities) / len(quantities))
+                product_stats[product_id]['mean'] = mean
+                product_stats[product_id]['std_dev'] = std_dev
 
-    # Step 4: Calculate stats per product
-    for product_id, daily_data in filtered_product_stats.items():
-        values = list(daily_data.values())
-        mean = sum(values) / len(values)
-        std = sqrt(sum((x - mean) ** 2 for x in values) / len(values))
+            # Step 6: Anomaly Detection
+            for (product_id, date), data in daily_data.items():
+                if product_id not in eligible_products:
+                    continue
 
-        # Step 5: Anomaly detection
-        if std == 0:
-            continue  # Skip products with no variation
+                mean = product_stats[product_id]['mean']
+                std_dev = product_stats[product_id]['std_dev']
+                if std_dev == 0:
+                    continue
 
-        for date, daily_quantity in daily_data.items():
-            z_score = (daily_quantity - mean) / std
-            if z_score > 3:
-                anomalies.append({
-                    "product_id": product_id,
-                    "product_name": product_names[product_id],
-                    "date": date,
-                    "daily_quantity": round(daily_quantity, 2),
-                    "mean_quantity": round(mean, 2),
-                    "std_dev": round(std, 2),
-                    "z_score": round(z_score, 2)
-                })
+                daily_quantity = data['quantity']
+                z_score = (daily_quantity - mean) / std_dev
 
-    # Step 6: Output anomalies to JSON
-    os.makedirs('output', exist_ok=True)
+                if z_score > 3:
+                    anomalies.append({
+                        'product_id': product_id,
+                        'product_name': data['product_name'],
+                        'date': date.strftime('%Y-%m-%d'),
+                        'daily_quantity': round(daily_quantity, 2),
+                        'mean_quantity': round(mean, 2),
+                        'std_dev': round(std_dev, 2),
+                        'z_score': round(z_score, 2)
+                    })
+
+    # Step 7: Output Anomalies
+    if not os.path.exists('output'):
+        os.makedirs('output')
+
     with open('output/anomaly_report.json', 'w', encoding='utf-8') as f:
-        json.dump(anomalies, f, indent=4)
+        json.dump(anomalies, f, ensure_ascii=False, indent=4)
 
-    # Summary
-    affected_products = list(set(anomaly['product_id'] for anomaly in anomalies))
-    summary = {
-        "total_anomalies": len(anomalies),
-        "affected_products": affected_products
-    }
-
+    # Step 8: Return Summary
+    affected_products = {anomaly['product_id'] for anomaly in anomalies}
+    summary = (
+        f"Found {len(anomalies)} anomalies across {len(affected_products)} products. "
+        f"Report saved to output/anomaly_report.json. "
+        f"Affected products: {', '.join(sorted(affected_products))}"
+    )
     return summary

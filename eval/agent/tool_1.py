@@ -1,6 +1,7 @@
 import glob
 import os
 import json
+from collections import defaultdict
 
 def find_key(d, options):
     for k in d:
@@ -10,7 +11,7 @@ def find_key(d, options):
     return None
 
 def tool():
-    # Step 1: List all data files in the data/ directory
+    # Discover files
     files = glob.glob('data/**/*.json', recursive=True) + glob.glob('**/*.json', recursive=True)
     files = list(set(files))  # Remove duplicates
 
@@ -19,7 +20,18 @@ def tool():
     if files_in_data:
         files = files_in_data
 
-    # Step 2: Check if 'employees.json' exists in the files
+    if not files:
+        # Fallback to os.walk if no files found
+        for root, dirs, filenames in os.walk('data/'):
+            for filename in filenames:
+                if filename.endswith('.json'):
+                    files.append(os.path.join(root, filename))
+        files = list(set(files))  # Remove duplicates again
+
+    if not files:
+        return "No matching file found"
+
+    # Process employees.json
     employees_file = None
     for file in files:
         if 'employees.json' in file:
@@ -27,19 +39,9 @@ def tool():
             break
 
     if not employees_file:
-        # Fallback to os.walk if no file found
-        for root, dirs, filenames in os.walk('data/'):
-            for filename in filenames:
-                if filename == 'employees.json':
-                    employees_file = os.path.join(root, filename)
-                    break
-            if employees_file:
-                break
-
-    if not employees_file:
         return "No matching file found"
 
-    # Step 3: Read employees.json and process the data
+    # Read and process the employees.json file
     with open(employees_file, 'r') as f:
         data = json.load(f)
 
@@ -50,35 +52,40 @@ def tool():
     else:
         return "Invalid data format"
 
-    department_key = find_key(rows[0], ["department"]) or "department"
-    salary_key = find_key(rows[0], ["salary", "income"]) or "salary"
-    name_key = find_key(rows[0], ["name"]) or "name"
+    # Detect relevant fields
+    department_key = find_key(rows[0], ['department'])
+    salary_key = find_key(rows[0], ['salary', 'wage', 'pay'])
+    name_key = find_key(rows[0], ['name', 'employee'])
 
-    department_count = {}
+    if not department_key or not salary_key or not name_key:
+        return "Required fields not found"
+
+    # Initialize structures for results
+    department_counts = defaultdict(int)
     highest_paid_employee = None
     highest_salary = float('-inf')
 
+    # Process each row
     for row in rows:
-        # Count employees in each department
-        department = row.get(department_key, "Unknown")
-        department_count[department] = department_count.get(department, 0) + 1
+        # Count employees per department
+        department = row.get(department_key)
+        if department:
+            department_counts[department] += 1
 
         # Determine the highest-paid employee
         raw_salary = str(row.get(salary_key, '')).strip()
-        if not raw_salary:
-            continue
-        try:
-            salary = float(raw_salary)
-        except:
-            continue
-
-        if salary > highest_salary:
-            highest_salary = salary
-            highest_paid_employee = row.get(name_key, "Unknown")
+        if raw_salary:
+            try:
+                salary = float(raw_salary)
+                if salary > highest_salary:
+                    highest_salary = salary
+                    highest_paid_employee = row.get(name_key)
+            except ValueError:
+                continue
 
     # Prepare the result
     result = {
-        "department_count": department_count,
+        "department_counts": dict(department_counts),
         "highest_paid_employee": highest_paid_employee
     }
 
