@@ -8,45 +8,47 @@ def find_key(d, options):
     return None
 
 def tool():
-    # Step 1: Connect to the SQLite database
+    # Connect to the SQLite database
     path = 'data/metrics.db'
     conn = sqlite3.connect(path)
     cursor = conn.cursor()
 
-    # Step 2: Discover schema
+    # Discover schema
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
     tables = cursor.fetchall()
-    table_names = [table[0] for table in tables]
+    table_name = None
 
     # Prefer table named 'requests' if exists
-    if 'requests' in table_names:
-        target_table = 'requests'
-    else:
-        # Otherwise choose table with most rows
+    for table in tables:
+        if table[0] == 'requests':
+            table_name = 'requests'
+            break
+
+    # If 'requests' does not exist, choose the table with the most rows
+    if not table_name:
         max_rows = 0
-        target_table = None
-        for table in table_names:
-            cursor.execute(f"SELECT COUNT(*) FROM {table}")
+        for table in tables:
+            cursor.execute(f"SELECT COUNT(*) FROM {table[0]}")
             row_count = cursor.fetchone()[0]
             if row_count > max_rows:
                 max_rows = row_count
-                target_table = table
+                table_name = table[0]
 
-    # Step 3: Load data
-    cursor.execute(f"SELECT * FROM {target_table}")
+    # Load data from the chosen table
+    cursor.execute(f"SELECT * FROM {table_name}")
     rows = cursor.fetchall()
 
     # Get column names
-    cursor.execute(f"PRAGMA table_info({target_table})")
+    cursor.execute(f"PRAGMA table_info({table_name})")
     columns_info = cursor.fetchall()
     column_names = [info[1] for info in columns_info]
 
-    # Step 4: Detect columns
+    # Detect columns
     endpoint_key = find_key(column_names, ["endpoint", "path", "route", "uri"]) or "endpoint"
     status_key = find_key(column_names, ["status", "status_code", "code"]) or "status_code"
     latency_key = find_key(column_names, ["latency", "response_time", "duration", "ms"]) or "latency_ms"
 
-    # Step 5: Grouping
+    # Grouping and calculations
     endpoint_data = {}
     for row in rows:
         row_dict = dict(zip(column_names, row))
@@ -57,9 +59,10 @@ def tool():
         if endpoint and isinstance(latency, (int, float)):
             if endpoint not in endpoint_data:
                 endpoint_data[endpoint] = {'latencies': [], 'total_requests': 0, 'error_count': 0}
+
             endpoint_data[endpoint]['latencies'].append(latency)
             endpoint_data[endpoint]['total_requests'] += 1
-            if status >= 400:
+            if 400 <= status <= 599:
                 endpoint_data[endpoint]['error_count'] += 1
 
     # Prepare results
@@ -71,6 +74,7 @@ def tool():
             sorted_latencies = sorted(data['latencies'])
             index = int(0.99 * (len(sorted_latencies) - 1))
             p99_latency = sorted_latencies[index]
+
             results.append({
                 'endpoint': endpoint,
                 'total_requests': total_requests,
@@ -78,11 +82,13 @@ def tool():
                 'p99_latency': p99_latency
             })
 
-    # Step 6: Sort + Filter
+    # Sort by p99_latency DESC and return top 10
     results.sort(key=lambda x: x['p99_latency'], reverse=True)
     top_10_results = results[:10]
 
-    # Step 7: Output format
+    # Close the connection
+    conn.close()
+
     return top_10_results
 
 # Example usage

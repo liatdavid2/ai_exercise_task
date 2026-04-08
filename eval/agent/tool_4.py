@@ -5,35 +5,37 @@ from collections import defaultdict
 
 def tool():
     # Step 1: File Discovery
-    files = glob.glob('data/**/*.log', recursive=True) + glob.glob('**/*.log', recursive=True)
-    files = list(set(files))  # Remove duplicates
+    log_files = glob.glob('data/**/*.log', recursive=True) + glob.glob('**/*.log', recursive=True)
+    log_files = list(set(log_files))  # Remove duplicates
 
     # Prefer files inside 'data/' if exist
-    files = sorted(files, key=lambda x: (not x.startswith('data/'), x))
+    log_files = sorted(log_files, key=lambda x: ('data/' not in x, x))
 
-    if not files:
-        # Fallback: Try known filenames
+    if not log_files:
+        # Fallback search
         known_files = ['app.log']
         for filename in known_files:
             if os.path.exists(filename):
-                files.append(filename)
+                log_files.append(filename)
+                break
 
-    if not files:
-        # Fallback: Try os.walk
-        for root, dirs, filenames in os.walk('data/'):
-            for filename in filenames:
-                if filename.endswith('.log'):
-                    files.append(os.path.join(root, filename))
+        if not log_files:
+            for root, dirs, files in os.walk('data/'):
+                for file in files:
+                    if file.endswith('.log'):
+                        log_files.append(os.path.join(root, file))
+                        break
 
-    if not files:
+    if not log_files:
         return "No matching file found"
 
-    # Step 2: Parse and Analyze Logs
-    log_data = defaultdict(lambda: {'latencies': [], 'total_requests': 0, 'error_count': 0})
+    # Step 2: Log Analysis
+    log_data = defaultdict(lambda: {'count': 0, 'latencies': [], 'errors': 0})
 
-    for file in files:
-        with open(file, 'r') as f:
+    for log_file in log_files:
+        with open(log_file, 'r') as f:
             for line in f:
+                # Parse the log line
                 parts = line.strip().split()
                 data = {}
                 for p in parts:
@@ -46,7 +48,7 @@ def tool():
                 endpoint = data.get("endpoint")
                 status = int(data.get("status", 200))
 
-                # Fallback for missing endpoint
+                # Fallback for endpoint
                 if not endpoint:
                     m = re.search(r'/api/\S+', line)
                     endpoint = m.group(0) if m else None
@@ -61,19 +63,18 @@ def tool():
 
                 # Group by (method, endpoint)
                 key = (method, endpoint)
+                log_data[key]['count'] += 1
                 log_data[key]['latencies'].append(latency)
-                log_data[key]['total_requests'] += 1
                 if status >= 400:
-                    log_data[key]['error_count'] += 1
+                    log_data[key]['errors'] += 1
 
-    # Step 3: Calculate Statistics
+    # Step 3: Calculate statistics
     results = []
     for (method, endpoint), stats in log_data.items():
-        total_requests = stats['total_requests']
-        latencies = stats['latencies']
-        avg_latency = sum(latencies) / total_requests
-        error_rate = stats['error_count'] / total_requests
-        values = sorted(latencies)
+        total_requests = stats['count']
+        avg_latency = sum(stats['latencies']) / total_requests
+        error_rate = stats['errors'] / total_requests
+        values = sorted(stats['latencies'])
         index = int(0.95 * (len(values) - 1))
         p95_latency = values[index]
 
@@ -86,7 +87,7 @@ def tool():
             "p95_latency": p95_latency
         })
 
-    # Step 4: Sort and Return Top 5
+    # Step 4: Sort by error_rate DESC and return top 5
     results.sort(key=lambda x: x['error_rate'], reverse=True)
     return results[:5]
 

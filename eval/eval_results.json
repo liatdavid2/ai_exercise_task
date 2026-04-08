@@ -1,11 +1,11 @@
 {
   "task_results": {
     "1": {
-      "score": 0.8,
+      "score": 1.0,
       "max_points": 1.0,
-      "points": 0.8,
-      "notes": "Missing salary: 210000",
-      "time": 11.8,
+      "points": 1.0,
+      "notes": "OK",
+      "time": 10.9,
       "error": null
     },
     "2": {
@@ -13,15 +13,15 @@
       "max_points": 1.0,
       "points": 1.0,
       "notes": "OK",
-      "time": 9.0,
+      "time": 10.4,
       "error": null
     },
     "3": {
-      "score": 0.0,
+      "score": 0.8,
       "max_points": 1.5,
-      "points": 0.0,
-      "notes": "Wrong December highest category (expected: Electronics); December Electronics revenue not found (expected ~2,210,199.61); No other December category totals found within tolerance",
-      "time": 11.2,
+      "points": 1.2,
+      "notes": "No other December category totals found within tolerance",
+      "time": 12.6,
       "error": null
     },
     "4": {
@@ -29,7 +29,7 @@
       "max_points": 1.5,
       "points": 0.0,
       "notes": "No mention of USD conversion; USD total not within 3% of expected (~716,537.79)",
-      "time": 10.1,
+      "time": 9.8,
       "error": null
     },
     "5": {
@@ -37,7 +37,7 @@
       "max_points": 1.5,
       "points": 0.83,
       "notes": "Top endpoint error rate not found (~15.6%); Top endpoint p95 not found (~1977ms)",
-      "time": 12.8,
+      "time": 13.3,
       "error": null
     },
     "6": {
@@ -45,7 +45,7 @@
       "max_points": 2.0,
       "points": 1.85,
       "notes": "OK",
-      "time": 9.3,
+      "time": 11.1,
       "error": null
     },
     "7": {
@@ -53,15 +53,15 @@
       "max_points": 2.0,
       "points": 1.2,
       "notes": "Only 0/24 anomaly products mentioned; Report has 24 anomalies, expected ~39",
-      "time": 15.3,
+      "time": 15.4,
       "error": null
     },
     "8": {
       "score": 0.0,
       "max_points": 2.0,
       "points": 0.0,
-      "notes": "Missing keys: {'department_summary', 'top_products_by_revenue', 'understocked_products', 'daily_revenue_trend', 'endpoint_health'}; department_summary missing or empty; top_products_by_revenue missing or empty; understocked_products is empty but expected entries; endpoint_health missing or empty; daily_revenue_trend missing or empty",
-      "time": 25.5,
+      "notes": "Missing keys: {'daily_revenue_trend', 'department_summary', 'endpoint_health', 'top_products_by_revenue', 'understocked_products'}; department_summary missing or empty; top_products_by_revenue missing or empty; understocked_products is empty but expected entries; endpoint_health missing or empty; daily_revenue_trend missing or empty",
+      "time": 21.5,
       "error": null
     },
     "9": {
@@ -69,7 +69,7 @@
       "max_points": 2.5,
       "points": 0.62,
       "notes": "Did not identify returns/negative quantities in CSV; Did not identify empty/missing totals in CSV; Did not identify unknown currencies (CHF) in CSV; Did not identify duplicate order IDs in CSV; Did not identify multi-line stack traces in logs; Did not identify malformed lines in logs; Did not identify alternate timestamp formats in logs; Did not discover database integrity bug (aggregates missing 99 4xx errors)",
-      "time": 35.4,
+      "time": 33.2,
       "error": null
     }
   },
@@ -90,24 +90,20 @@
       "agent\\tool_1.py: hardcoded column name: department",
       "agent\\tool_1.py: hardcoded column name: salary",
       "agent\\tool_2.py: hardcoded filename: sales.csv",
-      "agent\\tool_3.py: hardcoded filename: app.log",
-      "agent\\tool_3.py: hardcoded column name: endpoint",
-      "agent\\tool_3.py: hardcoded column name: latency_ms",
-      "agent\\tool_3.py: statistical formula hint (p95/p99)",
-      "agent\\tool_4.py: hardcoded filename: metrics.db",
+      "agent\\tool_3.py: hardcoded filename: sales.csv",
+      "agent\\tool_3.py: hardcoded column name: category",
+      "agent\\tool_4.py: hardcoded filename: app.log",
       "agent\\tool_4.py: hardcoded column name: endpoint",
-      "agent\\tool_4.py: hardcoded column name: status_code",
       "agent\\tool_4.py: hardcoded column name: latency_ms",
       "agent\\tool_4.py: statistical formula hint (p95/p99)",
-      "agent\\tool_4.py: SQLite-specific hint",
-      "agent\\tool_5.py: hardcoded filename: sales.csv",
-      "agent\\tool_5.py: hardcoded column name: product_id",
-      "agent\\tool_6.py: hardcoded filename: metrics.db",
-      "agent\\tool_6.py: hardcoded column name: endpoint",
-      "agent\\tool_6.py: hardcoded column name: status_code",
-      "agent\\tool_6.py: hardcoded column name: latency_ms",
-      "agent\\tool_6.py: statistical formula hint (p95/p99)",
-      "agent\\tool_6.py: SQLite-specific hint",
+      "agent\\tool_5.py: hardcoded filename: metrics.db",
+      "agent\\tool_5.py: hardcoded column name: endpoint",
+      "agent\\tool_5.py: hardcoded column name: status_code",
+      "agent\\tool_5.py: hardcoded column name: latency_ms",
+      "agent\\tool_5.py: statistical formula hint (p95/p99)",
+      "agent\\tool_5.py: SQLite-specific hint",
+      "agent\\tool_6.py: hardcoded filename: sales.csv",
+      "agent\\tool_6.py: hardcoded column name: product_id",
       "agent\\tool_7.py: hardcoded filename: employees.json",
       "agent\\tool_7.py: hardcoded filename: sales.csv",
       "agent\\tool_7.py: hardcoded filename: app.log",
@@ -119,7 +115,7 @@
       "agent\\tool_8.py: hardcoded column name: order_id"
     ]
   },
-  "r4_score": 6.300000000000001,
+  "r4_score": 7.700000000000001,
   "r4_max": 15.0,
-  "total_time_seconds": 140.4
+  "total_time_seconds": 138.1
 }

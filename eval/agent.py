@@ -71,6 +71,8 @@ class RulesAgent:
     def detect_task_type(self, task: str) -> str:
         t = task.lower()
 
+        if "exchange" in t or "currency" in t or "usd" in t:
+            return "currency"
         if "dashboard" in t or "cross-source" in t or "multiple data sources" in t:
             return "multi"
         if "audit" in t or "integrity" in t or "quality" in t:
@@ -81,8 +83,7 @@ class RulesAgent:
             return "anomaly"
         if ".log" in t or " log" in t or t.startswith("log"):
             return "log"
-        if "exchange" in t or "currency" in t or "usd" in t:
-            return "currency"
+
 
 
         return "generic"

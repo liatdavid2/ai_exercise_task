@@ -1,21 +1,25 @@
-CURRENCY CONVERSION OUTPUT (CRITICAL):
+CURRENCY / FX TASK (CRITICAL):
 
-- You MUST return a result that EXPLICITLY mentions USD conversion
+- Return a result that clearly mentions conversion to USD or target currency
+- Do not return only a raw number
 
-- The output MUST include at least one of:
-    - "USD"
-    - "converted"
-    - "exchange rate"
+- Discover files dynamically
+- Inspect schema first
+- Infer the money field and the currency field semantically
+- Do not hardcode filenames or column names
 
-- Preferred formats:
+- For each row:
+    - read values safely
+    - strip whitespace
+    - normalize currency to uppercase
+    - skip empty or invalid rows
+    - never crash on malformed input
 
-STRING:
-    "Total revenue in USD: <value>"
+- If exchange rates are provided by API:
+    - fetch and parse them safely
+    - infer the correct conversion direction from the API structure
+    - convert every valid row
+    - accumulate the final total
+    - round to 2 decimals
 
-OR DICT:
-    {
-        "total_revenue_usd": <value>,
-        "description": "All transactions converted to USD using live exchange rates"
-    }
-
-- Returning ONLY a number is INVALID
+- Prefer skipping bad rows over failing the whole task
