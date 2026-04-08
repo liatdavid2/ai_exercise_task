@@ -5,7 +5,7 @@
       "max_points": 1.0,
       "points": 0.8,
       "notes": "Missing salary: 210000",
-      "time": 17.2,
+      "time": 14.5,
       "error": null
     },
     "2": {
@@ -13,7 +13,7 @@
       "max_points": 1.0,
       "points": 1.0,
       "notes": "OK",
-      "time": 14.5,
+      "time": 15.0,
       "error": null
     },
     "3": {
@@ -21,15 +21,15 @@
       "max_points": 1.5,
       "points": 1.2,
       "notes": "No other December category totals found within tolerance",
-      "time": 12.6,
+      "time": 17.4,
       "error": null
     },
     "4": {
-      "score": 0.8,
+      "score": 0.2,
       "max_points": 1.5,
-      "points": 1.2,
-      "notes": "OK",
-      "time": 10.4,
+      "points": 0.3,
+      "notes": "USD total not within 3% of expected (~716,537.79)",
+      "time": 13.2,
       "error": null
     },
     "5": {
@@ -37,7 +37,7 @@
       "max_points": 1.5,
       "points": 1.5,
       "notes": "OK",
-      "time": 17.5,
+      "time": 17.4,
       "error": null
     },
     "6": {
@@ -45,7 +45,7 @@
       "max_points": 2.0,
       "points": 1.85,
       "notes": "OK",
-      "time": 14.7,
+      "time": 13.4,
       "error": null
     },
     "7": {
@@ -53,15 +53,15 @@
       "max_points": 2.0,
       "points": 1.2,
       "notes": "Only 0/24 anomaly products mentioned; Report has 24 anomalies, expected ~39",
-      "time": 20.3,
+      "time": 19.3,
       "error": null
     },
     "8": {
-      "score": 0.7300000000000001,
+      "score": 0.8500000000000002,
       "max_points": 2.0,
-      "points": 1.46,
-      "notes": "understocked has 30 entries, expected ~2; endpoint_health missing or empty",
-      "time": 24.9,
+      "points": 1.7,
+      "notes": "understocked_products is empty but expected entries",
+      "time": 36.0,
       "error": null
     },
     "9": {
@@ -69,7 +69,7 @@
       "max_points": 2.5,
       "points": 0.62,
       "notes": "Did not identify returns/negative quantities in CSV; Did not identify empty/missing totals in CSV; Did not identify unknown currencies (CHF) in CSV; Did not identify duplicate order IDs in CSV; Did not identify multi-line stack traces in logs; Did not identify malformed lines in logs; Did not identify alternate timestamp formats in logs; Did not discover database integrity bug (aggregates missing 99 4xx errors)",
-      "time": 26.8,
+      "time": 34.7,
       "error": null
     }
   },
@@ -90,6 +90,8 @@
       "agent\\tool_1.py: hardcoded filename: employees.json",
       "agent\\tool_1.py: hardcoded column name: department",
       "agent\\tool_1.py: hardcoded column name: salary",
+      "agent\\tool_2.py: hardcoded filename: sales.csv",
+      "agent\\tool_3.py: hardcoded filename: sales.csv",
       "agent\\tool_3.py: hardcoded column name: category",
       "agent\\tool_4.py: HTTP library hint",
       "agent\\tool_4.py: task-specific hint (exchange rate)",
@@ -105,16 +107,23 @@
       "agent\\tool_6.py: statistical formula hint (p95/p99)",
       "agent\\tool_6.py: SQLite-specific hint",
       "agent\\tool_7.py: hardcoded column name: product_id",
+      "agent\\tool_8.py: hardcoded filename: employees.json",
+      "agent\\tool_8.py: hardcoded filename: inventory.json",
       "agent\\tool_8.py: hardcoded column name: department",
       "agent\\tool_8.py: hardcoded column name: salary",
+      "agent\\tool_8.py: hardcoded column name: endpoint",
+      "agent\\tool_8.py: hardcoded column name: status_code",
+      "agent\\tool_8.py: hardcoded column name: latency_ms",
+      "agent\\tool_8.py: hardcoded column name: duration_ms",
       "agent\\tool_8.py: hardcoded column name: product_id",
+      "agent\\tool_8.py: statistical formula hint (p95/p99)",
       "agent\\tool_8.py: SQLite-specific hint",
       "agent\\tool_8.py: HTTP library hint",
-      "agent\\tool_9.py: SQLite-specific hint",
-      "agent\\tool_9.py: log format hint (stack trace)"
+      "agent\\tool_9.py: hardcoded column name: order_id",
+      "agent\\tool_9.py: SQLite-specific hint"
     ]
   },
-  "r4_score": 10.83,
+  "r4_score": 10.17,
   "r4_max": 15.0,
-  "total_time_seconds": 158.9
+  "total_time_seconds": 180.9
 }

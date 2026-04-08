@@ -1,31 +1,176 @@
 {
   "data\\employees.json": [],
   "data\\inventory.json": [],
-  "data\\logs\\app.log": [],
   "data\\metrics.db": [],
   "data\\sales.csv": [
     {
-      "issue_type": "Missing or empty values",
-      "description": "Column 'total' has missing or empty values.",
-      "affected_count": 15,
+      "issue_type": "Duplicate IDs",
+      "description": "Duplicate IDs found in the file.",
+      "affected_count": 10,
       "examples": [
-        92,
-        623,
-        745,
-        746,
-        872
+        "ORD-00433",
+        "ORD-00892",
+        "ORD-01143",
+        "ORD-01309",
+        "ORD-02814"
       ]
     },
     {
-      "issue_type": "Duplicate records",
-      "description": "Duplicate rows found.",
+      "issue_type": "Missing or Empty Values",
+      "description": "Rows with missing or empty values.",
+      "affected_count": 15,
+      "examples": [
+        {
+          "date": "2024-10-03",
+          "order_id": "ORD-02906",
+          "product_id": "P125",
+          "product_name": "Leadership Manual",
+          "category": "Books",
+          "quantity": "3",
+          "unit_price": "24.99",
+          "currency": "USD",
+          "total": "",
+          "region": "US",
+          "customer_id": "C0069"
+        },
+        {
+          "date": "2024-10-20",
+          "order_id": "ORD-02912",
+          "product_id": "P089",
+          "product_name": "Woven Laundry Basket",
+          "category": "Home & Garden",
+          "quantity": "3",
+          "unit_price": "29.99",
+          "currency": "USD",
+          "total": "",
+          "region": "US",
+          "customer_id": "C0137"
+        },
+        {
+          "date": "2024-10-24",
+          "order_id": "ORD-02904",
+          "product_id": "P046",
+          "product_name": "Silk Scarf",
+          "category": "Clothing",
+          "quantity": "3",
+          "unit_price": "39.99",
+          "currency": "USD",
+          "total": "",
+          "region": "US",
+          "customer_id": "C0103"
+        },
+        {
+          "date": "2024-10-24",
+          "order_id": "ORD-02905",
+          "product_id": "P110",
+          "product_name": "Compression Shirt",
+          "category": "Sports",
+          "quantity": "2",
+          "unit_price": "34.99",
+          "currency": "USD",
+          "total": "",
+          "region": "US",
+          "customer_id": "C0054"
+        },
+        {
+          "date": "2024-10-28",
+          "order_id": "ORD-02903",
+          "product_id": "P121",
+          "product_name": "Mystery Novel Collection",
+          "category": "Books",
+          "quantity": "2",
+          "unit_price": "34.99",
+          "currency": "USD",
+          "total": "",
+          "region": "US",
+          "customer_id": "C0177"
+        }
+      ]
+    },
+    {
+      "issue_type": "Unexpected Currency Codes",
+      "description": "Rows with unexpected currency codes.",
       "affected_count": 10,
       "examples": [
-        446,
-        920,
-        1178,
-        1347,
-        1447
+        {
+          "date": "2024-11-06",
+          "order_id": "ORD-02920",
+          "product_id": "P093",
+          "product_name": "Adjustable Dumbbells",
+          "category": "Sports",
+          "quantity": "2",
+          "unit_price": "175.99",
+          "currency": "CHF",
+          "total": "351.98",
+          "region": "EU",
+          "customer_id": "C0061"
+        },
+        {
+          "date": "2024-11-07",
+          "order_id": "ORD-02924",
+          "product_id": "P032",
+          "product_name": "Denim Jeans",
+          "category": "Clothing",
+          "quantity": "1",
+          "unit_price": "52.79",
+          "currency": "CHF",
+          "total": "52.79",
+          "region": "EU",
+          "customer_id": "C0197"
+        },
+        {
+          "date": "2024-11-08",
+          "order_id": "ORD-02916",
+          "product_id": "P055",
+          "product_name": "Flannel Shirt",
+          "category": "Clothing",
+          "quantity": "2",
+          "unit_price": "35.19",
+          "currency": "CHF",
+          "total": "70.38",
+          "region": "EU",
+          "customer_id": "C0116"
+        },
+        {
+          "date": "2024-11-18",
+          "order_id": "ORD-02921",
+          "product_id": "P145",
+          "product_name": "AI and Machine Learning",
+          "category": "Books",
+          "quantity": "1",
+          "unit_price": "43.99",
+          "currency": "CHF",
+          "total": "43.99",
+          "region": "EU",
+          "customer_id": "C0097"
+        },
+        {
+          "date": "2024-11-20",
+          "order_id": "ORD-02923",
+          "product_id": "P038",
+          "product_name": "Cargo Pants",
+          "category": "Clothing",
+          "quantity": "1",
+          "unit_price": "48.39",
+          "currency": "CHF",
+          "total": "48.39",
+          "region": "EU",
+          "customer_id": "C0147"
+        }
+      ]
+    }
+  ],
+  "data\\logs\\app.log": [
+    {
+      "issue_type": "Malformed Lines",
+      "description": "Lines that do not match the expected log structure.",
+      "affected_count": 152,
+      "examples": [
+        "java.lang.NullPointerException: null",
+        "at com.app.service.OrderService.processOrder(OrderService.java:156)",
+        "at com.app.controller.OrderController.create(OrderController.java:42)",
+        "at sun.reflect.GeneratedMethodAccessor12.invoke(Unknown Source)",
+        "Traceback (most recent call last):"
       ]
     }
   ]

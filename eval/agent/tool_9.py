@@ -1,8 +1,8 @@
-import os
 import glob
 import json
 import csv
 import sqlite3
+import os
 from collections import defaultdict
 
 def find_key(d, options):
@@ -20,43 +20,77 @@ def audit_csv(file_path):
         if not rows:
             return issues
         
+        # Detect likely ID column
+        id_column = find_key(rows[0], ['id', 'order_id', 'transaction_id', 'record_id'])
+        total_column = find_key(rows[0], ['total', 'amount', 'price'])
+        currency_column = find_key(rows[0], ['currency', 'curr'])
+        
+        # Check for duplicates
+        if id_column:
+            seen_ids = set()
+            duplicate_ids = []
+            for row in rows:
+                row_id = row.get(id_column)
+                if row_id in seen_ids:
+                    duplicate_ids.append(row_id)
+                else:
+                    seen_ids.add(row_id)
+            if duplicate_ids:
+                issues.append({
+                    "issue_type": "Duplicate IDs",
+                    "description": "Duplicate IDs found in the file.",
+                    "affected_count": len(duplicate_ids),
+                    "examples": duplicate_ids[:5]
+                })
+        
         # Check for missing or empty values
-        missing_values = defaultdict(list)
-        for i, row in enumerate(rows):
+        missing_values = []
+        for row in rows:
             for key, value in row.items():
-                if value is None or value.strip() == '':
-                    missing_values[key].append(i)
-        
-        for key, indices in missing_values.items():
+                if value in (None, '', 'NULL', 'null'):
+                    missing_values.append(row)
+                    break
+        if missing_values:
             issues.append({
-                "issue_type": "Missing or empty values",
-                "description": f"Column '{key}' has missing or empty values.",
-                "affected_count": len(indices),
-                "examples": indices[:5]
+                "issue_type": "Missing or Empty Values",
+                "description": "Rows with missing or empty values.",
+                "affected_count": len(missing_values),
+                "examples": missing_values[:5]
             })
         
-        # Check for duplicate records
-        seen = set()
-        duplicates = []
-        for i, row in enumerate(rows):
-            row_tuple = tuple(row.items())
-            if row_tuple in seen:
-                duplicates.append(i)
-            else:
-                seen.add(row_tuple)
+        # Check for negative totals
+        if total_column:
+            negative_totals = []
+            for row in rows:
+                try:
+                    total_value = float(row[total_column])
+                    if total_value < 0:
+                        negative_totals.append(row)
+                except (ValueError, TypeError):
+                    continue
+            if negative_totals:
+                issues.append({
+                    "issue_type": "Negative Totals",
+                    "description": "Rows with negative total values.",
+                    "affected_count": len(negative_totals),
+                    "examples": negative_totals[:5]
+                })
         
-        if duplicates:
-            issues.append({
-                "issue_type": "Duplicate records",
-                "description": "Duplicate rows found.",
-                "affected_count": len(duplicates),
-                "examples": duplicates[:5]
-            })
-        
-        # Placeholder for additional checks
-        # Check for invalid or inconsistent values
-        # Check for unexpected values / malformed rows
-        
+        # Check for unexpected currency codes
+        if currency_column:
+            unexpected_currencies = []
+            for row in rows:
+                currency = row.get(currency_column)
+                if currency not in ('USD', 'EUR', 'GBP', 'JPY'):  # Example of expected currencies
+                    unexpected_currencies.append(row)
+            if unexpected_currencies:
+                issues.append({
+                    "issue_type": "Unexpected Currency Codes",
+                    "description": "Rows with unexpected currency codes.",
+                    "affected_count": len(unexpected_currencies),
+                    "examples": unexpected_currencies[:5]
+                })
+    
     return issues
 
 def audit_json(file_path):
@@ -67,32 +101,53 @@ def audit_json(file_path):
         except json.JSONDecodeError:
             issues.append({
                 "issue_type": "Malformed JSON",
-                "description": "The JSON file could not be parsed.",
+                "description": "The JSON file is not properly formatted.",
                 "affected_count": 1,
                 "examples": [file_path]
             })
             return issues
         
-        # Placeholder for additional checks
-        # Check for missing or empty values
-        # Check for duplicate records
-        # Check for invalid or inconsistent values
-        # Check for unexpected values / malformed rows
+        # Traverse JSON structure
+        def traverse_json(obj, path=""):
+            if isinstance(obj, dict):
+                for k, v in obj.items():
+                    traverse_json(v, path + "." + k if path else k)
+            elif isinstance(obj, list):
+                for i, item in enumerate(obj):
+                    traverse_json(item, f"{path}[{i}]")
+            else:
+                if obj in (None, '', 'NULL', 'null'):
+                    issues.append({
+                        "issue_type": "Missing or Empty Values",
+                        "description": f"Missing or empty value at {path}.",
+                        "affected_count": 1,
+                        "examples": [path]
+                    })
         
+        traverse_json(data)
+    
     return issues
 
 def audit_log(file_path):
     issues = []
     with open(file_path, 'r', encoding='utf-8') as logfile:
         lines = logfile.readlines()
-        if not lines:
-            return issues
+        malformed_lines = []
+        for line in lines:
+            if not line.strip():
+                continue
+            # Example of a simple log line structure check
+            if not any(keyword in line for keyword in ['ERROR', 'INFO', 'DEBUG']):
+                malformed_lines.append(line.strip())
         
-        # Placeholder for additional checks
-        # Check for malformed lines
-        # Check for multi-line stack traces / continuation lines
-        # Check for alternate timestamp formats
-        
+        if malformed_lines:
+            issues.append({
+                "issue_type": "Malformed Lines",
+                "description": "Lines that do not match the expected log structure.",
+                "affected_count": len(malformed_lines),
+                "examples": malformed_lines[:5]
+            })
+    
     return issues
 
 def audit_sqlite(file_path):
@@ -100,31 +155,65 @@ def audit_sqlite(file_path):
     conn = sqlite3.connect(file_path)
     cursor = conn.cursor()
     
-    # Discover all tables
+    # Discover tables
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
     tables = cursor.fetchall()
     
     for table_name, in tables:
         cursor.execute(f"PRAGMA table_info({table_name});")
         columns = cursor.fetchall()
+        column_names = [col[1] for col in columns]
         
-        # Placeholder for additional checks
+        # Check for duplicates and missing values
+        cursor.execute(f"SELECT * FROM {table_name};")
+        rows = cursor.fetchall()
+        if not rows:
+            continue
+        
+        # Detect likely ID column
+        id_column = find_key(column_names, ['id', 'order_id', 'transaction_id', 'record_id'])
+        
+        if id_column:
+            seen_ids = set()
+            duplicate_ids = []
+            for row in rows:
+                row_id = row[column_names.index(id_column)]
+                if row_id in seen_ids:
+                    duplicate_ids.append(row_id)
+                else:
+                    seen_ids.add(row_id)
+            if duplicate_ids:
+                issues.append({
+                    "issue_type": "Duplicate IDs",
+                    "description": f"Duplicate IDs found in table {table_name}.",
+                    "affected_count": len(duplicate_ids),
+                    "examples": duplicate_ids[:5]
+                })
+        
         # Check for missing or empty values
-        # Check for duplicate records
-        # Check for invalid or inconsistent values
-        # Check for unexpected values / malformed rows
-        
+        missing_values = []
+        for row in rows:
+            if any(value in (None, '', 'NULL', 'null') for value in row):
+                missing_values.append(row)
+        if missing_values:
+            issues.append({
+                "issue_type": "Missing or Empty Values",
+                "description": f"Rows with missing or empty values in table {table_name}.",
+                "affected_count": len(missing_values),
+                "examples": missing_values[:5]
+            })
+    
     conn.close()
     return issues
 
 def tool():
     data_dir = 'data/'
     output_file = 'output/data_audit.json'
-    audit_results = {}
+    audit_results = defaultdict(list)
     
-    # Use glob to find files recursively
-    files = glob.glob(os.path.join(data_dir, '**'), recursive=True)
-    files = [f for f in files if os.path.isfile(f) and not any(excl in f for excl in ['output/', 'agent/', '__pycache__/', '.git/', 'venv/', '.venv/'])]
+    # Discover files
+    files = glob.glob(data_dir + '**/*', recursive=True)
+    files = [f for f in files if not any(excl in f for excl in ['output/', 'agent/', '__pycache__/', '.git/', 'venv/', '.venv/'])]
     
     for file_path in files:
         if file_path.endswith('.csv'):
@@ -138,15 +227,18 @@ def tool():
         else:
             continue
         
-        audit_results[file_path] = issues
+        if issues:
+            audit_results[file_path] = issues
+        else:
+            audit_results[file_path] = []
     
     # Write results to JSON
     with open(output_file, 'w', encoding='utf-8') as outfile:
         json.dump(audit_results, outfile, indent=2)
     
-    # Create a summary
+    # Return summary
     summary = []
-    for file_path, issues in audit_results.items():
-        summary.append(f"{file_path}: {len(issues)} issues found.")
+    for file, issues in audit_results.items():
+        summary.append(f"{file}: {len(issues)} issues found.")
     
     return "\n".join(summary)

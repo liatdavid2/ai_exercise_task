@@ -82,3 +82,15 @@ OUTPUT RULES:
 - Return non-empty findings when issues exist
 - If a file has no issues, include an empty list for that file
 - Do not crash on one bad file; continue auditing the rest
+
+MINIMUM REQUIRED FINDINGS WHEN PRESENT:
+
+- In CSV-like transaction data:
+  detect duplicate likely IDs, empty totals, negative quantities/returns, and unexpected currency codes
+- In log files:
+  detect malformed lines, multiline stack traces, and alternate timestamp formats
+- In SQLite databases:
+  if both raw request rows and aggregate tables exist, recompute 2xx / 4xx / 5xx counts and report mismatches
+
+IMPLEMENT CONCRETE DETECTORS.
+Do not return "0 issues" unless those checks were actually executed.

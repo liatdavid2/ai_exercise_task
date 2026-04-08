@@ -90,12 +90,13 @@ class RulesAgent:
         t = task.lower()
 
         names = []
-        if ("exchange" in t or "currency" in t or "usd" in t) and "cross-source" not in t:
+        if "audit" in t:
+            names += ["file","audit"]
+        elif ("exchange" in t or "currency" in t or "usd" in t) and "cross-source" not in t:
             names += ["file", "currency"]
         elif "dashboard" in t or "cross-source" in t or "multiple" in t:
             names += ["file", "currency","log","db"]
-        elif "audit" in t or "integrity" in t or "quality" in t:
-            names += ["audit"]
+
         elif ".db" in t or "sqlite" in t or "database" in t:
             names += ["db"]
         elif ".log" in t or "log" in t:

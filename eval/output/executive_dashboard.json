@@ -51,219 +51,159 @@
             "revenue_usd": 26756.99
         }
     ],
-    "understocked_products": [
+    "understocked_products": [],
+    "endpoint_health": [
         {
-            "product_id": "P001",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 11,
-            "total_sales_count": 86
+            "endpoint": "/api/reports",
+            "method": "GET",
+            "log_request_count": 144,
+            "log_error_rate_pct": 9.72,
+            "log_p95_ms": 2481.0,
+            "db_request_count": 216,
+            "db_error_rate_pct": 11.11,
+            "db_p99_ms": 6875.77
         },
         {
-            "product_id": "P005",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 48,
-            "total_sales_count": 106
+            "endpoint": "/api/payments",
+            "method": "POST",
+            "log_request_count": 186,
+            "log_error_rate_pct": 15.59,
+            "log_p95_ms": 1929.0,
+            "db_request_count": 305,
+            "db_error_rate_pct": 18.03,
+            "db_p99_ms": 2804.64
         },
         {
-            "product_id": "P009",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 23,
-            "total_sales_count": 91
+            "endpoint": "/api/uploads",
+            "method": "POST",
+            "log_request_count": 143,
+            "log_error_rate_pct": 6.99,
+            "log_p95_ms": 1024.0,
+            "db_request_count": 296,
+            "db_error_rate_pct": 10.81,
+            "db_p99_ms": 1522.44
         },
         {
-            "product_id": "P010",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 34,
-            "total_sales_count": 81
+            "endpoint": "/api/webhooks",
+            "method": "POST",
+            "log_request_count": 139,
+            "log_error_rate_pct": 7.19,
+            "log_p95_ms": 413.0,
+            "db_request_count": 268,
+            "db_error_rate_pct": 9.33,
+            "db_p99_ms": 820.07
         },
         {
-            "product_id": "P019",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 14,
-            "total_sales_count": 72
+            "endpoint": "/api/orders",
+            "method": "GET",
+            "log_request_count": 432,
+            "log_error_rate_pct": 2.55,
+            "log_p95_ms": 133.0,
+            "db_request_count": 1459,
+            "db_error_rate_pct": 4.52,
+            "db_p99_ms": 766.04
         },
         {
-            "product_id": "P031",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 37,
-            "total_sales_count": 62
+            "endpoint": "/api/orders",
+            "method": "POST",
+            "log_request_count": 262,
+            "log_error_rate_pct": 6.49,
+            "log_p95_ms": 323.0,
+            "db_request_count": 1459,
+            "db_error_rate_pct": 4.52,
+            "db_p99_ms": 766.04
         },
         {
-            "product_id": "P032",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 34,
-            "total_sales_count": 97
+            "endpoint": "/api/search",
+            "method": "GET",
+            "log_request_count": 441,
+            "log_error_rate_pct": 2.04,
+            "log_p95_ms": 146.0,
+            "db_request_count": 905,
+            "db_error_rate_pct": 2.65,
+            "db_p99_ms": 559.76
         },
         {
-            "product_id": "P038",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 50,
-            "total_sales_count": 64
+            "endpoint": "/api/auth/login",
+            "method": "POST",
+            "log_request_count": 383,
+            "log_error_rate_pct": 3.92,
+            "log_p95_ms": 257.0,
+            "db_request_count": 716,
+            "db_error_rate_pct": 4.75,
+            "db_p99_ms": 394.32
         },
         {
-            "product_id": "P046",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 43,
-            "total_sales_count": 92
+            "endpoint": "/api/notifications",
+            "method": "POST",
+            "log_request_count": 177,
+            "log_error_rate_pct": 8.47,
+            "log_p95_ms": 196.0,
+            "db_request_count": 376,
+            "db_error_rate_pct": 4.52,
+            "db_p99_ms": 258.95
         },
         {
-            "product_id": "P055",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 23,
-            "total_sales_count": 89
+            "endpoint": "/api/users",
+            "method": "POST",
+            "log_request_count": 249,
+            "log_error_rate_pct": 2.81,
+            "log_p95_ms": 185.0,
+            "db_request_count": 1582,
+            "db_error_rate_pct": 2.59,
+            "db_p99_ms": 218.83
         },
         {
-            "product_id": "P061",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 25,
-            "total_sales_count": 122
+            "endpoint": "/api/users",
+            "method": "GET",
+            "log_request_count": 576,
+            "log_error_rate_pct": 2.43,
+            "log_p95_ms": 82.0,
+            "db_request_count": 1582,
+            "db_error_rate_pct": 2.59,
+            "db_p99_ms": 218.83
         },
         {
-            "product_id": "P066",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 20,
-            "total_sales_count": 94
+            "endpoint": "/api/inventory",
+            "method": "GET",
+            "log_request_count": 315,
+            "log_error_rate_pct": 2.86,
+            "log_p95_ms": 90.0,
+            "db_request_count": 769,
+            "db_error_rate_pct": 2.08,
+            "db_p99_ms": 145.92
         },
         {
-            "product_id": "P072",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 13,
-            "total_sales_count": 56
+            "endpoint": "/api/auth/refresh",
+            "method": "POST",
+            "log_request_count": 277,
+            "log_error_rate_pct": 1.08,
+            "log_p95_ms": 100.0,
+            "db_request_count": 469,
+            "db_error_rate_pct": 0.64,
+            "db_p99_ms": 141.69
         },
         {
-            "product_id": "P080",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 30,
-            "total_sales_count": 96
+            "endpoint": "/api/products",
+            "method": "GET",
+            "log_request_count": 659,
+            "log_error_rate_pct": 1.21,
+            "log_p95_ms": 59.0,
+            "db_request_count": 1300,
+            "db_error_rate_pct": 0.62,
+            "db_p99_ms": 83.73
         },
         {
-            "product_id": "P090",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 27,
-            "total_sales_count": 86
-        },
-        {
-            "product_id": "P091",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 31,
-            "total_sales_count": 111
-        },
-        {
-            "product_id": "P092",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 42,
-            "total_sales_count": 109
-        },
-        {
-            "product_id": "P093",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 15,
-            "total_sales_count": 92
-        },
-        {
-            "product_id": "P099",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 18,
-            "total_sales_count": 89
-        },
-        {
-            "product_id": "P103",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 21,
-            "total_sales_count": 63
-        },
-        {
-            "product_id": "P110",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 27,
-            "total_sales_count": 105
-        },
-        {
-            "product_id": "P119",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 49,
-            "total_sales_count": 96
-        },
-        {
-            "product_id": "P121",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 30,
-            "total_sales_count": 137
-        },
-        {
-            "product_id": "P125",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 28,
-            "total_sales_count": 91
-        },
-        {
-            "product_id": "P130",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 22,
-            "total_sales_count": 90
-        },
-        {
-            "product_id": "P135",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 16,
-            "total_sales_count": 82
-        },
-        {
-            "product_id": "P140",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 45,
-            "total_sales_count": 64
-        },
-        {
-            "product_id": "P145",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 44,
-            "total_sales_count": 89
-        },
-        {
-            "product_id": "P148",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 44,
-            "total_sales_count": 64
-        },
-        {
-            "product_id": "P150",
-            "product_name": null,
-            "current_stock": 0,
-            "reorder_point": 46,
-            "total_sales_count": 104
+            "endpoint": "/api/health",
+            "method": "GET",
+            "log_request_count": 634,
+            "log_error_rate_pct": 0.79,
+            "log_p95_ms": 8.0,
+            "db_request_count": 1065,
+            "db_error_rate_pct": 0.0,
+            "db_p99_ms": 9.75
         }
     ],
-    "endpoint_health": [],
     "department_summary": [
         {
             "department": "Engineering",

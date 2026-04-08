@@ -33,28 +33,32 @@ def tool():
     # Step 2: Fetch current USD exchange rates
     try:
         response = requests.get('https://open.er-api.com/v6/latest/USD')
+        response.raise_for_status()  # Ensure we raise an error for bad responses
         rates_data = response.json()
         rates = rates_data.get('rates', {})
     except Exception as e:
-        return f"Failed to fetch exchange rates: {str(e)}"
+        return f"Failed to fetch exchange rates: {e}"
 
     total_usd = 0.0
 
     # Step 3: Process each file
     for file in files:
-        with open(file, mode='r', encoding='utf-8') as f:
+        with open(file, mode='r', newline='', encoding='utf-8') as f:
             reader = csv.DictReader(f)
-            currency_key = find_key(reader.fieldnames, ['currency'])
-            amount_key = find_key(reader.fieldnames, ['amount', 'total', 'value'])
+            headers = reader.fieldnames
 
-            if not currency_key or not amount_key:
-                continue
+            # Dynamically find relevant fields
+            amount_key = find_key(headers, ['amount', 'value', 'price'])
+            currency_key = find_key(headers, ['currency', 'curr'])
+
+            if not amount_key or not currency_key:
+                continue  # Skip files without necessary fields
 
             for row in reader:
-                raw_currency = str(row.get(currency_key, '')).strip().upper()
                 raw_amount = str(row.get(amount_key, '')).strip()
+                raw_currency = str(row.get(currency_key, '')).strip().upper()
 
-                if not raw_currency or not raw_amount:
+                if not raw_amount or not raw_currency:
                     continue
 
                 try:
@@ -62,7 +66,7 @@ def tool():
                 except ValueError:
                     continue
 
-                rate = rates.get(raw_currency, 1)  # Assume USD if rate is missing
+                rate = rates.get(raw_currency, 1)  # Assume USD if rate not found
                 usd_value = amount / rate
                 total_usd += usd_value
 

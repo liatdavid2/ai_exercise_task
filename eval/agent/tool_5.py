@@ -16,7 +16,7 @@ def tool():
     files = list(set(files))  # Remove duplicates
 
     # Prefer files inside 'data/' if exist
-    files = sorted(files, key=lambda x: 0 if x.startswith('data/') else 1)
+    files = sorted(files, key=lambda x: (not x.startswith('data/'), x))
 
     if not files:
         # Fallback to os.walk if no files found
@@ -24,10 +24,8 @@ def tool():
             for filename in filenames:
                 if filename.endswith('.log'):
                     files.append(os.path.join(root, filename))
-        files = list(set(files))  # Remove duplicates again
-
-    if not files:
-        return "No matching file found"
+        if not files:
+            return "No matching file found"
 
     # Step 2: Initialize data structures
     endpoint_data = defaultdict(lambda: {
@@ -60,17 +58,12 @@ def tool():
 
                 # Step 5: Safe parsing
                 if not method or not endpoint:
-                    # Try regex fallback for endpoint
-                    match = re.search(r'/api/\S+', line)
-                    if match:
-                        endpoint = match.group(0)
-                    else:
-                        continue  # Skip if endpoint is still missing
+                    continue
 
                 try:
                     status = int(status)
                 except:
-                    continue  # Skip if status is not a valid integer
+                    continue
 
                 latency = None
                 if raw_latency:
@@ -115,6 +108,4 @@ def tool():
 
     # Step 8: Sorting and output
     results.sort(key=lambda x: (-x["error_rate"], -x["total_requests"]))
-    top_5_results = results[:5]
-
-    return top_5_results
+    return results[:5]

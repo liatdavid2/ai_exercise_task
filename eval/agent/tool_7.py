@@ -30,7 +30,6 @@ def tool():
     # Step 2: Read and Process CSV
     anomalies = []
     product_stats = {}
-    product_orders = {}
 
     for file in files:
         with open(file, 'r', newline='', encoding='utf-8') as f:
@@ -44,24 +43,22 @@ def tool():
             quantity_key = find_key(headers, ['quantity', 'qty', 'units', 'amount'])
 
             if not all([product_id_key, product_name_key, date_key, quantity_key]):
-                continue  # Skip if any key is not found
+                continue  # Skip if essential columns are missing
 
             # Step 3: Date Filter and Aggregation
             for row in reader:
                 raw_date = str(row[date_key]).strip()
-                if not raw_date:
+                raw_quantity = str(row[quantity_key]).strip()
+                if not raw_date or not raw_quantity:
                     continue
+
                 try:
                     date = datetime.strptime(raw_date, '%Y-%m-%d')
+                    if not (datetime(2024, 10, 1) <= date <= datetime(2024, 12, 31)):
+                        continue
                 except ValueError:
                     continue
 
-                if not (datetime(2024, 10, 1) <= date <= datetime(2024, 12, 31)):
-                    continue
-
-                raw_quantity = str(row[quantity_key]).strip()
-                if not raw_quantity:
-                    continue
                 try:
                     quantity = float(raw_quantity)
                 except ValueError:
@@ -72,27 +69,25 @@ def tool():
 
                 # Aggregate daily quantities
                 if product_id not in product_stats:
-                    product_stats[product_id] = {'name': product_name, 'daily_quantities': {}}
+                    product_stats[product_id] = {'name': product_name, 'daily_quantities': {}, 'total_orders': 0}
+
                 if date not in product_stats[product_id]['daily_quantities']:
                     product_stats[product_id]['daily_quantities'][date] = 0
+
                 product_stats[product_id]['daily_quantities'][date] += quantity
+                product_stats[product_id]['total_orders'] += 1
 
-                # Count orders for eligibility
-                if product_id not in product_orders:
-                    product_orders[product_id] = set()
-                product_orders[product_id].add(date)
+    # Step 4: Product Eligibility Filter
+    eligible_products = {pid: stats for pid, stats in product_stats.items() if stats['total_orders'] >= 20}
 
-    # Step 4: Compute Stats and Detect Anomalies
-    for product_id, stats in product_stats.items():
-        if len(product_orders[product_id]) < 20:
-            continue  # Skip products with less than 20 orders
-
+    # Step 5: Stats Per Product and Anomaly Detection
+    for product_id, stats in eligible_products.items():
         daily_quantities = list(stats['daily_quantities'].values())
         mean_quantity = sum(daily_quantities) / len(daily_quantities)
         std_dev = sqrt(sum((x - mean_quantity) ** 2 for x in daily_quantities) / len(daily_quantities))
 
         if std_dev == 0:
-            continue  # Skip products with zero standard deviation
+            continue
 
         for date, daily_quantity in stats['daily_quantities'].items():
             z_score = (daily_quantity - mean_quantity) / std_dev
@@ -107,16 +102,14 @@ def tool():
                     'z_score': round(z_score, 2)
                 })
 
-    # Step 5: Write Output
-    os.makedirs('output', exist_ok=True)
+    # Step 6: Output Records
+    if not os.path.exists('output'):
+        os.makedirs('output')
+
     with open('output/anomaly_report.json', 'w', encoding='utf-8') as f:
         json.dump(anomalies, f, indent=4)
 
-    # Step 6: Return Summary
+    # Return Summary
     affected_products = set(anomaly['product_id'] for anomaly in anomalies)
-    summary = (
-        f"Found {len(anomalies)} anomalies across {len(affected_products)} products. "
-        f"Report saved to output/anomaly_report.json. "
-        f"Affected products: {', '.join(sorted(affected_products))}"
-    )
+    summary = f"Found {len(anomalies)} anomalies across {len(affected_products)} products. Report saved to output/anomaly_report.json. Affected products: {', '.join(affected_products)}"
     return summary
