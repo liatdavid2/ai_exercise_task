@@ -16,9 +16,7 @@ def tool():
     files = list(set(files))  # Remove duplicates
 
     # Prefer files inside 'data/' if exist
-    files_in_data = [f for f in files if f.startswith('data/')]
-    if files_in_data:
-        files = files_in_data
+    files = sorted(files, key=lambda x: 0 if x.startswith('data/') else 1)
 
     if not files:
         # Fallback to os.walk if no files found
@@ -42,20 +40,20 @@ def tool():
                 category_key = find_key(row, ["category"]) or "category"
 
                 # Parse and validate values
-                raw_total = str(row.get(total_key, '')).strip()
                 raw_date = str(row.get(date_key, '')).strip()
-                category = row.get(category_key, '').strip()
+                raw_total = str(row.get(total_key, '')).strip()
+                category = str(row.get(category_key, '')).strip()
 
-                if not raw_total or not raw_date or not category:
-                    continue
-
-                try:
-                    total = float(raw_total)
-                except ValueError:
+                if not raw_date or not raw_total or not category:
                     continue
 
                 try:
                     date = datetime.strptime(raw_date, '%Y-%m-%d')
+                except ValueError:
+                    continue
+
+                try:
+                    total = float(raw_total)
                 except ValueError:
                     continue
 

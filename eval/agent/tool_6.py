@@ -8,23 +8,23 @@ def find_key(d, options):
     return None
 
 def tool():
-    # Connect to the SQLite database
+    # Step 1: Connect to the SQLite database
     path = 'data/metrics.db'
     conn = sqlite3.connect(path)
     cursor = conn.cursor()
 
-    # Discover schema
+    # Step 2: Discover schema
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
     tables = cursor.fetchall()
     table_name = None
 
-    # Prefer table named 'requests' if exists
+    # Prefer table named 'requests'
     for table in tables:
         if table[0] == 'requests':
             table_name = 'requests'
             break
 
-    # If 'requests' table doesn't exist, choose the table with most rows
+    # If 'requests' table doesn't exist, choose the table with the most rows
     if not table_name:
         max_rows = 0
         for table in tables:
@@ -34,7 +34,7 @@ def tool():
                 max_rows = row_count
                 table_name = table[0]
 
-    # Load data from the chosen table
+    # Step 3: Load data
     cursor.execute(f"SELECT * FROM {table_name}")
     rows = cursor.fetchall()
 
@@ -43,12 +43,12 @@ def tool():
     columns_info = cursor.fetchall()
     column_names = [info[1] for info in columns_info]
 
-    # Detect columns
+    # Step 4: Detect columns
     endpoint_key = find_key(column_names, ["endpoint", "path", "route", "uri"]) or "endpoint"
     status_key = find_key(column_names, ["status", "status_code", "code"]) or "status_code"
     latency_key = find_key(column_names, ["latency", "response_time", "duration", "ms"]) or "latency_ms"
 
-    # Grouping and calculations
+    # Step 5: Grouping
     endpoint_data = {}
     for row in rows:
         row_dict = dict(zip(column_names, row))
@@ -72,8 +72,8 @@ def tool():
             total_requests = data['total_requests']
             error_rate = data['error_count'] / total_requests
             sorted_latencies = sorted(data['latencies'])
-            p99_index = int(0.99 * (len(sorted_latencies) - 1))
-            p99_latency = sorted_latencies[p99_index]
+            index = int(0.99 * (len(sorted_latencies) - 1))
+            p99_latency = sorted_latencies[index]
 
             results.append({
                 'endpoint': endpoint,
@@ -82,13 +82,11 @@ def tool():
                 'p99_latency': p99_latency
             })
 
-    # Sort by p99_latency DESC and return top 10
+    # Step 6: Sort + Filter
     results.sort(key=lambda x: x['p99_latency'], reverse=True)
     top_10_results = results[:10]
 
-    # Close the connection
-    conn.close()
-
+    # Step 7: Output format
     return top_10_results
 
 # Example usage

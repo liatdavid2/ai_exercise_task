@@ -1,7 +1,14 @@
 import glob
+import os
 import re
 from collections import defaultdict
-import os
+
+def find_key(d, options):
+    for k in d:
+        for opt in options:
+            if opt in k.lower():
+                return k
+    return None
 
 def tool():
     # Step 1: Discover log files
@@ -17,13 +24,20 @@ def tool():
             for filename in filenames:
                 if filename.endswith('.log'):
                     files.append(os.path.join(root, filename))
-        files = list(set(files))  # Remove duplicates again
+        if not files:
+            return "No matching file found"
 
-    if not files:
-        return "No matching file found"
+    # Step 2: Parse and analyze log data
+    method_key_options = ["method", "http_method", "verb"]
+    endpoint_key_options = ["endpoint", "path", "route", "url", "uri"]
+    status_key_options = ["status", "status_code", "code", "response_code"]
+    latency_key_options = ["latency_ms", "latency", "response_time_ms", "response_time", "duration_ms", "duration"]
 
-    # Step 2: Parse log files
-    log_data = defaultdict(lambda: {'count': 0, 'latencies': [], 'errors': 0})
+    endpoint_stats = defaultdict(lambda: {
+        "total_requests": 0,
+        "latencies": [],
+        "error_count": 0
+    })
 
     for file in files:
         with open(file, 'r') as f:
@@ -33,58 +47,63 @@ def tool():
                 for p in parts:
                     if '=' in p:
                         k, v = p.split('=', 1)
-                        data[k] = v
+                        data[k.strip()] = v.strip()
 
-                # Extract fields
-                method = data.get("method", "GET")
-                endpoint = data.get("endpoint")
-                status = int(data.get("status", 200))
+                # Extract core fields
+                method = data.get(find_key(data, method_key_options))
+                endpoint = data.get(find_key(data, endpoint_key_options))
+                status = data.get(find_key(data, status_key_options))
+                raw_latency = data.get(find_key(data, latency_key_options))
 
-                # Fallback for endpoint if missing
+                # Fallback for endpoint using regex if missing
                 if not endpoint:
-                    m = re.search(r'/api/\S+', line)
-                    endpoint = m.group(0) if m else None
+                    match = re.search(r'/api/\S*', line)
+                    if match:
+                        endpoint = match.group(0)
 
-                if not endpoint:
-                    continue  # Skip line if endpoint is still missing
+                if not method or not endpoint:
+                    continue  # Skip if essential fields are missing
 
-                # Extract latency
-                raw = data.get("latency_ms", "0")
-                m = re.search(r'(\d+\.?\d*)', raw)
-                latency = float(m.group(1)) if m else 0
+                # Safe parsing of status
+                try:
+                    status = int(status)
+                except (ValueError, TypeError):
+                    continue
 
-                # Group by (method, endpoint)
+                # Safe parsing of latency
+                latency = None
+                if raw_latency:
+                    raw_latency = str(raw_latency).strip()
+                    m = re.search(r'(\d+(?:\.\d+)?)', raw_latency)
+                    if m:
+                        latency = float(m.group(1))
+
+                # Update statistics
                 key = (method, endpoint)
-                log_data[key]['count'] += 1
-                log_data[key]['latencies'].append(latency)
+                endpoint_stats[key]["total_requests"] += 1
+                if latency is not None:
+                    endpoint_stats[key]["latencies"].append(latency)
                 if status >= 400:
-                    log_data[key]['errors'] += 1
+                    endpoint_stats[key]["error_count"] += 1
 
-    # Step 3: Compute metrics
+    # Step 3: Compute metrics for each group
     results = []
-    for (method, endpoint), metrics in log_data.items():
-        total_requests = metrics['count']
-        avg_latency = sum(metrics['latencies']) / total_requests
-        error_rate = metrics['errors'] / total_requests
-        latencies_sorted = sorted(metrics['latencies'])
-        p95_index = int(0.95 * (len(latencies_sorted) - 1))
-        p95_latency = latencies_sorted[p95_index]
+    for (method, endpoint), stats in endpoint_stats.items():
+        total_requests = stats["total_requests"]
+        error_rate = stats["error_count"] / total_requests if total_requests > 0 else 0
+        avg_latency = sum(stats["latencies"]) / len(stats["latencies"]) if stats["latencies"] else 0
+        latencies_sorted = sorted(stats["latencies"])
+        p95_latency = latencies_sorted[int(0.95 * (len(latencies_sorted) - 1))] if latencies_sorted else 0
 
         results.append({
             "method": method,
             "endpoint": endpoint,
             "total_requests": total_requests,
-            "avg_latency": avg_latency,
-            "error_rate": error_rate,
-            "p95_latency": p95_latency
+            "avg_latency": round(avg_latency, 2),
+            "error_rate": round(error_rate * 100, 2),  # Convert to percentage
+            "p95_latency": round(p95_latency, 2)
         })
 
-    # Step 4: Sort by error_rate DESC and return top 5
-    results.sort(key=lambda x: x['error_rate'], reverse=True)
+    # Step 4: Sort and return top 5 by error rate
+    results.sort(key=lambda x: (-x["error_rate"], -x["total_requests"]))
     return results[:5]
-
-# Example usage
-if __name__ == "__main__":
-    top_endpoints = tool()
-    for entry in top_endpoints:
-        print(entry)

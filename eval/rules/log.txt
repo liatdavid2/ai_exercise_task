@@ -1,106 +1,147 @@
 LOG ANALYSIS TASK (CRITICAL):
 
-    Log format is mostly:
+Log lines are typically key=value pairs separated by spaces.
 
-        method=GET endpoint=/api/... status=200 latency_ms=123
+--------------------------------------------------
+STEP 1 — PARSE KEY=VALUE TOKENS (PRIMARY)
+--------------------------------------------------
 
-    --------------------------------------------------
-    STEP 1 — PARSE (PRIMARY - STRICT)
-    --------------------------------------------------
+- Parse each line by splitting on whitespace
+- For each token containing '=':
+    split only on the first '='
+    store key and value in a dict
 
-    You MUST parse using:
+Recommended pattern:
 
-        parts = line.strip().split()
+    parts = line.strip().split()
+    data = {}
+    for p in parts:
+        if '=' in p:
+            k, v = p.split('=', 1)
+            data[k] = v
 
-        data = {}
-        for p in parts:
-            if '=' in p:
-                k, v = p.split('=', 1)
-                data[k] = v
+--------------------------------------------------
+STEP 2 — EXTRACT CORE FIELDS
+--------------------------------------------------
 
-    --------------------------------------------------
-    STEP 2 — EXTRACT FIELDS (STRICT)
-    --------------------------------------------------
+- Extract method, endpoint, status, and latency from parsed fields
+- Prefer direct keys when present
+- Strip whitespace from extracted values
 
-    - Use EXACT keys first:
+Preferred semantic keys:
 
-        method = data.get("method", "GET")
-        endpoint = data.get("endpoint")
-        status = int(data.get("status", 200))
+- method:
+    method, http_method, verb
 
-    - For latency:
+- endpoint:
+    endpoint, path, route, url, uri
 
-        import re
-        raw = data.get("latency_ms", "0")
-        m = re.search(r'(\\d+\\.?\\d*)', raw)
-        latency = float(m.group(1)) if m else 0
+- status:
+    status, status_code, code, response_code
 
-    --------------------------------------------------
-    STEP 3 — FALLBACK (ONLY IF endpoint missing)
-    --------------------------------------------------
+- latency:
+    latency_ms, latency, response_time_ms, response_time, duration_ms, duration
 
-    If endpoint is missing:
+--------------------------------------------------
+STEP 3 — SAFE PARSING
+--------------------------------------------------
 
-        import re
+- Never fail because one line is malformed
+- If endpoint is missing after normal extraction, try regex fallback from the raw line
+- If status cannot be parsed, skip the line or use a safe fallback only if clearly valid
+- For latency:
+    - do not blindly default missing latency to 0
+    - first try to extract a numeric value from the latency-like field
+    - if no numeric latency can be found, skip latency contribution for that line
 
-        m = re.search(r'/api/\\S+', line)
-        endpoint = m.group(0) if m else None
+Recommended latency parsing:
 
-    If still missing → skip line
+    raw_latency = ...
+    raw_latency = str(raw_latency).strip()
 
-    --------------------------------------------------
-    STEP 4 — GROUPING
-    --------------------------------------------------
+    if raw_latency:
+        m = re.search(r'(\\d+(?:\\.\\d+)?)', raw_latency)
+        if m:
+            latency = float(m.group(1))
+        else:
+            latency = None
+    else:
+        latency = None
 
-    - Group by (method, endpoint)
+--------------------------------------------------
+STEP 4 — ENDPOINT FALLBACK
+--------------------------------------------------
 
-    - For each group:
+- If endpoint is missing from parsed fields:
+    try extracting a route-like value from the raw line using regex
 
-        total_requests = count
-        avg_latency = sum(latencies) / count
-        error_rate = count(status >= 400) / total_requests
+Example fallback:
+    /api/...
 
-    - Store ALL latency values
+- If endpoint is still missing, skip the line
 
-    --------------------------------------------------
-    STEP 5 — P95
-    --------------------------------------------------
+--------------------------------------------------
+STEP 5 — GROUPING
+--------------------------------------------------
 
-    - values = sorted(latencies)
+- Group by (method, endpoint)
 
-    - index = int(0.95 * (len(values) - 1))
+For each group compute:
+- total_requests = total line count in that group
+- avg_latency = average of valid latency values only
+- error_rate = count of status >= 400 divided by total_requests
+- p95_latency = 95th percentile of valid latency values only
 
-    - p95_latency = values[index]
+- Store all valid latency values for each group
+- Do not let missing latency values become artificial zeros
 
-    --------------------------------------------------
-    STEP 6 — SORT
-    --------------------------------------------------
+--------------------------------------------------
+STEP 6 — PERCENTILE
+--------------------------------------------------
 
-    - Sort by error_rate DESC
+- Sort latency values ascending
+- Compute p95 from the sorted valid values
 
-    --------------------------------------------------
-    STEP 7 — OUTPUT
-    --------------------------------------------------
+Recommended pattern:
 
-    - Return top 5 groups
+    values = sorted(latencies)
+    index = int(0.95 * (len(values) - 1))
+    p95_latency = values[index]
 
-    - Each row:
+- If no valid latency values exist for a group:
+    use 0 only at final output stage
 
-    {
+--------------------------------------------------
+STEP 7 — SORTING
+--------------------------------------------------
+
+- Rank groups by error_rate descending
+- Return the top 5 groups
+- If needed, use total_requests descending as a secondary tiebreaker
+
+--------------------------------------------------
+STEP 8 — OUTPUT
+--------------------------------------------------
+
+- Return a table-like result or structured rows containing:
+
+{
     "method": "...",
     "endpoint": "...",
     "total_requests": int,
     "avg_latency": float,
     "error_rate": float,
     "p95_latency": float
-    }
+}
 
-    --------------------------------------------------
-    IMPORTANT RULES
-    --------------------------------------------------
+- Round numeric metrics appropriately for readability
 
-    - DO NOT skip rows if endpoint exists
-    - DO NOT require flexible field names
-    - DO NOT overcomplicate parsing
-    - You MUST process many rows (not just a few)
-    - Returning empty result is INVALID
+--------------------------------------------------
+IMPORTANT RULES
+--------------------------------------------------
+
+- Process the full log, not just a sample
+- Do not hardcode a single latency field name
+- Do not replace missing latency with 0 before aggregation
+- Prefer valid parsed latency values only
+- Returning empty results is invalid
