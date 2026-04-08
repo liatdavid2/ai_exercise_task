@@ -42,18 +42,64 @@ BASE RULES (generic reasoning)
 ## Architecture
 
 ```
-                Task
-                 ↓
-        Task Classification
-                 ↓
-            Routing Layer
-                 ↓
-      Build Prompt (dynamic)
-     [BASE + RULES + CONSTRAINTS]
-                 ↓
-                LLM
-                 ↓
-          Generated Tool
++--------------------------------------------------------------+
+|                         User Task                            |
++------------------------------+-------------------------------+
+                               |
+                               v
++--------------------------------------------------------------+
+|                    AgentOrchestrator                         |
+|              LangGraph-based control flow                    |
++------------------------------+-------------------------------+
+                               |
+                               v
++--------------------------------------------------------------+
+|                        RulesAgent                            |
+| Detects task pattern and loads matching rule files           |
++------------------------------+-------------------------------+
+                               |
+                               v
++--------------------------------------------------------------+
+|                        ReuseAgent                            |
+| Checks whether an existing generated tool can be reused      |
++-------------------+------------------------------------------+
+                    | yes
+                    v
+              +-----------+
+              | Execute   |
+              +-----------+
+                    |
+                    | no reusable tool
+                    v
++--------------------------------------------------------------+
+|                  ToolGenerationAgent                         |
+| Builds prompt = generic base + selected rules                |
+| Generates Python tool() with GPT-4o                          |
++------------------------------+-------------------------------+
+                               |
+                               v
++--------------------------------------------------------------+
+|                    ExecutionAgent                            |
+| Runs generated code and captures result or error             |
++-------------------+----------------------+-------------------+
+                    | success              | failure
+                    v                      v
+          +------------------+   +----------------------------+
+          |   StorageAgent   |   |          FixAgent          |
+          | Saves tool file  |   | Repairs code with GPT-4o   |
+          +------------------+   +-------------+--------------+
+                                                |
+                                                v
+                                      +------------------+
+                                      | Retry Execution  |
+                                      +------------------+
+                                                |
+                                  +-------------+-------------+
+                                  | success                   | fail
+                                  v                           v
+                           +--------------+              +-----------+
+                           | save + end   |              | end/error |
+                           +--------------+              +-----------+
 ```
 
 ---

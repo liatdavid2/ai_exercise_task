@@ -53,8 +53,10 @@ def audit_csv(file_path):
                 "examples": duplicates[:5]
             })
         
-        # Additional checks can be added here (e.g., invalid values, currency checks)
-    
+        # Placeholder for additional checks
+        # Check for invalid or inconsistent values
+        # Check for unexpected values / malformed rows
+        
     return issues
 
 def audit_json(file_path):
@@ -65,33 +67,18 @@ def audit_json(file_path):
         except json.JSONDecodeError:
             issues.append({
                 "issue_type": "Malformed JSON",
-                "description": "The JSON file is not properly formatted.",
+                "description": "The JSON file could not be parsed.",
                 "affected_count": 1,
-                "examples": []
+                "examples": [file_path]
             })
             return issues
         
+        # Placeholder for additional checks
         # Check for missing or empty values
-        if isinstance(data, list):
-            for i, item in enumerate(data):
-                if not item:
-                    issues.append({
-                        "issue_type": "Empty JSON object",
-                        "description": f"Empty JSON object at index {i}.",
-                        "affected_count": 1,
-                        "examples": [i]
-                    })
-        elif isinstance(data, dict):
-            if not data:
-                issues.append({
-                    "issue_type": "Empty JSON object",
-                    "description": "The JSON object is empty.",
-                    "affected_count": 1,
-                    "examples": []
-                })
+        # Check for duplicate records
+        # Check for invalid or inconsistent values
+        # Check for unexpected values / malformed rows
         
-        # Additional checks can be added here
-    
     return issues
 
 def audit_log(file_path):
@@ -101,22 +88,11 @@ def audit_log(file_path):
         if not lines:
             return issues
         
+        # Placeholder for additional checks
         # Check for malformed lines
-        malformed_lines = []
-        for i, line in enumerate(lines):
-            if not line.strip():
-                malformed_lines.append(i)
+        # Check for multi-line stack traces / continuation lines
+        # Check for alternate timestamp formats
         
-        if malformed_lines:
-            issues.append({
-                "issue_type": "Malformed lines",
-                "description": "Lines that do not match the expected log format.",
-                "affected_count": len(malformed_lines),
-                "examples": malformed_lines[:5]
-            })
-        
-        # Additional checks can be added here
-    
     return issues
 
 def audit_sqlite(file_path):
@@ -124,7 +100,7 @@ def audit_sqlite(file_path):
     conn = sqlite3.connect(file_path)
     cursor = conn.cursor()
     
-    # Discover tables
+    # Discover all tables
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
     tables = cursor.fetchall()
     
@@ -132,26 +108,12 @@ def audit_sqlite(file_path):
         cursor.execute(f"PRAGMA table_info({table_name});")
         columns = cursor.fetchall()
         
+        # Placeholder for additional checks
         # Check for missing or empty values
-        cursor.execute(f"SELECT * FROM {table_name};")
-        rows = cursor.fetchall()
-        if not rows:
-            continue
+        # Check for duplicate records
+        # Check for invalid or inconsistent values
+        # Check for unexpected values / malformed rows
         
-        for col in columns:
-            col_name = col[1]
-            cursor.execute(f"SELECT COUNT(*) FROM {table_name} WHERE {col_name} IS NULL OR {col_name} = '';")
-            count = cursor.fetchone()[0]
-            if count > 0:
-                issues.append({
-                    "issue_type": "Missing or empty values",
-                    "description": f"Column '{col_name}' in table '{table_name}' has missing or empty values.",
-                    "affected_count": count,
-                    "examples": []
-                })
-        
-        # Additional checks can be added here
-    
     conn.close()
     return issues
 
@@ -160,18 +122,18 @@ def tool():
     output_file = 'output/data_audit.json'
     audit_results = {}
     
-    # Use glob to find files
-    files = glob.glob(data_dir + '**/*', recursive=True)
-    files = [f for f in files if not any(excl in f for excl in ['output/', 'agent/', '__pycache__/', '.git/', 'venv/', '.venv/'])]
+    # Use glob to find files recursively
+    files = glob.glob(os.path.join(data_dir, '**'), recursive=True)
+    files = [f for f in files if os.path.isfile(f) and not any(excl in f for excl in ['output/', 'agent/', '__pycache__/', '.git/', 'venv/', '.venv/'])]
     
     for file_path in files:
         if file_path.endswith('.csv'):
             issues = audit_csv(file_path)
         elif file_path.endswith('.json'):
             issues = audit_json(file_path)
-        elif file_path.endswith('.log') or file_path.endswith('.txt'):
+        elif file_path.endswith(('.log', '.txt')):
             issues = audit_log(file_path)
-        elif file_path.endswith('.db') or file_path.endswith('.sqlite'):
+        elif file_path.endswith(('.db', '.sqlite')):
             issues = audit_sqlite(file_path)
         else:
             continue
@@ -184,7 +146,7 @@ def tool():
     
     # Create a summary
     summary = []
-    for file, issues in audit_results.items():
-        summary.append(f"{file}: {len(issues)} issues found.")
+    for file_path, issues in audit_results.items():
+        summary.append(f"{file_path}: {len(issues)} issues found.")
     
     return "\n".join(summary)

@@ -1,6 +1,7 @@
 {
   "data\\employees.json": [],
   "data\\inventory.json": [],
+  "data\\logs\\app.log": [],
   "data\\metrics.db": [],
   "data\\sales.csv": [
     {
@@ -25,20 +26,6 @@
         1178,
         1347,
         1447
-      ]
-    }
-  ],
-  "data\\logs\\app.log": [
-    {
-      "issue_type": "Malformed lines",
-      "description": "Lines that do not match the expected log format.",
-      "affected_count": 6,
-      "examples": [
-        16,
-        671,
-        1866,
-        3081,
-        3128
       ]
     }
   ]
