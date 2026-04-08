@@ -25,7 +25,7 @@ def tool():
             for file in files:
                 if file.endswith('.csv'):
                     csv_files.append(os.path.join(root, file))
-        csv_files = list(set(csv_files))  # Remove duplicates
+        csv_files = list(set(csv_files))  # Remove duplicates again
 
     if not csv_files:
         return "No matching file found"
@@ -42,17 +42,20 @@ def tool():
     total_usd = 0.0
 
     # Process each CSV file
-    for file in csv_files:
-        with open(file, newline='', encoding='utf-8') as csvfile:
-            reader = csv.DictReader(csvfile)
+    for csv_file in csv_files:
+        with open(csv_file, newline='', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
             for row in reader:
-                # Detect fields dynamically
-                total_key = find_key(row, ["total"]) or "total"
-                currency_key = find_key(row, ["currency"]) or "currency"
+                # Detect relevant fields
+                total_key = find_key(row, ["total"])
+                currency_key = find_key(row, ["currency"])
 
-                # Read and parse values safely
-                raw_total = str(row.get(total_key, '')).strip()
-                raw_currency = str(row.get(currency_key, '')).strip().upper()
+                if not total_key or not currency_key:
+                    continue
+
+                # Safe value parsing
+                raw_total = str(row[total_key]).strip()
+                raw_currency = str(row[currency_key]).strip().upper()
 
                 if not raw_total or not raw_currency:
                     continue
@@ -62,10 +65,8 @@ def tool():
                 except ValueError:
                     continue
 
-                # Get the exchange rate
-                rate = rates.get(raw_currency, 1)  # Assume USD if rate is missing
-
                 # Convert to USD
+                rate = rates.get(raw_currency, 1)
                 usd_value = total / rate
                 total_usd += usd_value
 

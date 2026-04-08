@@ -14,24 +14,12 @@ def tool():
     files = glob.glob('data/**/*.json', recursive=True) + glob.glob('**/*.json', recursive=True)
     files = list(set(files))  # Remove duplicates
 
-    # Prefer files inside 'data/' if they exist
+    # Prefer files inside 'data/' if exist
     files_in_data = [f for f in files if f.startswith('data/')]
     if files_in_data:
         files = files_in_data
 
-    # If no file found, try fallback
-    if not files:
-        for root, dirs, filenames in os.walk('data/'):
-            for filename in filenames:
-                if filename.endswith('.json'):
-                    files.append(os.path.join(root, filename))
-        files = list(set(files))  # Remove duplicates again
-
-    # If still no file found, return message
-    if not files:
-        return "No matching file found"
-
-    # Step 2: Read employees.json
+    # Step 2: Check if 'employees.json' exists in the files
     employees_file = None
     for file in files:
         if 'employees.json' in file:
@@ -39,53 +27,62 @@ def tool():
             break
 
     if not employees_file:
-        return "employees.json not found"
+        # Fallback to os.walk if no file found
+        for root, dirs, filenames in os.walk('data/'):
+            for filename in filenames:
+                if filename == 'employees.json':
+                    employees_file = os.path.join(root, filename)
+                    break
+            if employees_file:
+                break
 
+    if not employees_file:
+        return "No matching file found"
+
+    # Step 3: Read employees.json and process the data
     with open(employees_file, 'r') as f:
         data = json.load(f)
 
-    # Determine the structure of the JSON
     if isinstance(data, list):
         rows = data
     elif isinstance(data, dict):
         rows = list(data.values())
     else:
-        return "Invalid JSON structure"
+        return "Invalid data format"
 
-    # Step 3: Analyze the data
-    department_counts = {}
+    department_key = find_key(rows[0], ["department"]) or "department"
+    salary_key = find_key(rows[0], ["salary", "income"]) or "salary"
+    name_key = find_key(rows[0], ["name"]) or "name"
+
+    department_count = {}
     highest_paid_employee = None
-    highest_salary = -1
+    highest_salary = float('-inf')
 
     for row in rows:
-        # Find keys dynamically
-        department_key = find_key(row, ["department"]) or "department"
-        salary_key = find_key(row, ["salary", "income"]) or "salary"
-        name_key = find_key(row, ["name"]) or "name"
-
-        # Get department
+        # Count employees in each department
         department = row.get(department_key, "Unknown")
-        department_counts[department] = department_counts.get(department, 0) + 1
+        department_count[department] = department_count.get(department, 0) + 1
 
-        # Get salary
-        raw_salary = str(row.get(salary_key, "")).strip()
-        if raw_salary:
-            try:
-                salary = float(raw_salary)
-            except ValueError:
-                continue
+        # Determine the highest-paid employee
+        raw_salary = str(row.get(salary_key, '')).strip()
+        if not raw_salary:
+            continue
+        try:
+            salary = float(raw_salary)
+        except:
+            continue
 
-            # Check for highest-paid employee
-            if salary > highest_salary:
-                highest_salary = salary
-                highest_paid_employee = row.get(name_key, "Unknown")
+        if salary > highest_salary:
+            highest_salary = salary
+            highest_paid_employee = row.get(name_key, "Unknown")
 
-    # Step 4: Return results
-    return {
-        "department_counts": department_counts,
+    # Prepare the result
+    result = {
+        "department_count": department_count,
         "highest_paid_employee": highest_paid_employee
     }
 
+    return result
+
 # Example usage
-result = tool()
-print(result)
+print(tool())

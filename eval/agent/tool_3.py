@@ -16,7 +16,9 @@ def tool():
     files = list(set(files))  # Remove duplicates
 
     # Prefer files inside 'data/' if exist
-    files = sorted(files, key=lambda x: 0 if x.startswith('data/') else 1)
+    files_in_data = [f for f in files if f.startswith('data/')]
+    if files_in_data:
+        files = files_in_data
 
     if not files:
         # Fallback to os.walk if no files found
@@ -28,7 +30,7 @@ def tool():
             return "No matching file found"
 
     total_revenue_by_category = {}
-    december_revenue_by_category = {}
+    december_2024_revenue_by_category = {}
 
     for file in files:
         with open(file, mode='r', newline='', encoding='utf-8') as f:
@@ -39,39 +41,39 @@ def tool():
                 total_key = find_key(row, ["total"]) or "total"
                 category_key = find_key(row, ["category"]) or "category"
 
-                # Parse and validate values
-                raw_date = str(row.get(date_key, '')).strip()
+                # Parse and validate total value
                 raw_total = str(row.get(total_key, '')).strip()
-                category = str(row.get(category_key, '')).strip()
-
-                if not raw_date or not raw_total or not category:
+                if not raw_total:
                     continue
-
                 try:
-                    date = datetime.strptime(raw_date, '%Y-%m-%d')
+                    total_value = float(raw_total)
                 except ValueError:
                     continue
 
+                # Parse date and filter for December 2024
+                raw_date = str(row.get(date_key, '')).strip()
                 try:
-                    total = float(raw_total)
+                    date_value = datetime.strptime(raw_date, '%Y-%m-%d')
                 except ValueError:
                     continue
+
+                category = row.get(category_key, 'Unknown').strip()
 
                 # Aggregate total revenue by category
                 if category not in total_revenue_by_category:
                     total_revenue_by_category[category] = 0.0
-                total_revenue_by_category[category] += total
+                total_revenue_by_category[category] += total_value
 
                 # Filter for December 2024
-                if date.year == 2024 and date.month == 12:
-                    if category not in december_revenue_by_category:
-                        december_revenue_by_category[category] = 0.0
-                    december_revenue_by_category[category] += total
+                if date_value.year == 2024 and date_value.month == 12:
+                    if category not in december_2024_revenue_by_category:
+                        december_2024_revenue_by_category[category] = 0.0
+                    december_2024_revenue_by_category[category] += total_value
 
     # Find the category with the highest revenue in December 2024
-    if december_revenue_by_category:
-        highest_december_category = max(december_revenue_by_category, key=december_revenue_by_category.get)
-        highest_december_revenue = december_revenue_by_category[highest_december_category]
+    if december_2024_revenue_by_category:
+        highest_december_category = max(december_2024_revenue_by_category, key=december_2024_revenue_by_category.get)
+        highest_december_revenue = december_2024_revenue_by_category[highest_december_category]
     else:
         highest_december_category = None
         highest_december_revenue = 0.0
@@ -79,8 +81,8 @@ def tool():
     # Prepare the result
     result = {
         "total_revenue_by_category": {k: round(v, 2) for k, v in total_revenue_by_category.items()},
-        "highest_december_category": highest_december_category,
-        "highest_december_revenue": round(highest_december_revenue, 2)
+        "highest_december_2024_category": highest_december_category,
+        "highest_december_2024_revenue": round(highest_december_revenue, 2)
     }
 
     return result

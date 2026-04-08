@@ -1,1 +1,820 @@
-{"total_revenue_usd": 715607.38}
+{
+    "top_products_by_revenue": [
+        {
+            "product_id": "P091",
+            "product_name": "Running Shoes Pro",
+            "revenue_usd": 99455.17
+        },
+        {
+            "product_id": "P061",
+            "product_name": "Coffee Maker Deluxe",
+            "revenue_usd": 69470.59
+        },
+        {
+            "product_id": "P093",
+            "product_name": "Adjustable Dumbbells",
+            "revenue_usd": 59906.89
+        },
+        {
+            "product_id": "P009",
+            "product_name": "Smart Watch",
+            "revenue_usd": 58167.52
+        },
+        {
+            "product_id": "P001",
+            "product_name": "Wireless Headphones",
+            "revenue_usd": 56134.67
+        },
+        {
+            "product_id": "P090",
+            "product_name": "Robot Vacuum",
+            "revenue_usd": 45118.15
+        },
+        {
+            "product_id": "P005",
+            "product_name": "Mechanical Keyboard",
+            "revenue_usd": 42237.42
+        },
+        {
+            "product_id": "P010",
+            "product_name": "Noise Cancelling Earbuds",
+            "revenue_usd": 31913.94
+        },
+        {
+            "product_id": "P092",
+            "product_name": "Yoga Mat Premium",
+            "revenue_usd": 31486.97
+        },
+        {
+            "product_id": "P121",
+            "product_name": "Mystery Novel Collection",
+            "revenue_usd": 26756.99
+        }
+    ],
+    "understocked_products": [
+        {
+            "product_id": "P001",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 11,
+            "total_sales_count": 86
+        },
+        {
+            "product_id": "P005",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 48,
+            "total_sales_count": 106
+        },
+        {
+            "product_id": "P009",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 23,
+            "total_sales_count": 91
+        },
+        {
+            "product_id": "P010",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 34,
+            "total_sales_count": 81
+        },
+        {
+            "product_id": "P019",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 14,
+            "total_sales_count": 72
+        },
+        {
+            "product_id": "P031",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 37,
+            "total_sales_count": 62
+        },
+        {
+            "product_id": "P032",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 34,
+            "total_sales_count": 97
+        },
+        {
+            "product_id": "P038",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 50,
+            "total_sales_count": 64
+        },
+        {
+            "product_id": "P046",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 43,
+            "total_sales_count": 92
+        },
+        {
+            "product_id": "P055",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 23,
+            "total_sales_count": 89
+        },
+        {
+            "product_id": "P061",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 25,
+            "total_sales_count": 122
+        },
+        {
+            "product_id": "P066",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 20,
+            "total_sales_count": 94
+        },
+        {
+            "product_id": "P072",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 13,
+            "total_sales_count": 56
+        },
+        {
+            "product_id": "P080",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 30,
+            "total_sales_count": 96
+        },
+        {
+            "product_id": "P090",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 27,
+            "total_sales_count": 86
+        },
+        {
+            "product_id": "P091",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 31,
+            "total_sales_count": 111
+        },
+        {
+            "product_id": "P092",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 42,
+            "total_sales_count": 109
+        },
+        {
+            "product_id": "P093",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 15,
+            "total_sales_count": 92
+        },
+        {
+            "product_id": "P099",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 18,
+            "total_sales_count": 89
+        },
+        {
+            "product_id": "P103",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 21,
+            "total_sales_count": 63
+        },
+        {
+            "product_id": "P110",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 27,
+            "total_sales_count": 105
+        },
+        {
+            "product_id": "P119",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 49,
+            "total_sales_count": 96
+        },
+        {
+            "product_id": "P121",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 30,
+            "total_sales_count": 137
+        },
+        {
+            "product_id": "P125",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 28,
+            "total_sales_count": 91
+        },
+        {
+            "product_id": "P130",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 22,
+            "total_sales_count": 90
+        },
+        {
+            "product_id": "P135",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 16,
+            "total_sales_count": 82
+        },
+        {
+            "product_id": "P140",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 45,
+            "total_sales_count": 64
+        },
+        {
+            "product_id": "P145",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 44,
+            "total_sales_count": 89
+        },
+        {
+            "product_id": "P148",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 44,
+            "total_sales_count": 64
+        },
+        {
+            "product_id": "P150",
+            "product_name": null,
+            "current_stock": 0,
+            "reorder_point": 46,
+            "total_sales_count": 104
+        }
+    ],
+    "endpoint_health": [
+        {
+            "endpoint": "/api/users",
+            "method": "POST",
+            "log_request_count": 249,
+            "log_error_rate_pct": 2.81,
+            "log_p95_ms": 0,
+            "db_request_count": 461,
+            "db_error_rate_pct": 0.0,
+            "db_p99_ms": 0
+        },
+        {
+            "endpoint": "/api/reports",
+            "method": "GET",
+            "log_request_count": 144,
+            "log_error_rate_pct": 9.72,
+            "log_p95_ms": 0,
+            "db_request_count": 262,
+            "db_error_rate_pct": 0.0,
+            "db_p99_ms": 0
+        },
+        {
+            "endpoint": "/api/auth/login",
+            "method": "POST",
+            "log_request_count": 383,
+            "log_error_rate_pct": 3.92,
+            "log_p95_ms": 0,
+            "db_request_count": 763,
+            "db_error_rate_pct": 0.0,
+            "db_p99_ms": 0
+        },
+        {
+            "endpoint": "/api/payments",
+            "method": "POST",
+            "log_request_count": 186,
+            "log_error_rate_pct": 15.59,
+            "log_p95_ms": 0,
+            "db_request_count": 352,
+            "db_error_rate_pct": 0.0,
+            "db_p99_ms": 0
+        },
+        {
+            "endpoint": "/api/users",
+            "method": "GET",
+            "log_request_count": 576,
+            "log_error_rate_pct": 2.43,
+            "log_p95_ms": 0,
+            "db_request_count": 1215,
+            "db_error_rate_pct": 0.0,
+            "db_p99_ms": 0
+        },
+        {
+            "endpoint": "/api/orders",
+            "method": "GET",
+            "log_request_count": 432,
+            "log_error_rate_pct": 2.55,
+            "log_p95_ms": 0,
+            "db_request_count": 1015,
+            "db_error_rate_pct": 0.0,
+            "db_p99_ms": 0
+        },
+        {
+            "endpoint": "/api/inventory",
+            "method": "GET",
+            "log_request_count": 315,
+            "log_error_rate_pct": 2.86,
+            "log_p95_ms": 0,
+            "db_request_count": 816,
+            "db_error_rate_pct": 0.0,
+            "db_p99_ms": 0
+        },
+        {
+            "endpoint": "/api/uploads",
+            "method": "POST",
+            "log_request_count": 143,
+            "log_error_rate_pct": 6.99,
+            "log_p95_ms": 0,
+            "db_request_count": 343,
+            "db_error_rate_pct": 0.0,
+            "db_p99_ms": 0
+        },
+        {
+            "endpoint": "/api/health",
+            "method": "GET",
+            "log_request_count": 634,
+            "log_error_rate_pct": 0.79,
+            "log_p95_ms": 0,
+            "db_request_count": 1112,
+            "db_error_rate_pct": 0.0,
+            "db_p99_ms": 0
+        },
+        {
+            "endpoint": "/api/orders",
+            "method": "POST",
+            "log_request_count": 262,
+            "log_error_rate_pct": 6.49,
+            "log_p95_ms": 0,
+            "db_request_count": 538,
+            "db_error_rate_pct": 0.0,
+            "db_p99_ms": 0
+        },
+        {
+            "endpoint": "/api/products",
+            "method": "GET",
+            "log_request_count": 659,
+            "log_error_rate_pct": 1.21,
+            "log_p95_ms": 0,
+            "db_request_count": 1347,
+            "db_error_rate_pct": 0.0,
+            "db_p99_ms": 0
+        },
+        {
+            "endpoint": "/api/search",
+            "method": "GET",
+            "log_request_count": 441,
+            "log_error_rate_pct": 2.04,
+            "log_p95_ms": 0,
+            "db_request_count": 952,
+            "db_error_rate_pct": 0.0,
+            "db_p99_ms": 0
+        },
+        {
+            "endpoint": "/api/webhooks",
+            "method": "POST",
+            "log_request_count": 139,
+            "log_error_rate_pct": 7.19,
+            "log_p95_ms": 0,
+            "db_request_count": 315,
+            "db_error_rate_pct": 0.0,
+            "db_p99_ms": 0
+        },
+        {
+            "endpoint": "/api/auth/refresh",
+            "method": "POST",
+            "log_request_count": 277,
+            "log_error_rate_pct": 1.08,
+            "log_p95_ms": 0,
+            "db_request_count": 516,
+            "db_error_rate_pct": 0.0,
+            "db_p99_ms": 0
+        },
+        {
+            "endpoint": "/api/notifications",
+            "method": "POST",
+            "log_request_count": 177,
+            "log_error_rate_pct": 8.47,
+            "log_p95_ms": 0,
+            "db_request_count": 423,
+            "db_error_rate_pct": 0.0,
+            "db_p99_ms": 0
+        }
+    ],
+    "department_summary": [
+        {
+            "department": "Engineering",
+            "headcount": 8,
+            "avg_salary": 149000.0,
+            "total_salary": 1192000
+        },
+        {
+            "department": "Marketing",
+            "headcount": 5,
+            "avg_salary": 113000.0,
+            "total_salary": 565000
+        },
+        {
+            "department": "Sales",
+            "headcount": 5,
+            "avg_salary": 124400.0,
+            "total_salary": 622000
+        },
+        {
+            "department": "Product",
+            "headcount": 4,
+            "avg_salary": 165000.0,
+            "total_salary": 660000
+        },
+        {
+            "department": "Operations",
+            "headcount": 3,
+            "avg_salary": 128333.33,
+            "total_salary": 385000
+        }
+    ],
+    "daily_revenue_trend": [
+        {
+            "date": "2024-10-01",
+            "revenue_usd": 5280.08
+        },
+        {
+            "date": "2024-10-02",
+            "revenue_usd": 7856.17
+        },
+        {
+            "date": "2024-10-03",
+            "revenue_usd": 3468.21
+        },
+        {
+            "date": "2024-10-04",
+            "revenue_usd": 6559.26
+        },
+        {
+            "date": "2024-10-05",
+            "revenue_usd": 5292.58
+        },
+        {
+            "date": "2024-10-06",
+            "revenue_usd": 6234.81
+        },
+        {
+            "date": "2024-10-07",
+            "revenue_usd": 6457.15
+        },
+        {
+            "date": "2024-10-08",
+            "revenue_usd": 5213.47
+        },
+        {
+            "date": "2024-10-09",
+            "revenue_usd": 7174.59
+        },
+        {
+            "date": "2024-10-10",
+            "revenue_usd": 3529.41
+        },
+        {
+            "date": "2024-10-11",
+            "revenue_usd": 7435.07
+        },
+        {
+            "date": "2024-10-12",
+            "revenue_usd": 4232.05
+        },
+        {
+            "date": "2024-10-13",
+            "revenue_usd": 5186.37
+        },
+        {
+            "date": "2024-10-14",
+            "revenue_usd": 7899.6
+        },
+        {
+            "date": "2024-10-15",
+            "revenue_usd": 4363.07
+        },
+        {
+            "date": "2024-10-16",
+            "revenue_usd": 7566.88
+        },
+        {
+            "date": "2024-10-17",
+            "revenue_usd": 4768.47
+        },
+        {
+            "date": "2024-10-18",
+            "revenue_usd": 6465.79
+        },
+        {
+            "date": "2024-10-19",
+            "revenue_usd": 4998.73
+        },
+        {
+            "date": "2024-10-20",
+            "revenue_usd": 6991.48
+        },
+        {
+            "date": "2024-10-21",
+            "revenue_usd": 5819.41
+        },
+        {
+            "date": "2024-10-22",
+            "revenue_usd": 3964.67
+        },
+        {
+            "date": "2024-10-23",
+            "revenue_usd": 5385.07
+        },
+        {
+            "date": "2024-10-24",
+            "revenue_usd": 5573.23
+        },
+        {
+            "date": "2024-10-25",
+            "revenue_usd": 6839.19
+        },
+        {
+            "date": "2024-10-26",
+            "revenue_usd": 6173.83
+        },
+        {
+            "date": "2024-10-27",
+            "revenue_usd": 7634.14
+        },
+        {
+            "date": "2024-10-28",
+            "revenue_usd": 5529.42
+        },
+        {
+            "date": "2024-10-29",
+            "revenue_usd": 5205.72
+        },
+        {
+            "date": "2024-10-30",
+            "revenue_usd": 6642.2
+        },
+        {
+            "date": "2024-10-31",
+            "revenue_usd": 5358.72
+        },
+        {
+            "date": "2024-11-01",
+            "revenue_usd": 5118.74
+        },
+        {
+            "date": "2024-11-02",
+            "revenue_usd": 6639.25
+        },
+        {
+            "date": "2024-11-03",
+            "revenue_usd": 2735.57
+        },
+        {
+            "date": "2024-11-04",
+            "revenue_usd": 4313.05
+        },
+        {
+            "date": "2024-11-05",
+            "revenue_usd": 5406.09
+        },
+        {
+            "date": "2024-11-06",
+            "revenue_usd": 7661.21
+        },
+        {
+            "date": "2024-11-07",
+            "revenue_usd": 8737.82
+        },
+        {
+            "date": "2024-11-08",
+            "revenue_usd": 5470.15
+        },
+        {
+            "date": "2024-11-09",
+            "revenue_usd": 6066.96
+        },
+        {
+            "date": "2024-11-10",
+            "revenue_usd": 3981.33
+        },
+        {
+            "date": "2024-11-11",
+            "revenue_usd": 7153.4
+        },
+        {
+            "date": "2024-11-12",
+            "revenue_usd": 5753.22
+        },
+        {
+            "date": "2024-11-13",
+            "revenue_usd": 6088.37
+        },
+        {
+            "date": "2024-11-14",
+            "revenue_usd": 5268.64
+        },
+        {
+            "date": "2024-11-15",
+            "revenue_usd": 70504.55
+        },
+        {
+            "date": "2024-11-16",
+            "revenue_usd": 6305.3
+        },
+        {
+            "date": "2024-11-17",
+            "revenue_usd": 5137.05
+        },
+        {
+            "date": "2024-11-18",
+            "revenue_usd": 3828.1
+        },
+        {
+            "date": "2024-11-19",
+            "revenue_usd": 6116.12
+        },
+        {
+            "date": "2024-11-20",
+            "revenue_usd": 3569.43
+        },
+        {
+            "date": "2024-11-21",
+            "revenue_usd": 7193.11
+        },
+        {
+            "date": "2024-11-22",
+            "revenue_usd": 4111.33
+        },
+        {
+            "date": "2024-11-23",
+            "revenue_usd": 3363.97
+        },
+        {
+            "date": "2024-11-24",
+            "revenue_usd": 8507.64
+        },
+        {
+            "date": "2024-11-25",
+            "revenue_usd": 7100.01
+        },
+        {
+            "date": "2024-11-26",
+            "revenue_usd": 2240.76
+        },
+        {
+            "date": "2024-11-27",
+            "revenue_usd": 4805.18
+        },
+        {
+            "date": "2024-11-28",
+            "revenue_usd": 21862.82
+        },
+        {
+            "date": "2024-11-29",
+            "revenue_usd": 4600.58
+        },
+        {
+            "date": "2024-11-30",
+            "revenue_usd": 5114.19
+        },
+        {
+            "date": "2024-12-01",
+            "revenue_usd": 6509.6
+        },
+        {
+            "date": "2024-12-02",
+            "revenue_usd": 4269.02
+        },
+        {
+            "date": "2024-12-03",
+            "revenue_usd": 3628.91
+        },
+        {
+            "date": "2024-12-04",
+            "revenue_usd": 5759.24
+        },
+        {
+            "date": "2024-12-05",
+            "revenue_usd": 46277.84
+        },
+        {
+            "date": "2024-12-06",
+            "revenue_usd": 5714.89
+        },
+        {
+            "date": "2024-12-07",
+            "revenue_usd": 5209.69
+        },
+        {
+            "date": "2024-12-08",
+            "revenue_usd": 4471.39
+        },
+        {
+            "date": "2024-12-09",
+            "revenue_usd": 8683.89
+        },
+        {
+            "date": "2024-12-10",
+            "revenue_usd": 4671.46
+        },
+        {
+            "date": "2024-12-11",
+            "revenue_usd": 5929.25
+        },
+        {
+            "date": "2024-12-12",
+            "revenue_usd": 25705.55
+        },
+        {
+            "date": "2024-12-13",
+            "revenue_usd": 7695.51
+        },
+        {
+            "date": "2024-12-14",
+            "revenue_usd": 4063.73
+        },
+        {
+            "date": "2024-12-15",
+            "revenue_usd": 6067.75
+        },
+        {
+            "date": "2024-12-16",
+            "revenue_usd": 10610.2
+        },
+        {
+            "date": "2024-12-17",
+            "revenue_usd": 5722.07
+        },
+        {
+            "date": "2024-12-18",
+            "revenue_usd": 7018.15
+        },
+        {
+            "date": "2024-12-19",
+            "revenue_usd": 5817.9
+        },
+        {
+            "date": "2024-12-20",
+            "revenue_usd": 47494.26
+        },
+        {
+            "date": "2024-12-21",
+            "revenue_usd": 6810.37
+        },
+        {
+            "date": "2024-12-22",
+            "revenue_usd": 7182.07
+        },
+        {
+            "date": "2024-12-23",
+            "revenue_usd": 7809.27
+        },
+        {
+            "date": "2024-12-24",
+            "revenue_usd": 6149.3
+        },
+        {
+            "date": "2024-12-25",
+            "revenue_usd": 6401.88
+        },
+        {
+            "date": "2024-12-26",
+            "revenue_usd": 6110.48
+        },
+        {
+            "date": "2024-12-27",
+            "revenue_usd": 6180.12
+        },
+        {
+            "date": "2024-12-28",
+            "revenue_usd": 7075.73
+        },
+        {
+            "date": "2024-12-29",
+            "revenue_usd": 4474.95
+        },
+        {
+            "date": "2024-12-30",
+            "revenue_usd": 5056.45
+        },
+        {
+            "date": "2024-12-31",
+            "revenue_usd": 5183.71
+        }
+    ]
+}

@@ -15,7 +15,7 @@ def tool():
     # Step 1: File Discovery
     files = glob.glob('data/**/*.csv', recursive=True) + glob.glob('**/*.csv', recursive=True)
     files = list(set(files))  # Remove duplicates
-    files = [f for f in files if 'data/' in f] or files  # Prefer files inside 'data/'
+    files = [f for f in files if 'data/' in f] or files  # Prefer files inside 'data/' if exist
 
     if not files:
         # Fallback to os.walk if no files found
@@ -33,8 +33,8 @@ def tool():
     total_quantity_per_product = {}
 
     for file in files:
-        with open(file, mode='r', newline='', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
+        with open(file, newline='', encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile)
             date_key = find_key(reader.fieldnames, ["date"]) or "date"
             quantity_key = find_key(reader.fieldnames, ["quantity"]) or "quantity"
             product_id_key = find_key(reader.fieldnames, ["product_id"]) or "product_id"
@@ -42,7 +42,7 @@ def tool():
 
             for row in reader:
                 # Date filtering
-                raw_date = row.get(date_key, "").strip()
+                raw_date = str(row.get(date_key, '')).strip()
                 if not raw_date:
                     continue
                 try:
@@ -52,8 +52,8 @@ def tool():
                 except:
                     continue
 
-                # Safe quantity parsing
-                raw_quantity = str(row.get(quantity_key, "")).strip()
+                # Safe value parsing
+                raw_quantity = str(row.get(quantity_key, '')).strip()
                 if not raw_quantity:
                     continue
                 try:
@@ -61,9 +61,8 @@ def tool():
                 except:
                     continue
 
-                # Product details
-                product_id = row.get(product_id_key, "").strip()
-                product_name = row.get(product_name_key, "").strip()
+                product_id = row.get(product_id_key, '').strip()
+                product_name = row.get(product_name_key, '').strip()
 
                 # Aggregate total quantity per product
                 if product_id not in total_quantity_per_product:
@@ -81,12 +80,13 @@ def tool():
     # Step 3: Filter products with total_quantity >= 20
     filtered_product_stats = {pid: stats for pid, stats in product_stats.items() if total_quantity_per_product[pid] >= 20}
 
-    # Step 4: Calculate statistics and detect anomalies
+    # Step 4: Calculate stats per product
     for product_id, daily_data in filtered_product_stats.items():
         values = list(daily_data.values())
         mean = sum(values) / len(values)
         std = sqrt(sum((x - mean) ** 2 for x in values) / len(values))
 
+        # Step 5: Anomaly detection
         if std == 0:
             continue  # Skip products with no variation
 
@@ -103,15 +103,16 @@ def tool():
                     "z_score": round(z_score, 2)
                 })
 
-    # Step 5: Write anomalies to JSON file
+    # Step 6: Output anomalies to JSON
     os.makedirs('output', exist_ok=True)
     with open('output/anomaly_report.json', 'w', encoding='utf-8') as f:
         json.dump(anomalies, f, indent=4)
 
-    # Step 6: Return summary
-    affected_products = list(set(anomaly["product_id"] for anomaly in anomalies))
+    # Summary
+    affected_products = list(set(anomaly['product_id'] for anomaly in anomalies))
     summary = {
         "total_anomalies": len(anomalies),
         "affected_products": affected_products
     }
+
     return summary
